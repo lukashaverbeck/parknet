@@ -9,7 +9,7 @@ class FrontAgentScanner:
         # TODO Pi-Kamera initialisieren statt Webkamera
         self.__camera = cv2.VideoCapture(0)
 
-        refresh_frequency = 3
+        refresh_frequency = 1
 
         while True:
             self.refresh()
@@ -21,7 +21,8 @@ class FrontAgentScanner:
         decoded_objects = pyzbar.decode(frame)
 
         if len(decoded_objects) > 0:
-            self.__front_agent_id = decoded_objects[0].data
+            data_bytes = decoded_objects[0].data
+            self.__front_agent_id = data_bytes.decode("utf-8")
         else:
             self.__front_agent_id = None
 
