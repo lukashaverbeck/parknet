@@ -1,6 +1,6 @@
 class Formation:
     def __init__(self):
-        """ initrializes an empty formation of agents """
+        """ initializes an empty formation of agents """
 
         self.__agents = []
         self.__longest = 0.0
