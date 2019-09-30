@@ -5,8 +5,6 @@ ATTRIBUTES_FILE = "./attributes.json"
 
 class Agent:
     def __init__(self):
-        global ATTRIBUTES_FILE
-
         self.__communication = None # TODO
         self.__driver = None        # TODO
         self.__formation = Formation()
