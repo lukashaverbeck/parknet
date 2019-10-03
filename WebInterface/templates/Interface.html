@@ -1,0 +1,125 @@
+<html lang="de">
+    <head>
+        <title>Home</title>
+
+        <script type="text/javascript" src="{{ url_for('static', filename='Load.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='DisplayData.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='Navigation.js') }}"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    </head>
+
+    <body>
+        <script type="text/javascript">
+            new LoadScreen();
+        </script>
+
+        <nav>
+            <div class="content">    
+                <button data-route="driver">
+                    <i class="material-icons">navigation</i>
+                </button>
+                
+                <button data-route="formation">
+                    <i class="material-icons">view_list</i>
+                </button>
+    
+                <button data-route="sensors">
+                    <i class="material-icons">memory</i>
+                </button>
+            </div>
+        </nav>
+
+        <main>
+            <section id="formation" class="no-display">
+                <h1>Formation</h1>
+
+                <div id="lane">
+                    <div id="agents"></div>
+                </div>
+            </section>
+
+            <section id="driver" class="no-display">
+                <h1>Driver</h1>
+
+                <p id="speedometer"></p>
+                <img id="steering-wheel" src="{{ url_for('static', filename='img/steering-wheel.png') }}">
+            </section>
+
+            <section id="sensors" class="no-display">
+                <h1>Sensoren</h1>
+                
+                <div class="rectangle">
+                    <div class="top">
+                        <div id="sensor-top"></div>
+                    </div>
+                    <div class="bottom">
+                        <div id="sensor-bottom"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <section id="details">
+            <div class="content">
+                <div id="details-formation" class="no-display">
+                    <div class="detail" data-detail="longest">
+                        <span class="name">Längests Fahrzeug</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="gap">
+                        <span class="name">Optimale Lücke</span>
+                        <span class="value"></span>
+                    </div>
+                </div>
+
+                <div id="details-driver" class="no-display">
+                    <div class="detail" data-detail="velocity">
+                        <span class="name">Geschwindigkeit</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="angle">
+                        <span class="name">Winkel</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="mode">
+                        <span class="name">Modus</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="isRecording">
+                        <span class="name">Aufnahme</span>
+                        <span class="value"></span>
+                    </div>
+                </div>
+
+                <div id="details-sensors" class="no-display">
+                    <div class="detail" data-detail="front">
+                        <span class="name">Vorne</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="right">
+                        <span class="name">Rechts</span>
+                        <span class="value"></span>
+                    </div>
+
+                    <div class="detail" data-detail="back">
+                        <span class="name">Hinten</span>
+                        <span class="value"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </body>
+
+    <script type="text/javascript">
+        updateValues();
+        setInterval(updateValues, 1000);
+        
+        new Navigation();
+    </script>
+</html>
