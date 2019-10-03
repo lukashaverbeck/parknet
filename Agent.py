@@ -18,5 +18,3 @@ class Agent:
 
     def listen_for_message(self, message):
         pass # TODO
-
-Agent()
