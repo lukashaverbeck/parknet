@@ -5,6 +5,8 @@ ATTRIBUTES_FILE = "./attributes.json"
 
 class Agent:
     def __init__(self):
+        """ initalizes a specific car agent based on his attributes file """
+        
         self.__communication = None # TODO
         self.__driver = None        # TODO
         self.__formation = Formation()

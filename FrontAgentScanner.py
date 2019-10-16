@@ -5,6 +5,7 @@ import pyzbar.pyzbar as pyzbar
 class FrontAgentScanner:
     def __init__(self):
         """ initializes the scanner and starts to refresh the front agent ID """
+
         self.__front_agent_id = None
         # TODO Pi-Kamera initialisieren statt Webkamera
         self.__camera = cv2.VideoCapture(0)
@@ -17,6 +18,7 @@ class FrontAgentScanner:
 
     def refresh(self):
         """ updates the front agent ID based on the current video input """
+        
         _, frame = self.__camera.read()
         decoded_objects = pyzbar.decode(frame)
 
