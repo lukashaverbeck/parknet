@@ -1,4 +1,4 @@
-from Formation import Formation
+from .Formation import Formation
 import json
 
 ATTRIBUTES_FILE = "./attributes.json"
@@ -9,7 +9,7 @@ class Agent:
         
         self.__communication = None # TODO
         self.__driver = None        # TODO
-        self.__formation = Formation()
+        self.__formation = None     # TODO
 
         with open(ATTRIBUTES_FILE) as attributes_file:
             data = attributes_file.read()
