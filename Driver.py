@@ -26,7 +26,7 @@ class Driver:
         self.__recorder = None
 
     # TODO
-    def accelerate(self, velocity):
+    def accelerate(self, velocity) -> None:
         """ changes the velocity of the vehicle
 
         Args:
@@ -36,7 +36,7 @@ class Driver:
         pass
 
     # TODO
-    def steer(self, angle):
+    def steer(self, angle) -> None:
         """ changes the steering angle of the vehicle
 
         Args:
@@ -45,7 +45,7 @@ class Driver:
 
         pass
 
-    def change_mode(self, mode):
+    def change_mode(self, mode) -> None:
         """ updates the behaviour of the agent by changing its mode
 
         Args:
@@ -55,7 +55,7 @@ class Driver:
         pass
 
     # TODO
-    def enter_parking_lot(self):
+    def enter_parking_lot(self) -> None:
         """ parallel parking from a provided starting position
 
             for the algorithm to work the method assumes that the vehicle is parallel
@@ -65,13 +65,13 @@ class Driver:
         pass
 
     # TODO
-    def leave_parking_lot(self):
+    def leave_parking_lot(self) -> None:
         """ steers the vehicle out of the parking lot """
 
         pass
 
     # TODO
-    def search_parking_lot(self):
+    def search_parking_lot(self) -> None:
         """ drives straight while identifying possible parking lots and evaluating
             whether such a parking lot would fit the vehicle's dimensions
             the evaluation is based on sensor data
@@ -80,7 +80,7 @@ class Driver:
         pass
 
     # TODO
-    def follow_road(self):
+    def follow_road(self) -> None:
         """ drives autonomously without explicit instructions
             by feeding the camera input through a convolutional neural network
             that predicts a steering angle and a velocity for the vehicle
@@ -89,7 +89,7 @@ class Driver:
         pass
 
     # TODO
-    def move_up(self):
+    def move_up(self) -> None:
         """ drives as close to the front vehicle or obstacle as
             possible for the current vehicle formation
         """
@@ -97,7 +97,7 @@ class Driver:
         pass
 
     # TODO
-    def move_back(self):
+    def move_back(self) -> None:
         """ drives as close to the rear vehicle or obstacle as
             possible for the current vehicle formation
         """
@@ -105,7 +105,7 @@ class Driver:
         pass
 
     # TODO
-    def manual_driving(self, inputs):
+    def manual_driving(self, inputs) -> None:
         """ steers the vehicle based on user inputs
 
             Args:
@@ -114,7 +114,7 @@ class Driver:
         pass
 
     # TODO
-    def start_recording(self):
+    def start_recording(self) -> None:
         """ saves an image of the current camera input and logs the corresponding
             steering angle and velocity
         """
@@ -136,7 +136,7 @@ class Driver:
         self.__recorder.start()
 
     # TODO
-    def stop_recording(self):
+    def stop_recording(self) -> None:
         """ stops the recording of the camera input and the corresponding log """
 
         if isinstance(self.__recorder, self.RecorderThread):
@@ -144,10 +144,10 @@ class Driver:
 
         self.__recorder = None
 
-    def get_angle(self):
+    def get_angle(self) -> float:
         return self.__angle
 
-    def get_velocity(self):
+    def get_velocity(self) -> float:
         return self.__velocity
 
     class RecorderThread(threading.Thread):
@@ -175,7 +175,7 @@ class Driver:
             self.__img_directory = img_directory
             self.__interval = 0.2
 
-        def run(self):
+        def run(self) -> None:
             """ starts capturing the data """
 
             with open(self.__log_path, "a", newline="") as log:
@@ -196,7 +196,7 @@ class Driver:
 
                 time.sleep(self.__interval)
 
-        def stop(self):
+        def stop(self) -> None:
             """ stops capturing the data """
 
             cv2.destroyAllWindows()
