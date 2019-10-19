@@ -20,5 +20,5 @@ class Agent:
             self.__length = attributes['length']
             self.__width = attributes['width']
 
-    def listen_for_message(self, message):
+    def listen_for_message(self, message) -> None:
         pass  # TODO
