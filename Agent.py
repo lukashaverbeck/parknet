@@ -3,13 +3,14 @@ import json
 
 ATTRIBUTES_FILE = "./attributes.json"
 
+
 class Agent:
     def __init__(self):
-        """ initalizes a specific car agent based on his attributes file """
+        """ initializes a specific car agent based on his attributes file """
         
-        self.__communication = None # TODO
-        self.__driver = None        # TODO
-        self.__formation = None     # TODO
+        self.__communication = None  # TODO
+        self.__driver = None         # TODO
+        self.__formation = None      # TODO
 
         with open(ATTRIBUTES_FILE) as attributes_file:
             data = attributes_file.read()
@@ -17,6 +18,7 @@ class Agent:
             
             self.__id = attributes['id']
             self.__length = attributes['length']
+            self.__width = attributes['width']
 
     def listen_for_message(self, message):
-        pass # TODO
+        pass  # TODO
