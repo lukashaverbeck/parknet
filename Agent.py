@@ -1,4 +1,4 @@
-from .Formation import Formation
+from Formation import Formation
 import json
 
 ATTRIBUTES_FILE = "./attributes.json"
@@ -20,5 +20,6 @@ class Agent:
             self.__length = attributes['length']
             self.__width = attributes['width']
 
-    def listen_for_message(self, message) -> None:
-        pass  # TODO
+    # TODO
+    def listen_for_message(self, message: str) -> None:
+        pass
