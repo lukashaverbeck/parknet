@@ -11,11 +11,11 @@ class FrontAgentScanner:
         # TODO Pi-Kamera initialisieren statt Webkamera
         self.__camera = cv2.VideoCapture(0)
 
-        refresh_frequency = 1
+        refresh_interval = 0.01
 
         while True:
             self.refresh()
-            time.sleep(refresh_frequency)
+            time.sleep(refresh_interval)
 
     def refresh(self) -> None:
         """ updates the front agent ID based on the current video input """
@@ -30,4 +30,4 @@ class FrontAgentScanner:
             self.__front_agent_id = None
 
     def get_front_agent_id(self) -> str:
-        return self.__front_agent_id;
+        return self.__front_agent_id
