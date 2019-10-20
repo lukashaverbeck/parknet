@@ -4,7 +4,6 @@ import cv2
 import time
 import threading
 from datetime import datetime
-from Formation import Formation
 
 MODE_ENTER = "parking/enter"
 MODE_LEAVE = "parking/leave"
@@ -18,11 +17,18 @@ MODE_MOVE_BACK = "react/move-back"
 MODE_DEFAULT = MODE_STANDBY
 MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
 
+CAUTIOUS_VELOCITY = 3.0
+MIN_VELOCITY = -10.0
+MAX_VELOCITY = +10.0
+
+MIN_STEERING_ANGLE = -60.0
+MAX_STEERING_ANGLE = +60.0
+
 
 class Driver:
     """ controls the steering of the vehicle """
 
-    def __init__(self, length: float, formation: Formation):
+    def __init__(self, length: float, formation: object):
         """ initializes the driver component of an agent
 
             Args:
@@ -30,6 +36,7 @@ class Driver:
                 formation (Formation): formation of vehicles in parking lot
         """
 
+        self.__drive_thread = None
         self.__sensor_manager = None  # TODO
         self.__velocity = 0.0
         self.__angle = 0.0
@@ -38,25 +45,58 @@ class Driver:
         self.__formation = formation
         self.__recorder = None
 
+    def start_driving(self):
+        """ starts the thread that moves the vehicle """
+
+        self.__drive_thread = self.DriveThread(self)
+        self.__drive_thread.start()
+
+    def stop_driving(self):
+        """ stops and deletes the thread that moves the vehicle
+            it also sets the velocity and steering angle to 0
+        """
+
+        self.__drive_thread.stop()
+        del self.__drive_thread
+        self.__drive_thread = None
+
+        self.accelerate(0.0)
+        self.steer(0.0)
+
     # TODO
     def accelerate(self, velocity: float) -> None:
         """ changes the velocity of the vehicle
+
+            this method does not move the vehicle but instead works as a setter for the velocity
 
         Args:
             velocity (float): desired absolute velocity
         """
 
-        pass
+        if velocity > MAX_VELOCITY:
+            velocity = MAX_VELOCITY
+        elif velocity < MIN_VELOCITY:
+            velocity = MIN_VELOCITY
+
+        self.__velocity = velocity
 
     # TODO
     def steer(self, angle: float) -> None:
         """ changes the steering angle of the vehicle
 
+            this method does not move the vehicle's steering axle but instead works as a setter
+            for the steering angle
+
         Args:
             angle (float): desired absolute steering angle
         """
 
-        pass
+        if angle > MAX_STEERING_ANGLE:
+            angle = MAX_STEERING_ANGLE
+        elif angle < MIN_STEERING_ANGLE:
+            angle = MIN_STEERING_ANGLE
+
+        self.__angle = angle
 
     def change_mode(self, mode: str) -> None:
         """ updates the behaviour of the agent by changing its mode
@@ -131,7 +171,16 @@ class Driver:
             possible for the current vehicle formation
         """
 
-        pass
+        self.accelerate(CAUTIOUS_VELOCITY)
+        self.steer(0.0)
+
+        gap = self.__formation.calc_gap()
+        self.start_driving()
+
+        while self.__sensor_manager.get_distance(0) > gap:
+            time.sleep(0.5)
+
+        self.stop_driving()
 
     # TODO
     def move_back(self) -> None:
@@ -139,7 +188,16 @@ class Driver:
             possible for the current vehicle formation
         """
 
-        pass
+        self.accelerate(-1 * CAUTIOUS_VELOCITY)
+        self.steer(0.0)
+
+        gap = self.__formation.calc_gap()
+        self.start_driving()
+
+        while self.__sensor_manager.get_distance(0) > gap:
+            time.sleep(0.5)
+
+        self.stop_driving()
 
     # TODO
     def manual_driving(self) -> None:
@@ -236,3 +294,33 @@ class Driver:
             cv2.destroyAllWindows()
             self.__camera.release()
             self.__run = False
+
+    class DriveThread(threading.Thread):
+        """ thread that moves the vehicle """
+
+        def __init__(self, driver: object):
+            """ initializes the thread without starting to move the vehicle
+
+            Args:
+                driver (Driver): driver that dictates the vehicle's steering angle and velocity
+            """
+
+            super().__init__()
+            self.__driver = driver
+            self.__drive = True
+
+        # TODO
+        def run(self) -> None:
+            """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
+                the vehicle accordingly to the driver's steering angle and velocity by addressing
+                the vehicle's hardware
+            """
+
+            while self.__drive:
+                angle = self.__driver.get_angle()
+                velocity = self.__driver.get_velocity()
+
+        def stop(self):
+            """ permits the thread to move the vehicle """
+
+            self.__drive = False
