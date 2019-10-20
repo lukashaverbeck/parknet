@@ -6,6 +6,19 @@ import threading
 from datetime import datetime
 
 
+MODE_ENTER = "parking/enter"
+MODE_LEAVE = "parking/leave"
+MODE_SEARCH = "parking/search"
+MODE_STANDBY = "parking/standby"
+MODE_AUTONOMOUS = "drive/follow-road"
+MODE_MANUAL = "drive/manual"
+MODE_MOVE_UP = "react/move-up"
+MODE_MOVE_BACK = "react/move-back"
+
+MODE_DEFAULT = MODE_STANDBY
+MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
+
+
 class Driver:
     """ controls the steering of the vehicle """
 
@@ -48,11 +61,35 @@ class Driver:
     def change_mode(self, mode) -> None:
         """ updates the behaviour of the agent by changing its mode
 
+            best practice is not to pass the desired mode directly as a string but instead
+            passing it as one of the global mode constants defined at the top of this file
+
+            if the passed mode is not one of those modes, the vehicle's mode will be changed
+            to the default mode
+
         Args:
-            mode (str): desired mode
+            mode (str): desired mode which
         """
 
-        pass
+        if mode not in MODES:
+            mode = MODE_DEFAULT
+
+        self.__mode = mode
+
+        if mode == MODE_ENTER:
+            self.enter_parking_lot()
+        elif mode == MODE_LEAVE:
+            self.leave_parking_lot()
+        elif mode == MODE_SEARCH:
+            self.search_parking_lot()
+        elif mode == MODE_AUTONOMOUS:
+            self.follow_road()
+        elif mode == MODE_MANUAL:
+            self.manual_driving()
+        elif mode == MODE_MOVE_UP:
+            self.move_up()
+        elif mode == MODE_MOVE_UP:
+            self.move_back()
 
     # TODO
     def enter_parking_lot(self) -> None:
@@ -105,12 +142,9 @@ class Driver:
         pass
 
     # TODO
-    def manual_driving(self, inputs) -> None:
-        """ steers the vehicle based on user inputs
+    def manual_driving(self) -> None:
+        """ steers the vehicle based on user inputs """
 
-            Args:
-                inputs (dict): user input for the desired steering angle and velocity
-        """
         pass
 
     # TODO
