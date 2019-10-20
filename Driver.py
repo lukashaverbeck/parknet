@@ -57,7 +57,6 @@ class Driver:
         """
 
         self.__drive_thread.stop()
-        del self.__drive_thread
         self.__drive_thread = None
 
         self.accelerate(0.0)
