@@ -4,7 +4,7 @@ import cv2
 import time
 import threading
 from datetime import datetime
-
+from Formation import Formation
 
 MODE_ENTER = "parking/enter"
 MODE_LEAVE = "parking/leave"
@@ -22,7 +22,7 @@ MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MOD
 class Driver:
     """ controls the steering of the vehicle """
 
-    def __init__(self, length, formation, mode=None):
+    def __init__(self, length: float, formation: Formation):
         """ initializes the driver component of an agent
 
             Args:
@@ -33,13 +33,13 @@ class Driver:
         self.__sensor_manager = None  # TODO
         self.__velocity = 0.0
         self.__angle = 0.0
-        self.__mode = mode
+        self.__mode = MODE_DEFAULT
         self.__length = length
         self.__formation = formation
         self.__recorder = None
 
     # TODO
-    def accelerate(self, velocity) -> None:
+    def accelerate(self, velocity: float) -> None:
         """ changes the velocity of the vehicle
 
         Args:
@@ -49,7 +49,7 @@ class Driver:
         pass
 
     # TODO
-    def steer(self, angle) -> None:
+    def steer(self, angle: float) -> None:
         """ changes the steering angle of the vehicle
 
         Args:
@@ -58,7 +58,7 @@ class Driver:
 
         pass
 
-    def change_mode(self, mode) -> None:
+    def change_mode(self, mode: str) -> None:
         """ updates the behaviour of the agent by changing its mode
 
             best practice is not to pass the desired mode directly as a string but instead
@@ -189,7 +189,7 @@ class Driver:
             and creates a log of the corresponding steering angle and velocity
         """
 
-        def __init__(self, driver, log_path, img_directory):
+        def __init__(self, driver: object, log_path: str, img_directory: str):
             """ initializes the thread without starting to capture the data
 
             Args:

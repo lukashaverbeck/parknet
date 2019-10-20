@@ -1,3 +1,6 @@
+from Agent import Agent
+
+
 class Formation:
     def __init__(self):
         """ initializes an empty formation of agents """
@@ -18,7 +21,7 @@ class Formation:
 
         return round(needed_space / number_of_agents, 2)
 
-    def add_agent(self, agent) -> None:
+    def add_agent(self, agent: Agent) -> None:
         """ adds an agent to the formation
 
         Args:
