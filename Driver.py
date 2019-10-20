@@ -62,7 +62,6 @@ class Driver:
         self.accelerate(0.0)
         self.steer(0.0)
 
-    # TODO
     def accelerate(self, velocity: float) -> None:
         """ changes the velocity of the vehicle
 
@@ -79,7 +78,6 @@ class Driver:
 
         self.__velocity = velocity
 
-    # TODO
     def steer(self, angle: float) -> None:
         """ changes the steering angle of the vehicle
 
@@ -164,7 +162,6 @@ class Driver:
 
         pass
 
-    # TODO
     def move_up(self) -> None:
         """ drives as close to the front vehicle or obstacle as
             possible for the current vehicle formation
@@ -181,7 +178,6 @@ class Driver:
 
         self.stop_driving()
 
-    # TODO
     def move_back(self) -> None:
         """ drives as close to the rear vehicle or obstacle as
             possible for the current vehicle formation
@@ -204,7 +200,6 @@ class Driver:
 
         pass
 
-    # TODO
     def start_recording(self) -> None:
         """ saves an image of the current camera input and logs the corresponding
             steering angle and velocity
@@ -226,7 +221,6 @@ class Driver:
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
         self.__recorder.start()
 
-    # TODO
     def stop_recording(self) -> None:
         """ stops the recording of the camera input and the corresponding log """
 
@@ -303,6 +297,9 @@ class Driver:
             Args:
                 driver (Driver): driver that dictates the vehicle's steering angle and velocity
             """
+
+            assert callable(driver.get_angle), "driver does not provide a getter for the steering angle"
+            assert callable(driver.get_velocity), "driver does not provide a getter for the steering angle"
 
             super().__init__()
             self.__driver = driver
