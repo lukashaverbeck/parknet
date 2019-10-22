@@ -3,6 +3,7 @@ import csv
 import cv2
 import time
 import threading
+import SensorManager as sm
 from datetime import datetime
 
 MODE_ENTER = "parking/enter"
@@ -37,7 +38,7 @@ class Driver:
         """
 
         self.__drive_thread = None
-        self.__sensor_manager = None  # TODO
+        self.__sensor_manager = sm.SensorManager()
         self.__velocity = 0.0
         self.__angle = 0.0
         self.__mode = MODE_DEFAULT
@@ -173,7 +174,7 @@ class Driver:
         gap = self.__formation.calc_gap()
         self.start_driving()
 
-        while self.__sensor_manager.get_distance(0) > gap:
+        while self.__sensor_manager.get_distance(sm.FRONT) > gap:
             time.sleep(0.5)
 
         self.stop_driving()
@@ -189,7 +190,7 @@ class Driver:
         gap = self.__formation.calc_gap()
         self.start_driving()
 
-        while self.__sensor_manager.get_distance(0) > gap:
+        while self.__sensor_manager.get_distance(sm.FRONT) > gap:
             time.sleep(0.5)
 
         self.stop_driving()
