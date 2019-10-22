@@ -18,9 +18,9 @@ MODE_MOVE_BACK = "react/move-back"
 MODE_DEFAULT = MODE_STANDBY
 MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
 
-CAUTIOUS_VELOCITY = 3.0
-MIN_VELOCITY = -10.0
-MAX_VELOCITY = +10.0
+CAUTIOUS_VELOCITY = 0.3  # m/s
+MIN_VELOCITY = -2.0  # m/s
+MAX_VELOCITY = +8.0  # m/s
 
 MIN_STEERING_ANGLE = -60.0
 MAX_STEERING_ANGLE = +60.0
@@ -29,11 +29,12 @@ MAX_STEERING_ANGLE = +60.0
 class Driver:
     """ controls the steering of the vehicle """
 
-    def __init__(self, length: float, formation: object):
+    def __init__(self, length: float, width: float, formation: object):
         """ initializes the driver component of an agent
 
             Args:
                 length (float): length of vehicle
+                width (float): width of vehicle
                 formation (Formation): formation of vehicles in parking lot
         """
 
@@ -43,6 +44,7 @@ class Driver:
         self.__angle = 0.0
         self.__mode = MODE_DEFAULT
         self.__length = length
+        self.__width = width
         self.__formation = formation
         self.__recorder = None
 
@@ -145,14 +147,36 @@ class Driver:
 
         pass
 
-    # TODO
     def search_parking_lot(self) -> None:
-        """ drives straight while identifying possible parking lots and evaluating
-            whether such a parking lot would fit the vehicle's dimensions
-            the evaluation is based on sensor data
+        """ drives straight while identifying possible parking lots and evaluating whether such a parking lot would fit
+            the vehicle's dimensions for parallel parking
+            after identifying a parking lot, the vehicle drives further until it reaches the start of the parking lot
         """
 
-        pass
+        check_interval = 1
+        velocity = CAUTIOUS_VELOCITY
+        intervals_with_matching_space = 0
+        required_lot_length = self.__length * 1.4
+        required_lot_width = self.__width * 1.2
+
+        self.accelerate(velocity)
+        self.steer(0.0)
+        self.start_driving()
+
+        # evaluate whether there would be enough space in terms of width and length for parallel parking
+        while True:
+            if self.__sensor_manager.get_distance(sm.RIGHT) >= required_lot_width:
+                intervals_with_matching_space += 1
+                length_with_matching_space = intervals_with_matching_space * velocity * check_interval
+
+                if length_with_matching_space >= required_lot_length:
+                    break
+
+            time.sleep(check_interval)
+
+        # drive further until the vehicle reaches the start of the parking lot
+        while self.__sensor_manager.get_distance(sm.RIGHT) >= required_lot_width:
+            time.sleep(check_interval)
 
     # TODO
     def follow_road(self) -> None:
@@ -292,6 +316,8 @@ class Driver:
     class DriveThread(threading.Thread):
         """ thread that moves the vehicle """
 
+        DRIVING_INTERVAL = 1
+
         def __init__(self, driver: object):
             """ initializes the thread without starting to move the vehicle
 
@@ -316,8 +342,13 @@ class Driver:
             while self.__drive:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
+                time.sleep(self.DRIVING_INTERVAL)
 
         def stop(self):
             """ permits the thread to move the vehicle """
 
             self.__drive = False
+
+
+d = Driver(1, 0.3, None)
+d.search_parking_lot()
