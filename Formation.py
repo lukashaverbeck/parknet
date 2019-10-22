@@ -11,8 +11,8 @@ class Formation:
     def calc_gap(self) -> float:
         """ calculates the minimal gap between two agents
 
-        Returns:
-            float: length of minimal gap rounded to 2 decimal places
+            Returns:
+                float: length of minimal gap rounded to 2 decimal places
         """
         
         number_of_agents = len(self.__agents)
@@ -24,8 +24,8 @@ class Formation:
     def add_agent(self, agent: Agent) -> None:
         """ adds an agent to the formation
 
-        Args:
-            agent (Agent): agent that is to be added
+            Args:
+                agent (Agent): agent that is to be added
         """
 
         self.__agents.append(agent)

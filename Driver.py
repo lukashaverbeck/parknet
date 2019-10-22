@@ -70,8 +70,8 @@ class Driver:
 
             this method does not move the vehicle but instead works as a setter for the velocity
 
-        Args:
-            velocity (float): desired absolute velocity
+            Args:
+                velocity (float): desired absolute velocity
         """
 
         if velocity > MAX_VELOCITY:
@@ -87,8 +87,8 @@ class Driver:
             this method does not move the vehicle's steering axle but instead works as a setter
             for the steering angle
 
-        Args:
-            angle (float): desired absolute steering angle
+            Args:
+                angle (float): desired absolute steering angle
         """
 
         if angle > MAX_STEERING_ANGLE:
@@ -107,8 +107,8 @@ class Driver:
             if the passed mode is not one of those modes, the vehicle's mode will be changed
             to the default mode
 
-        Args:
-            mode (str): desired mode which
+            Args:
+                mode (str): desired mode which
         """
 
         if mode not in MODES:
@@ -268,10 +268,10 @@ class Driver:
         def __init__(self, driver: object, log_path: str, img_directory: str):
             """ initializes the thread without starting to capture the data
 
-            Args:
-                driver (Driver): driver whose data is recorded
-                log_path (str): path to the directory of the log file
-                img_directory (str): path to the directory in which the images are saved
+                Args:
+                    driver (Driver): driver whose data is recorded
+                    log_path (str): path to the directory of the log file
+                    img_directory (str): path to the directory in which the images are saved
             """
 
             assert os.path.isdir(img_directory), "given image directory does not exist"
@@ -321,8 +321,8 @@ class Driver:
         def __init__(self, driver: object):
             """ initializes the thread without starting to move the vehicle
 
-            Args:
-                driver (Driver): driver that dictates the vehicle's steering angle and velocity
+                Args:
+                    driver (Driver): driver that dictates the vehicle's steering angle and velocity
             """
 
             assert callable(driver.get_angle), "driver does not provide a getter for the steering angle"
