@@ -31,12 +31,12 @@ class SensorManager:
     def get_distance(self, direction: int) -> float or None:
         """ gives the latest measured distance in a certain direction
 
-        Args:
-            direction (int): number that represents the direction
+            Args:
+                direction (int): number that represents the direction
 
-        Returns:
-            float: latest measured distance if the direction can be interpreted
-            None: if the handed direction is not one of the directions defined at th top of this file
+            Returns:
+                float: latest measured distance if the direction can be interpreted
+                None: if the handed direction is not one of the directions defined at th top of this file
         """
 
         if direction == FRONT:
