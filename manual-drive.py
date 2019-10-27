@@ -73,5 +73,6 @@ finally:
   curses.nocbreak()
   screen.keypad(0)
 	curses.echo()
+  curses.echo()
   curses.endwin()
 
