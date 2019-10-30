@@ -108,7 +108,7 @@ class Driver:
             to the default mode
 
             Args:
-                mode (str): desired mode which
+                mode (str): desired mode
         """
 
         if mode not in MODES:
