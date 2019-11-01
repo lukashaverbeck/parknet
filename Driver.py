@@ -348,7 +348,3 @@ class Driver:
             """ permits the thread to move the vehicle """
 
             self.__drive = False
-
-
-d = Driver(1, 0.3, None)
-d.search_parking_lot()
