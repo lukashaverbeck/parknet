@@ -3,7 +3,7 @@ import csv
 import cv2
 import time
 import threading
-import vehicle.SensorManager as sm
+import SensorManager as sm
 from datetime import datetime
 
 MODE_ENTER = "parking/enter"
