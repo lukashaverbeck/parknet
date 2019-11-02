@@ -1,0 +1,72 @@
+<html lang="de">
+    <head>
+        <title>Steuerung</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}"></script>
+    </head>
+
+    <body>
+        <nav>
+            <h1>Modus auswählen</h1>
+            <hr>
+
+            <section>
+                <button data-mode="manual">manuelles Fahren</button>
+                <button data-mode="autonomous">autonomes Fahren</button>
+                <button data-mode="parking">Parken</button>
+            </section>
+
+            <button id="btn-start-recording" class="btn-record">
+                <i class="material-icons"> play_arrow </i>
+            </button>
+
+            <button id="btn-stop-recording" class="btn-record no-display">
+                <i class="material-icons"> stop </i>
+            </button>
+        </nav>
+
+        <main>
+            <button id="btn-close" class="no-display">
+                <i class="material-icons"> close </i>
+            </button>
+
+            <section id="container-standby">
+                <img src="{{url_for('static', filename='img/car.svg')}}">
+            </section>
+
+            <section id="container-manual" class="no-display">
+                <div id="keyboard">
+                    <div class="key" id="key-forward">
+                        <i class="material-icons"> keyboard_arrow_up </i>
+                    </div>
+
+                    <div class="key" id="key-backward">
+                        <i class="material-icons"> keyboard_arrow_down </i>
+                    </div>
+                    
+                    <div class="key" id="key-left">
+                        <i class="material-icons"> keyboard_arrow_left </i>
+                    </div>
+                    
+                    <div class="key" id="key-right">
+                        <i class="material-icons"> keyboard_arrow_right </i>
+                    </div>
+                </div>
+            </section>
+
+            <section id="container-autonomous" class="no-display">
+                <h1>AUTONOMES FAHREN</h1>
+            </section>
+
+            <section id="container-parking" class="no-display">
+                <h1>PARKEN</h1>
+            </section>
+        </main>
+    </body>
+
+    <script src="{{url_for('static', filename='main.js')}}"></script>
+
+    <script>
+        new Menu();
+    </script>
+</html>
