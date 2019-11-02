@@ -1,0 +1,205 @@
+@font-face
+    font-family: "Segoe UI Black"
+    font-display: swap
+    src: url("./fonts/Segoe-UI-Black.ttf") format("truetype")
+
+@font-face
+    font-family: "Segoe UI Bold"
+    font-display: swap
+    src: url("./fonts/Segoe-UI-Bold.ttf") format("truetype")
+    
+$large : 720px
+
+$color-primary : #EF476F
+$color-primary-bright : #F6AEBF
+$color-secondary : #FFD166
+$color-secondary-bright : #F5E6C4
+$color-accent-dark : #073B4C
+$color-accent-grey : #F5F5F5
+$color-accent-shadow : transparentize($color-accent-dark, 0.84)
+
+$font-black : "Segoe UI Black"
+$font-bold : "Segoe UI Bold"
+
+@mixin center
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+
+@mixin center-horizontal
+    left: 50%
+    transform: translateX(-50%)
+
+@keyframes recording
+    0%
+        opacity: 0
+    50%
+        opacity: 1
+    100%
+        opacity: 0
+
+*, *:focus
+    outline: none !important
+
+*::-webkit-scrollbar
+    width: 0
+
+*::-webkit-scrollbar-thumb
+    background: transparent
+
+body
+    width: 100%
+    height: 100%
+    margin: 0
+    padding: 0
+    overflow-y: scroll
+
+    *
+        transition: all 300ms
+
+h1, h2, h3, h4, h5, h6
+    font-family: $font-black
+    padding: 0
+
+button
+    background: transparent
+    border: none
+    padding: 0
+    margin: 0
+    cursor: pointer
+
+nav, main
+    height: 100%
+    padding: 60px
+    float: left
+    box-sizing: border-box
+
+nav
+    position: relative
+    width: 38.2%
+    background: $color-accent-grey
+
+    h1
+        text-align: center
+        margin: 60px 0 30px 0
+
+    hr
+        width: 60px
+        border: 6px solid $color-accent-dark
+        border-radius: 6px
+
+    section
+        position: absolute
+        width: 240px
+        @include center
+
+        button
+            position: relative
+            display: block
+            width: 240px
+            height: 60px
+            margin-bottom: 15px
+            background: white
+            border-radius: 30px
+            box-shadow: $color-accent-shadow 3px 3px 6px 0
+            font-family: $font-bold
+            font-size: 18px
+
+            &:last-of-type
+                margin: 0
+
+            &.active
+                background: radial-gradient($color-primary, $color-primary-bright 161%)
+                color: white
+                box-shadow: none
+
+            &:hover:not(.active)
+                box-shadow: $color-accent-shadow 0 0 6px 0
+
+    .btn-record
+        position: absolute
+        width: 80px
+        height: 80px
+        bottom: 60px
+        border-radius: 50%
+        box-shadow: $color-accent-shadow 3px 3px 12px 0
+        @include center-horizontal
+
+        &:hover, &:focus
+            box-shadow: $color-accent-shadow 0 0 12px 0
+
+        i
+            font-size: 48px
+
+    #btn-start-recording
+        background: white
+
+    #btn-stop-recording
+        background: linear-gradient(315deg, $color-primary, $color-primary-bright)
+
+        i
+            color: white
+            animation: 4s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite recording
+
+        &:hover, &:focus
+            i
+                animation: none
+main
+    width: 61.8%
+
+    section
+        width: 100%
+        height: 100%
+
+.no-display
+    display: none
+
+#container-standby
+    img
+        position: relative
+        width: 61.8%
+        @include center
+
+#btn-close
+    position: absolute
+    right: 60px
+
+#keyboard
+    position: relative
+    width: 560px
+    height: 360px
+    @include center
+
+    .key
+        position: absolute
+        width: 160px
+        height: 160px
+        padding: 48px
+        border-radius: 30px
+        box-shadow: $color-accent-shadow 0 6px 16px 0
+        box-sizing: border-box
+
+        i
+            font-size: 64px
+
+        &.active
+            background: linear-gradient(225deg, $color-primary, $color-primary-bright 162%)
+            box-shadow: $color-accent-shadow 0 0 16px 0
+
+            i
+                color: white
+
+    #key-forward, #key-backward
+        left: 200px
+
+    #key-left, #key-right, #key-backward
+        bottom: 0
+
+    #key-forward
+        top: 0
+
+    #key-left
+        left: 0
+
+    #key-right
+        right: 0
