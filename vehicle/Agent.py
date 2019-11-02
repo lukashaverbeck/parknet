@@ -1,4 +1,5 @@
 import json
+from Driver import Driver
 
 ATTRIBUTES_FILE = "./attributes.json"
 
@@ -19,6 +20,5 @@ class Agent:
             self.__length = attributes['length']
             self.__width = attributes['width']
 
-    # TODO
-    def listen_for_message(self, message: str) -> None:
-        pass
+    def driver(self):
+        return self.__driver
