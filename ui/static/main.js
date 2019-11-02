@@ -81,6 +81,23 @@ class ManualMode extends Mode {
 class AutonomousMode extends Mode {
     constructor() {
         super("drive/follow-road", "autonomous");
+
+        this.stopButton = document.getElementById("btn-stop-autonomous");
+        this.restartButton = document.getElementById("btn-restart-autonomous");
+
+        this.stopButton.addEventListener("click", () => {
+            this.stopButton.classList.add("no-display");
+            this.restartButton.classList.remove("no-display");
+
+            sendRequest("emergency-stop")
+        });
+
+        this.restartButton.addEventListener("click", () => {
+            this.restartButton.classList.add("no-display");
+            this.stopButton.classList.remove("no-display");
+
+            sendRequest("change-mode", { mode: "drive/follow-road" })
+        });
     }
 }
 

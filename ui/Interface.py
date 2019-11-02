@@ -18,7 +18,7 @@ def home():
 @app.route("/change-mode", methods=["POST"])
 def change_mode():
     data = request.get_json(silent=True)
-    
+
     if "mode" in data:
         agent.driver().change_mode(data["mode"])
 
@@ -33,6 +33,14 @@ def start_recording():
 @app.route("/stop-recording", methods=["POST"])
 def stop_recording():
     agent.driver().stop_recording()
+
+    return ""
+
+@app.route("/emergency-stop", methods=["POST"])
+def emergency_stop():
+    agent.driver().stop_recording()
+    agent.driver().accelerate(0.0)
+    agent.driver().stop_driving()
 
     return ""
 
