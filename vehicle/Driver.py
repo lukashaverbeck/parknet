@@ -65,8 +65,9 @@ class Driver:
             it also sets the velocity and steering angle to 0
         """
 
-        self.__drive_thread.stop()
-        self.__drive_thread = None
+        if self.__drive_thread is not None:
+            self.__drive_thread.stop()
+            self.__drive_thread = None
 
         self.accelerate(0.0)
         self.steer(0.0)
