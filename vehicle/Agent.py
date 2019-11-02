@@ -5,6 +5,7 @@ sys.path.append(parent_path)
 
 import json
 from vehicle.Driver import Driver
+from vehicle.Formation import Formation
 
 ATTRIBUTES_FILE = "./attributes.json"
 
@@ -12,10 +13,6 @@ ATTRIBUTES_FILE = "./attributes.json"
 class Agent:
     def __init__(self):
         """ initializes a specific car agent based on his attributes file """
-        
-        self.__communication = None  # TODO
-        self.__driver = None         # TODO
-        self.__formation = None      # TODO
 
         with open(ATTRIBUTES_FILE) as attributes_file:
             data = attributes_file.read()
@@ -24,6 +21,10 @@ class Agent:
             self.__id = attributes['id']
             self.__length = attributes['length']
             self.__width = attributes['width']
+
+        self.__communication = None  # TODO
+        self.__formation = Formation()
+        self.__driver = Driver(self.__length, self.__width, self.__formation)
 
     def driver(self):
         return self.__driver
