@@ -1,10 +1,16 @@
+import sys
+import os.path
+parent_path = os.path.abspath(os.path.join("."))
+sys.path.append(parent_path)
+
 import os
 import csv
 import cv2
 import time
 import threading
-import SensorManager as sm
+import vehicle.SensorManager as sm
 from datetime import datetime
+
 
 MODE_ENTER = "parking/enter"
 MODE_LEAVE = "parking/leave"

@@ -1,5 +1,10 @@
+import sys
+import os.path
+parent_path = os.path.abspath(os.path.join("."))
+sys.path.append(parent_path)
+
 import json
-from Driver import Driver
+from vehicle.Driver import Driver
 
 ATTRIBUTES_FILE = "./attributes.json"
 
