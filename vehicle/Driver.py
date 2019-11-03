@@ -7,6 +7,7 @@ import os
 import csv
 import cv2
 import time
+import curses
 import threading
 import Adafruit_PCA9685
 import SensorManager as sm
@@ -23,15 +24,16 @@ MODE_MANUAL = "drive/manual"
 MODE_MOVE_UP = "react/move-up"
 MODE_MOVE_BACK = "react/move-back"
 
-MODE_DEFAULT = MODE_STANDBY
+MODE_DEFAULT = MODE_MANUAL
 MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
 
 CAUTIOUS_VELOCITY = 0.3  # m/s
-MIN_VELOCITY = -2.0  # m/s
-MAX_VELOCITY = +8.0  # m/s
+MIN_VELOCITY = 345  # pwm
+MAX_VELOCITY = 355  # pwm
 
-MIN_STEERING_ANGLE = -60.0
-MAX_STEERING_ANGLE = +60.0
+MIN_STEERING_ANGLE = 270
+MAX_STEERING_ANGLE = 380
+NEUTRAL_STEERING_ANGLE = 310
 
 
 class Driver:
@@ -231,7 +233,64 @@ class Driver:
     # TODO
     def manual_driving(self) -> None:
         """ steers the vehicle based on user inputs """
+        screen = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        screen.keypad(True)
 
+        pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+        pulse_freq = 50
+        pwm.set_pwm_freq(pulse_freq)
+
+        velocity = MIN_VELOCITY
+        steering = NEUTRAL_STEERING_ANGLE
+        pwm.set_pwm(1, 0, MIN_VELOCITY)
+        pwm.set_pwm(0, 0, NEUTRAL_STEERING_ANGLE)
+
+        try:
+            while True:
+                screen.refresh()
+                char = screen.getch()  # get keyboard input
+                screen.clear()
+                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering PWM: " + str(steering))
+                if char == ord('q'):  # pressing q stops the script
+                    pwm.set_pwm(1, 0, 340)
+                    break
+                elif char == ord('w'):  # pressing w increases speed
+                    #screen.addstr("W pressed")
+                    if velocity < MAX_VELOCITY:
+                        velocity += 1
+                        move = True
+                elif char == ord('s'):  # pressing s decreases speed
+                    #screen.addstr("S pressed")
+                    if velocity > MIN_VELOCITY:
+                        velocity -= 1
+                        move = True
+                elif char == ord('a'):  # pressing a steers left
+                   #screen.addstr("A pressed")
+                    if steering > MIN_STEERING_ANGLE:
+                        steering -= 10
+                        move = True
+                elif char == ord('d'):  # pressing d steers right
+                    #screen.addstr("D pressed")
+                    if steering < MAX_STEERING_ANGLE:
+                        steering += 10
+                        move = True
+                elif char == ord('e'):  # pressing e returns car to start condition
+                    #screen.addstr("E pressed")
+                    velocity = MIN_VELOCITY
+                    steering = NEUTRAL_STEERING_ANGLE
+                    move = True
+
+                if move:  # move converts input to motor control
+                    pwm.set_pwm(1, 0, velocity)
+                    pwm.set_pwm(0, 0, steering)
+        finally:
+            curses.nocbreak()
+            screen.keypad(0)
+            curses.echo()
+            curses.endwin()
+        
         pass
 
     def start_recording(self) -> None:
