@@ -8,6 +8,8 @@ import csv
 import cv2
 import time
 import threading
+import Adafruit_PCA9685
+import SensorManager as sm
 import vehicle.SensorManager as sm
 from datetime import datetime
 
