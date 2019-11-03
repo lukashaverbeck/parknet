@@ -10,7 +10,6 @@ import time
 import curses
 import threading
 import Adafruit_PCA9685
-import SensorManager as sm
 import vehicle.SensorManager as sm
 from datetime import datetime
 
