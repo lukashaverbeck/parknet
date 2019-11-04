@@ -229,7 +229,6 @@ class Driver:
 
         self.stop_driving()
 
-    # TODO
     def manual_driving(self) -> None:
         """ steers the vehicle based on user inputs """
         screen = curses.initscr()
@@ -289,8 +288,6 @@ class Driver:
             screen.keypad(0)
             curses.echo()
             curses.endwin()
-        
-        pass
 
     def start_recording(self) -> None:
         """ saves an image of the current camera input and logs the corresponding
