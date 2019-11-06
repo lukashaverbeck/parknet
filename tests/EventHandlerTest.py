@@ -11,4 +11,5 @@ class EventHandlerTest():
     def runEvent(self):
         self
     def registerInEvent(self, methodName):
+        print (methodName)
         self
