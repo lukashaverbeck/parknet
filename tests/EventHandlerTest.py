@@ -6,3 +6,9 @@ toDoList.append({'f': test, 'a': args})
 # to run
 for item in toDoList:
      item['f']("t")
+
+class EventHandlerTest():
+    def runEvent(self):
+        self
+    def registerInEvent(self, methodName):
+        self
