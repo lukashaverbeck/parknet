@@ -13,3 +13,5 @@ class EventHandlerTest():
     def registerInEvent(self, methodName):
         print (methodName)
         self
+
+LukasGra@users.noreply.github.com
