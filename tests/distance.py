@@ -15,10 +15,10 @@ screen.keypad(True)  #enable special-keys
 
 GPIO.setmode(GPIO.BCM)	#set GPIO mode
 
-TRIG_1 = 23	#trigger pin of HC-SR04 module(front)
+TRIG_1 = 23 #trigger pin of HC-SR04 module(front)
 TRIG_2 = 22 #trigger pin of HC-SR04 module(side)
-ECHO_1 = 24	#echo pin of HC-SR04 module(front)
-ECHO_2 = 27	#echo pin of HC-SR04 module(side)
+ECHO_1 = 24 #echo pin of HC-SR04 module(front)
+ECHO_2 = 27 #echo pin of HC-SR04 module(side)
 
 #define all trigger pins as outputs and all echo pins as inputs
 GPIO.setup(TRIG_1,GPIO.OUT)	
