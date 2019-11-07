@@ -1,3 +1,7 @@
+#This script calcuates the distance between an HC-SR04 module and the nearest object.
+#author: @FrederikSchittny
+#version: 1.0(07.11.2019)
+
 import RPi.GPIO as GPIO #library for GPIO control
 import time
 import curses  #import for keyboard input and interface
