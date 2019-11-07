@@ -1,5 +1,8 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+from projektkurs.tests.Communication import Communication
+
+
 class Serv(BaseHTTPRequestHandler):
 
 
@@ -20,6 +23,7 @@ class Serv(BaseHTTPRequestHandler):
         self.end_headers()
         responseText = bytes(body).decode("utf-8")
         print("Content: " + responseText)
+        Communication.triggerEvent("general" , responseText)
         self.wfile.write(bytes("<h1> POST</h1>", 'utf-8'))
 
 
