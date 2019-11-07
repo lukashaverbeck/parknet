@@ -15,11 +15,16 @@ screen.keypad(True)  #enable special-keys
 
 GPIO.setmode(GPIO.BCM)	#set GPIO mode
 
-TRIG_1 = 23	#trigger pin of HC-SR04 module
-ECHO_1 = 24	#echo pin of HC-SR04 module
+TRIG_1 = 23	#trigger pin of HC-SR04 module(front)
+TRIG_2 = 22 #trigger pin of HC-SR04 module(side)
+ECHO_1 = 24	#echo pin of HC-SR04 module(front)
+ECHO_2 = 27	#echo pin of HC-SR04 module(side)
 
-GPIO.setup(TRIG_1,GPIO.OUT)	#the trigger pin is an output pin
-GPIO.setup(ECHO_1,GPIO.IN)	#to catch echo signal the pin has to be an input
+#define all trigger pins as outputs and all echo pins as inputs
+GPIO.setup(TRIG_1,GPIO.OUT)	
+GPIO.setup(ECHO_1,GPIO.IN)	
+GPIO.setup(TRIG_2,GPIO.OUT)	
+GPIO.setup(ECHO_2,GPIO.IN)	
 
 
 def sensordistance (trigpin, echopin):	#function gets distance value from the module with the reported pins
@@ -51,9 +56,10 @@ while True:	#cycle with sensordetection
   break	#ends the cycle
  
  distance_1 = sensordistance(TRIG_1, ECHO_1)	#call sensordetection function for front module
+ distance_2 = sensordistance(TRIG_2, ECHO_2)	#call sensordetection function for side module
  
  screen.clear()	#clear screen for next output
- screen.addstr("Distance_front: " + str(distance_1) + "cm")	#output the results on the console
+ screen.addstr("Distance_front: " + str(distance_1) + "cm			" + "Distance_side: " + str(distance_2) + "cm")	#output the results on the console
  screen.refresh()
  #print("Distance:",distance,"cm")
  
