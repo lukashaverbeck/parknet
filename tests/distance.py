@@ -28,27 +28,25 @@ while True: #cycle with sensordetection
  if char == ord('q'): #press q to exit script safely
   break #ends the cycle
  #if no keyboard input is detected .getch() is ignored
- GPIO.output(TRIG, True) #activate the trigger port of HC-SR04 module
+ GPIO.output(TRIG, True) #activate the trigger channel of HC-SR04 module
  time.sleep(0.00001) #10μs activate 8 ultrasound bursts at 40 kHz
- GPIO.output(TRIG, False)
+ GPIO.output(TRIG, False) #deactivate trigger channel
  
- while GPIO.input(ECHO)==0:
+ while GPIO.input(ECHO)==0: #measure time in which echo signal is detected
    pulse_start = time.time()
  
- while GPIO.input(ECHO)==1:
+ while GPIO.input(ECHO)==1: #measure the time of the echo signal
    pulse_end = time.time()
    
- pulse_duration = pulse_end - pulse_start   
- distance = pulse_duration * 17150
- distance = round(distance, 2)
+ pulse_duration = pulse_end - pulse_start #time it took the signal to hit the objectand return to sensor 
+ distance = pulse_duration * 17150 #calculate into cm 34300[cm/s]=Distance[cm]/(Time[s]/2)
+ distance = round(distance, 2) #round the result
  screen.clear() #clear screen for next output
- screen.addstr("Distance: " + str(distance) + "cm")
+ screen.addstr("Distance: " + str(distance) + "cm") #output the results to the console
  screen.refresh()
  #print("Distance:",distance,"cm")
  
- 
- 
-   
+#in order not to mess up the console all setting-changes need to be reset to default values
 GPIO.cleanup()  
 curses.nocbreak()
 screen.keypad(0)
