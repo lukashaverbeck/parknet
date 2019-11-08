@@ -78,7 +78,15 @@ class SensorManager:
         time.sleep(self.REFRESH_INTERVAL)	#pause to keep timing in interval
  
   def get_distance(self, direction: int) -> float or None:
-      """ gives the latest measured distance in a certain direction """
+      """ gives the latest measured distance in a certain direction
+          
+          Args:
+              direction (int): integer representing the direction of the measured distance (0 - 2)
+
+          Returns:
+              float: measured distance
+              None: if an unknown direction was provided
+      """
  
  		#the input request is analyzed and the corresponding value is returned
       if direction == FRONT:
