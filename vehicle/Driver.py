@@ -357,7 +357,10 @@ class Driver:
 
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
-                writer.writerow(["image", "angle", "velocity"])
+                writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
+
+            old_angle = self.__driver.get_angle()
+            old_velocity = self.__driver.get_velocity()
 
             while self.__run:
                 img_name = datetime.today().strftime("%H-%M-%S-%f") + ".jpg"
@@ -369,7 +372,10 @@ class Driver:
 
                 with open(self.__log_path, "a", newline="") as log:
                     writer = csv.writer(log)
-                    writer.writerow([img_name, str(angle), str(velocity)])
+                    writer.writerow([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
+
+                    old_angle = angle
+                    old_velocity = velocity
 
                 time.sleep(self.__interval)
 
