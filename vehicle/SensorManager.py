@@ -7,7 +7,7 @@ BACK = 2
 
 
 class SensorManager:
-    """ controls the measured distance to the vehicle's front, right and back """
+    """ controls the measured distances to the vehicle's front, right and back """
 
     REFRESH_INTERVAL = 0.5
 
