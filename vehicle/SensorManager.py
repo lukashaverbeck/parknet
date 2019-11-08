@@ -9,7 +9,7 @@ BACK = 2
 class SensorManager:
     """ controls the measured distances to the vehicle's front, right and back """
 
-    REFRESH_INTERVAL = 0.5
+    REFRESH_INTERVAL = 0.4
 
     def __init__(self):
         """ initializes the sensor manager and starts the thread that refreshes the sensor data """
