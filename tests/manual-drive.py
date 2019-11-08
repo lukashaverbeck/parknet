@@ -1,6 +1,6 @@
 #This script controls a picar with keyboard input via ssh-console.
 #
-#author: @FrederikSchittny
+#author: @LunaNordin
 #version: 1.0(27.10.2019)
 
 from __future__ import division
