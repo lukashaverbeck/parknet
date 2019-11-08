@@ -9,6 +9,9 @@ import time
 import threading
 import RPi.GPIO as GPIO	#library for GPIO control
 
+FRONT, RIGHT, BACK = 0, 1, 2
+
+
 class SensorManager:
   """ controls the measured distances to the vehicle's front, right and back """
 		
@@ -48,7 +51,7 @@ class SensorManager:
     refresh_thread.start()
  	
   def sensordistance (self, trigpin, echopin) -> float:
-    """triggers the module at given pins and calculates distance"""
+    """ triggers the module at given pins and calculates distance """
     
     GPIO.output(trigpin, True)	#activate the trigger channel of HC-SR04 module
     time.sleep(0.00001)	#10μs activate 8 ultrasound bursts at 40 kHz
@@ -69,13 +72,13 @@ class SensorManager:
       """ constantly updates the measured sensor data """
  
       while True:
-        time.sleep(self.REFRESH_INTERVAL)	#pause to keep timing in interval
         self.__distance_front = self.sensordistance(self.TRIG_1, self.ECHO_1) #call sensordetection function for front module
         self.__distance_right = self.sensordistance(self.TRIG_2, self.ECHO_2) #call sensordetection function for side module
         self.__distance_back = self.sensordistance(self.TRIG_3, self.ECHO_3) #call sensordetection function for back module
+        time.sleep(self.REFRESH_INTERVAL)	#pause to keep timing in interval
  
   def get_distance(self, direction: int) -> float or None:
-      """ gives the latest measured distance in a certain direction"""
+      """ gives the latest measured distance in a certain direction """
  
  		#the input request is analyzed and the corresponding value is returned
       if direction == FRONT:
