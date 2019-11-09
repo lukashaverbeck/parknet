@@ -16,7 +16,7 @@ from skimage.io import imread
 
 class SteeringNet:
     """ covers the deep learning model by providing high level functionality for training, evaluating and predictions of
-        a deep learning for autonomous driving
+        a deep learning model for autonomous driving
     """
 
     def __init__(self):
