@@ -4,7 +4,6 @@
 # author: @lukashaverbeck
 # version: 1.0 (08.11.2019)
 #
-# TODO implement prediction
 # TODO add velocity to the data generator
 # TODO add velocity to the model
 
@@ -87,22 +86,28 @@ class SteeringNet:
 
         return deviation_angle
 
-    def predict(self, image, current_angle, current_velocity):
+    def predict(self, image_path, current_angle, current_velocity):
         """ predicts an steering angle and a velocity based on the current image input and driving behaviour
 
             Args:
+                image_path (str): absolute path to the image
                 current_angle (float): the vehicle's current steering angle
                 current_velocity (float): the vehicle's current velocity
 
             Returns:
                 float, float: predicted steering angle and predicted velocity
-
-            TODO implement method
-            TODO choose appropriate data type for image parameter
-            TODO add documentation for image parameter
         """
 
-        pass
+        image = imread(image_path)
+        image = image / 255.0
+        image = np.array([image])
+
+        current_angle = np.array([current_angle])
+
+        inputs = {"image": image, "old_angle": current_angle}
+        prediction = self.model.predict(inputs)[0]
+        
+        return prediction[0]
 
     class Model(tf.keras.Model):
         """ deep learning model for predicting the steering angle and velocity for autonomous driving
@@ -201,8 +206,7 @@ def generate_data(root_directory, csv_file, batch_size):
                 batch_old_angles.append(old_angle)
 
                 if len(batch_images) == batch_size:
-                    yield (
-                    {"image": np.array(batch_images), "old_angle": np.array(batch_old_angles)}, np.array(batch_angles))
+                    yield ({"image": np.array(batch_images), "old_angle": np.array(batch_old_angles)}, np.array(batch_angles))
 
                     batch_images = []
                     batch_angles = []
