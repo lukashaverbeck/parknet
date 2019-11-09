@@ -24,11 +24,11 @@ class SteeringNet:
         self.model = self.Model()
         self.loss = "mean_squared_error"
 
-    def train(self, samples, root_directory, csv_file, epochs=10, batch_size=64, lr=0.001):
+    def train(self, num_samples, root_directory, csv_file, epochs=10, batch_size=64, lr=0.001):
         """ trains the deep learning model
 
             Args:
-                samples (int): number of samples used for training
+                num_samples (int): number of samples used for training
                 root_directory (str): path to the folder containing the training data
                 csv_file (str): path to the csv file mapping images to steering angles and velocities
                 epochs (int): number of training iterations over the whole data set
@@ -39,13 +39,13 @@ class SteeringNet:
         optimizer = tf.optimizers.Adam(lr)
         data_generator = generate_data(root_directory, csv_file, batch_size)
         self.model.compile(loss=self.loss, optimizer=optimizer, batch_size=batch_size)
-        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(samples / batch_size), epochs=epochs)
+        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples / batch_size), epochs=epochs)
 
-    def evaluate(self, samples, root_directory, csv_file, batch_size=64):
+    def evaluate(self, num_samples, root_directory, csv_file, batch_size=64):
         """ evaluates the model on data the neural net was not previously trained on
 
             Args:
-                samples (int): number of samples used for evaluation
+                num_samples (int): number of samples used for evaluation
                 root_directory (str): path to the folder containing the evaluation data
                 csv_file (str): path to the csv file mapping images to steering angles and velocities
                 batch_size (int): number of samples per batch
@@ -53,7 +53,39 @@ class SteeringNet:
 
         data_generator = generate_data(root_directory, csv_file, batch_size)
         self.model.compile(loss=self.loss, batch_size=batch_size)
-        self.model.fit_generator(data_generator, verbose=2, steps_per_epoch=math.ceil(samples / batch_size))
+        self.model.fit_generator(data_generator, verbose=2, steps_per_epoch=math.ceil(num_samples / batch_size))
+
+    def test(self, num_samples, root_directory, csv_file, batch_size=64):
+        """ determines the average deviation of the steering data given a test data set
+
+            Args:
+                samples (int): number of samples used for evaluation
+                root_directory (str): path to the folder containing the evaluation data
+                csv_file (str): path to the csv file mapping images to steering angles and velocities
+                batch_size (int): number of samples per batch
+
+            Returns:
+                float: average deviation of the predicted steering angle from the real angle
+
+            TODO add velocity deviation
+        """
+
+        data_generator = generate_data(root_directory, csv_file, batch_size)
+        steps = 0
+        deviation_angle = 0
+
+        for inputs, target in data_generator:
+            prediction = self.model.predict(inputs, batch_size)
+            deviation_angle += np.mean(abs(abs(prediction) - abs(target)))
+            steps += 1
+
+            if steps * batch_size >= num_samples:
+                break
+
+        deviation_angle /= steps
+        print("average deviation steering angle:", round(deviation_angle, 2))
+
+        return deviation_angle
 
     def predict(self, image, current_angle, current_velocity):
         """ predicts an steering angle and a velocity based on the current image input and driving behaviour
@@ -175,7 +207,3 @@ def generate_data(root_directory, csv_file, batch_size):
                     batch_images = []
                     batch_angles = []
                     batch_old_angles = []
-
-
-net = SteeringNet()
-net.train(2048, "./data/", "./data/test.csv", epochs=5, batch_size=128)
