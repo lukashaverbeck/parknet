@@ -7,6 +7,10 @@ IP1 = socketlib.gethostbyname(socketlib.gethostname())
 
 print(IP1 + " + " + socketlib.gethostname())
 
+IPsplit = IP1.split(".")
+IPNetwork = IPsplit[0] + "." + IPsplit[1] + "." + IPsplit[2] + "."
+print(IPNetwork)
+
 def check_if_up(ip_address):
     socket = socketlib.socket(socketlib.AF_INET, socketlib.SOCK_STREAM)
     socket.settimeout(0.004)
@@ -19,7 +23,7 @@ def check_if_up(ip_address):
 
 
 for i in range(1, 158):
-    ip = "192.168.178." + str(i)
+    ip = IPNetwork + str(i)
     result = check_if_up(ip)
     if result:
         print (str(result) + ip)
