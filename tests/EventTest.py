@@ -1,5 +1,5 @@
-from projektkurs.tests.Communication import Communication
-from projektkurs.tests.EventHandlerTest import EventHandlerTest
+from projektkurs.communication.Communication import Communication
+
 
 def othermethod(x):
     print("method2 "+str(x))

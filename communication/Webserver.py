@@ -1,6 +1,6 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-from projektkurs.tests.Communication import Communication
+from projektkurs.communication.Communication import Communication
 
 
 class Serv(BaseHTTPRequestHandler):
@@ -22,8 +22,9 @@ class Serv(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         responseText = bytes(body).decode("utf-8")
-        print("Content: " + responseText)
-        Communication.triggerEvent("general" , responseText)
+        txtSplit = responseText.split("=" , 1)
+        print("Content: " + str(txtSplit))
+        Communication.triggerEvent(txtSplit[0] , txtSplit[1])
         self.wfile.write(bytes("<h1> POST</h1>", 'utf-8'))
 
 
