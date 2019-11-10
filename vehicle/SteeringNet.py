@@ -4,12 +4,15 @@
 # author: @lukashaverbeck
 # version: 1.1 (10.11.2019)
 #
-# TODO add functionality for saving a trained model
 # TODO add functionality for setting chechpoints while training
 # TODO add functionality for plotting the training progress
+# TODO add validation option for training
 
+import os
 import math
 import random
+import datetime
+import subprocess
 import numpy as np
 import tensorflow as tf
 from skimage.io import imread
@@ -38,10 +41,15 @@ class SteeringNet:
                 lr (float): learning rate
         """
 
+        log_dir = os.path.join("logs", "fit", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
+
         optimizer = tf.optimizers.Adam(lr)
         data_generator = generate_data(root_directory, csv_file, batch_size)
         self.model.compile(loss=self.loss, loss_weights=self.LOSS_WEIGHTS, optimizer=optimizer, batch_size=batch_size)
-        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples / batch_size), epochs=epochs)
+        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples / batch_size), epochs=epochs, callbacks=[tensorboard_callback])
+
+        subprocess.call(["tensorboard", "--logdir", "logs"])
 
     def evaluate(self, num_samples, root_directory, csv_file, batch_size=64):
         """ evaluates the model on data the neural net was not previously trained on
@@ -238,3 +246,11 @@ def generate_data(root_directory, csv_file, batch_size):
                     batch_velocity = []
                     batch_old_angle = []
                     batch_old_velocity = []
+
+
+net = SteeringNet()
+net.train(7360, "./data/", "./data/train.csv", epochs=50, batch_size=128)
+net.test(7360, "./data/", "./data/train.csv")
+net.evaluate(7360, "./data/", "./data/train.csv")
+net.test(676, "./data/", "./data/test.csv")
+net.evaluate(676, "./data/", "./data/test.csv")
