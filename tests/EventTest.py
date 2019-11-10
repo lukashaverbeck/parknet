@@ -1,11 +1,14 @@
 from projektkurs.communication.Communication import Communication
 
+""" Testing class for communication
+"""
 
 def othermethod(x):
     print("method2 "+str(x))
 
-##EventHandlerTest.registerInEvent(othermethod)
+def testhere(x):
+    print("arg was "+str(x))
 
-##EventHandlerTest.runEvent("Command here")
+Communication.subscribe("t", testhere)
 
 Communication.send("t" , "t2")
