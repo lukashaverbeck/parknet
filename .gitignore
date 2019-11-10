@@ -2,6 +2,5 @@
 .vscode
 __pycache__
 data
-data/*
 recorded_data
-recorded_data/*
+logs
