@@ -1,5 +1,8 @@
 import requests
 
+from projektkurs.communication.NetworkScan import NetworkScan
+
+
 def testhere(x):
     print("arg was "+str(x))
 
@@ -18,8 +21,12 @@ class Communication:
         methods.append({'callback': callback, 'topic': topic})
     def send(topic , message):
         print (topic)
-        r = requests.post("http://192.168.178.156", data={topic: message})
+        rt = requests.post("http://192.168.178.156", data={topic: message})
+        list = NetworkScan.scanIPsFromNetwork("e")
+        for i in list:
+            print(i)
+            r = requests.post("http://" + i, data={topic: message})
 
 Communication.subscribe("t" ,testhere)
-#Communication.triggerEvent("t" ,"Hello test123")
+
 
