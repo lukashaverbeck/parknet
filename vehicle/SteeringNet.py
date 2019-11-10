@@ -4,7 +4,6 @@
 # author: @lukashaverbeck
 # version: 1.1 (10.11.2019)
 #
-# TODO add functionality for saving a trained model
 # TODO add functionality for setting chechpoints while training
 
 import os
@@ -28,7 +27,7 @@ class SteeringNet:
         self.model = self.Model()
         self.loss = "mean_squared_error"
 
-    def train(self, num_samples_train, root_directory, csv_file_train, num_samples_validation=None, csv_file_validation=None, epochs=10, batch_size=64, lr=0.001):
+    def train(self, num_samples_train, root_directory, csv_file_train, num_samples_validation=None, csv_file_validation=None, epochs=10, batch_size=64, lr=0.001, verbose=1):
         """ trains the deep learning model
 
             Args:
@@ -38,6 +37,7 @@ class SteeringNet:
                 epochs (int): number of training iterations over the whole data set
                 batch_size (int): number of samples per batch
                 lr (float): learning rate
+                verbose (int): logging verbosity level
         """
 
         validation_data = None
@@ -52,9 +52,7 @@ class SteeringNet:
         optimizer = tf.optimizers.Adam(lr)
         data_generator = generate_data(root_directory, csv_file_train, batch_size)
         self.model.compile(loss=self.loss, loss_weights=self.LOSS_WEIGHTS, optimizer=optimizer, batch_size=batch_size)
-        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples_train / batch_size), epochs=epochs, validation_data=validation_data, validation_steps=validation_steps, callbacks=[tensorboard_callback])
-
-        subprocess.call(["tensorboard", "--logdir", "logs"])
+        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples_train / batch_size), epochs=epochs, validation_data=validation_data, validation_steps=validation_steps, callbacks=[tensorboard_callback], verbose=verbose)
 
     def evaluate(self, num_samples, root_directory, csv_file, batch_size=64):
         """ evaluates the model on data the neural net was not previously trained on
@@ -133,6 +131,27 @@ class SteeringNet:
         prediction = self.model.predict(inputs)[0]
         
         return prediction[0]
+
+    def save(self, model_name):
+        """ saves the weights of the model to disk
+
+            Args:
+                model_name (str): name of the file storing the weights
+        """
+
+        self.model.save_weights("./models/" + model_name + ".h5", save_format="h5")
+
+    def load(self, model_path, root_directory, csv_file):
+        """ loads an existing model from weights after training it on a single sample in order for the model to be built properly
+
+            Args:
+                model_path (str): path to a .h5 representation of the model's weights
+                root_directory (str): path to the folder containing the evaluation data
+                csv_file (str): path to the csv file mapping images to steering angles and velocities
+        """
+
+        self.train(1, root_directory, csv_file, epochs=1, batch_size=1, lr=0.0, verbose=0)
+        self.model.load_weights(model_path)
 
     class Model(tf.keras.Model):
         """ deep learning model for predicting the steering angle and velocity for autonomous driving """
@@ -251,11 +270,3 @@ def generate_data(root_directory, csv_file, batch_size):
                     batch_velocity = []
                     batch_old_angle = []
                     batch_old_velocity = []
-
-
-net = SteeringNet()
-net.train(7360, "./data/", "./data/train.csv", csv_file_validation="./data/test.csv", num_samples_validation=676, epochs=50, batch_size=128)
-net.test(7360, "./data/", "./data/train.csv")
-net.evaluate(7360, "./data/", "./data/train.csv")
-net.test(676, "./data/", "./data/test.csv")
-net.evaluate(676, "./data/", "./data/test.csv")
