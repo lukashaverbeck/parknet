@@ -4,9 +4,8 @@
 # author: @lukashaverbeck
 # version: 1.1 (10.11.2019)
 #
+# TODO add functionality for saving a trained model
 # TODO add functionality for setting chechpoints while training
-# TODO add functionality for plotting the training progress
-# TODO add validation option for training
 
 import os
 import math
@@ -29,7 +28,7 @@ class SteeringNet:
         self.model = self.Model()
         self.loss = "mean_squared_error"
 
-    def train(self, num_samples, root_directory, csv_file, epochs=10, batch_size=64, lr=0.001):
+    def train(self, num_samples_train, root_directory, csv_file_train, num_samples_validation=None, csv_file_validation=None, epochs=10, batch_size=64, lr=0.001):
         """ trains the deep learning model
 
             Args:
@@ -41,13 +40,19 @@ class SteeringNet:
                 lr (float): learning rate
         """
 
+        validation_data = None
+        validation_steps = None
+        if csv_file_validation and num_samples_validation:
+            validation_data = generate_data(root_directory, csv_file_validation, batch_size)
+            validation_steps = math.ceil(num_samples_validation / batch_size)
+
         log_dir = os.path.join("logs", "fit", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
 
         optimizer = tf.optimizers.Adam(lr)
-        data_generator = generate_data(root_directory, csv_file, batch_size)
+        data_generator = generate_data(root_directory, csv_file_train, batch_size)
         self.model.compile(loss=self.loss, loss_weights=self.LOSS_WEIGHTS, optimizer=optimizer, batch_size=batch_size)
-        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples / batch_size), epochs=epochs, callbacks=[tensorboard_callback])
+        self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples_train / batch_size), epochs=epochs, validation_data=validation_data, validation_steps=validation_steps, callbacks=[tensorboard_callback])
 
         subprocess.call(["tensorboard", "--logdir", "logs"])
 
@@ -249,7 +254,7 @@ def generate_data(root_directory, csv_file, batch_size):
 
 
 net = SteeringNet()
-net.train(7360, "./data/", "./data/train.csv", epochs=50, batch_size=128)
+net.train(7360, "./data/", "./data/train.csv", csv_file_validation="./data/test.csv", num_samples_validation=676, epochs=50, batch_size=128)
 net.test(7360, "./data/", "./data/train.csv")
 net.evaluate(7360, "./data/", "./data/train.csv")
 net.test(676, "./data/", "./data/test.csv")
