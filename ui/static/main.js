@@ -172,6 +172,34 @@ function sendRequest(url, data = {}) {
 }
 
 
+function getJSON(url, callback) {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open("GET", url, true);
+    xhr.responseType = "json";
+
+    xhr.onload = () => {
+        let status = xhr.status;
+
+        if (status === 200) {
+            callback(xhr.response);
+        }
+    };
+
+    xhr.send();
+};
+
+
+setInterval(() => {
+    getJSON("./data-internal", (response) => {
+        response.forEach(data => {
+            let valueContainer = document.getElementById("data-" + data.id).querySelector("span");
+            valueContainer.innerText = data.value + " " + data.unit;
+        })
+    });
+}, 1000);
+
+
 let startRecordingButton = document.getElementById("btn-start-recording");
 let stopRecordingButton = document.getElementById("btn-stop-recording");
 
@@ -187,4 +215,33 @@ stopRecordingButton.addEventListener("click", () => {
     startRecordingButton.classList.remove("no-display");
 
     sendRequest("stop-recording");
+});
+
+let menuContainer = document.querySelector("nav");
+let dataContainer = document.getElementById("container-data");
+let dataButton = document.getElementById("btn-toggle-data");
+let dataToggled = false;
+
+dataButton.addEventListener("click", () => {
+    dataToggled = !dataToggled;
+    icon = "menu";
+
+    if (dataToggled) {
+        icon = "close";
+    }
+
+    dataButton.querySelector("i").innerHTML = icon
+    if (dataToggled) {
+        menuContainer.classList.remove("opened")
+        menuContainer.classList.add("closed")
+
+        dataContainer.classList.remove("closed")
+        dataContainer.classList.add("opened")
+    } else {
+        dataContainer.classList.remove("opened")
+        dataContainer.classList.add("closed")
+
+        menuContainer.classList.remove("closed")
+        menuContainer.classList.add("opened")
+    }
 });
