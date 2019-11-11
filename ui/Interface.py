@@ -2,7 +2,6 @@ import sys
 sys.path.append(sys.path[0][:-3])
 
 from flask import Flask, request, jsonify, render_template
-from vehicle import Agent
 from vehicle.Agent import Agent
 
 app = Flask(__name__)
@@ -14,6 +13,42 @@ agent = Agent()
 def home():
     return render_template("UI.html")
 
+
+# TODO get the agent's real data
+@app.route("/data-internal")
+def data():
+    driver = agent.driver()
+    sensors = driver.get_sensor_manager()
+
+    data = [
+        {
+            "id": "velocity",
+            "value": driver.get_velocity(),
+            "unit": "m/s"
+        },
+        {
+            "id": "steering-angle",
+            "value": driver.get_angle(),
+            "unit": "°"
+        },
+        {
+            "id": "distance-front",
+            "value": sensors.get_distance(0),
+            "unit": "m"
+        },
+        {
+            "id": "distance-right",
+            "value": sensors.get_distance(1),
+            "unit": "m"
+        },
+        {
+            "id": "distance-back",
+            "value": sensors.get_distance(2),
+            "unit": "m"
+        },
+    ]
+
+    return jsonify(data)
 
 @app.route("/change-mode", methods=["POST"])
 def change_mode():

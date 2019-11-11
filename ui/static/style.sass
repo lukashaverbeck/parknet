@@ -68,16 +68,18 @@ button
     margin: 0
     cursor: pointer
 
-nav, main
+nav, main, #container-data
     height: 100%
     padding: 60px
     float: left
     box-sizing: border-box
 
-nav
-    position: relative
-    width: 38.2%
-    background: $color-accent-grey
+nav, #container-data
+    position: absolute
+    border-top-right-radius: 60px
+    border-bottom-right-radius: 60px
+    border-bottom-left-radius: 60px
+    box-shadow: 3px 0 12px 0 $color-accent-shadow
 
     h1
         text-align: center
@@ -87,6 +89,10 @@ nav
         width: 60px
         border: 6px solid $color-accent-dark
         border-radius: 6px
+
+nav
+    width: 38.2%
+    background: $color-accent-grey
 
     section
         position: absolute
@@ -154,6 +160,63 @@ main
 
 .no-display
     display: none
+
+.closed
+    transform: translateX(-100%)
+
+.opened
+    transform: translateX(0)
+
+#btn-toggle-data
+    position: absolute
+    width: 60px
+    height: 60px
+    top: 15px
+    left: 15px
+    background: white
+    border-radius: 50%
+    box-shadow: $color-accent-shadow 3px 3px 12px 0
+    z-index: 10
+
+    &:hover, &:focus
+        box-shadow: $color-accent-shadow 0 0 12px 0
+
+#container-data
+    position: relative
+    height: 100%
+    width: 38.2%
+    top: 0
+    left: 0
+    background: white
+    z-index: 9
+
+    #data
+        position: relative
+        display: table
+        @include center
+
+        div
+            display: inline-block
+            height: 60px
+            float: left
+            clear: left
+
+            i
+                width: 60px
+                height: 60px
+                padding: 15px 12px
+                color: #909495
+                font-size: 32px
+                box-sizing: border-box
+
+            span
+                display: inline-block
+                height: 60px
+                padding: 20px 0
+                box-sizing: border-box
+                font-family: $font-bold
+                vertical-align: top
+                margin-right: 30px
 
 #container-standby
     img

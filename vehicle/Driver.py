@@ -324,6 +324,9 @@ class Driver:
     def get_velocity(self) -> float:
         return self.__velocity
 
+    def get_sensor_manager(self) -> object:
+        return self.__sensor_manager
+
     class RecorderThread(threading.Thread):
         """ thread that captures the current video input, saves it to memory
             and creates a log of the corresponding steering angle and velocity
