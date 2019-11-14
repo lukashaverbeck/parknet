@@ -15,7 +15,7 @@ screen.keypad(True)  #enable special-keys
 
 pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  #create PCA9685-object at I2C-port
 
-throttle_stop = 340    #stop ecceleration
+throttle_stop = 340    #stop acceleration
 throttle_max = 355     #maximum throttle    
 steering_left = 270    #steer to maximum left
 steering_nutral = 310  #steer to nutral position
