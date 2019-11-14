@@ -1,4 +1,4 @@
-# Script for initilizing the ESC build into a picar with an activation pulse.
+# Script for initializing the ESC build into a picar with an activation pulse.
 # Run this script before using any other PWM related ESC controls.
 
 # author: @LunaNordin
