@@ -1,10 +1,9 @@
-pyzbar>=0.1.8
 Flask>=1.1.1
-Adafruit-PCA9685
-numpy
-pandas
+pyzbar>=0.1.8
 tensorflow>=2.0.0
 scikit-image>=0.16.1
-Adafruit_PCA9685
-cursess
+numpy
+pandas
+curses
 RPi.GPIO
+Adafruit_PCA9685
