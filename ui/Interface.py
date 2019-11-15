@@ -80,9 +80,9 @@ def emergency_stop():
     return ""
 
 def open_interface(debug=False):
-    ip_address = '127.0.0.1'
-    port = '5000'
-    app.run(debug=debug)
+    ip_address = "192.168.2.116"
+    port = "5000"
+    app.run(host=ip_address, port=port, debug=debug)
 
 
 open_interface(True)
