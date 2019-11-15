@@ -5,13 +5,13 @@ sys.path.append(parent_path)
 
 import os
 import csv
-import cv2
 import time
 import curses
 import threading
 import Adafruit_PCA9685
 import vehicle.SensorManager as sm
 from datetime import datetime
+from picamera import PiCamera
 
 
 MODE_ENTER = "parking/enter"
@@ -347,10 +347,9 @@ class Driver:
             super().__init__()
             self.__run = True
             self.__driver = driver
-            self.__camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+            self.__camera = PiCamera()
             self.__log_path = log_path
             self.__img_directory = img_directory
-            self.__interval = 0.2
 
         def run(self) -> None:
             """ starts capturing the data """
@@ -367,23 +366,19 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
-                _, frame = self.__camera.read()
-                cv2.imwrite(self.__img_directory + img_name, frame)
+                img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f") + ".jpg"
+                self.__camera.capture(img_path)
 
                 with open(self.__log_path, "a", newline="") as log:
                     writer = csv.writer(log)
                     writer.writerow([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
-
+                    print([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
                     old_angle = angle
                     old_velocity = velocity
-
-                time.sleep(self.__interval)
 
         def stop(self) -> None:
             """ stops capturing the data """
 
-            cv2.destroyAllWindows()
-            self.__camera.release()
             self.__run = False
 
     class DriveThread(threading.Thread):
