@@ -5,3 +5,6 @@ numpy
 pandas
 tensorflow>=2.0.0
 scikit-image>=0.16.1
+Adafruit_PCA9685
+cursess
+RPi.GPIO
