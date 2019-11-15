@@ -14,33 +14,42 @@ curses.noecho()  #do not echo keyboard input
 #in this case no cbreak is used because the user is supposed to confirm input
 screen.keypad(True)  #enable special-keys
 
+#start values for I2C communication and PCA-module connection
 bus = 0
 addr = 0x00
 chnl = 0
 
 def __init__(self):
-  self.getI2Cinfo(self)
-  pwm = Adafruit_PCA9685.PCA9685(address = addr, busnum = bus)
-  self.getPCAinfo(self)
+  """collect information on connection and initialize I2C-link"""
+  
+  self.getI2Cinfo(self) #get I2C information
+  pwm = Adafruit_PCA9685.PCA9685(address = addr, busnum = bus)  #create new PCA9685 object with collected data input
+  self.getPCAinfo(self) #get channel information
   
   
 def getI2Cinfo(self):
+  """collect I2C information from user"""
+  
   screen.addstr("If you want to use default I2C-values press 'y', otherwise default values are used: ")
   screen.refresh()
   answ = screen.getch()
-  if answ == ord('y'):
-    address = 0x40
-    busnum = 1
-  elif answ != ord('y'):
+  
+  if answ == ord('y'):  #user confirms to use default values
+    address = 0x40  #default I2C address
+    busnum = 1 #default I2C busnumber (for Raspberry Pi's newer than model 2)
+    
+  elif answ != ord('y'):  #user hands over I2C information manually
     screen.addstr("Please enter the I2C-address of your PCA9685 module: ")
     screen.refresh()
-    addr = screen.getch()
+    addr = screen.getch() #get I2C address from user input
   
     screen.addstr("Please enter the I2C-bus of your PCA9685 module: ")
     screen.refresh()
-    bus = screen.getch()
+    bus = screen.getch()  #get I2C busnumber from user input
     
  def getPCAinfo(self):
+  """get PCA channel from user"""
+  
   screen.addstr("Please enter the PCA9685 channel you want to send a signal to: ")
   screen.refresh()
-  chnl = screen.getch()
+  chnl = screen.getch() #get PCA9685 channel from user input
