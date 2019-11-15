@@ -54,7 +54,7 @@ class SensorManager:
     """ triggers the module at given pins and calculates distance """
     
     GPIO.output(trigpin, True)	#activate the trigger channel of HC-SR04 module
-    time.sleep(0.00001)	#10μs activate 8 ultrasound bursts at 40 kHz
+    time.sleep(0.00001)	#10μs pulse activates 8 ultrasound bursts at 40 kHz
     GPIO.output(trigpin, False)	#deactivate trigger channel
  
     while GPIO.input(echopin)==0:	#measure time in which echo signal is detected
