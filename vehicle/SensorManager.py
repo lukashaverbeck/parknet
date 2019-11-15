@@ -58,10 +58,10 @@ class SensorManager:
         GPIO.output(trigpin, False)	#deactivate trigger channel
     
         while GPIO.input(echopin)==0:	#measure time in which echo signal is detected
-        pulse_start = time.time()
+            pulse_start = time.time()
     
         while GPIO.input(echopin)==1:	#measure the time of the echo signal
-        pulse_end = time.time()
+            pulse_end = time.time()
     
         pulse_duration = pulse_end - pulse_start	#time it took the signal to hit the objectand return to sensor   
         distance = pulse_duration * 17150	#calculate into cm 34300[cm/s]=Distance[cm]/(Time[s]/2)
