@@ -372,7 +372,6 @@ class Driver:
                 with open(self.__log_path, "a", newline="") as log:
                     writer = csv.writer(log)
                     writer.writerow([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
-                    print([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
                     old_angle = angle
                     old_velocity = velocity
 
