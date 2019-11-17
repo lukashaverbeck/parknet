@@ -46,6 +46,7 @@ def getI2Cinfo(self):
     screen.addstr("Please enter the I2C-bus of your PCA9685 module: ")
     screen.refresh()
     bus = screen.getch()  #get I2C busnumber from user input
+    screen.clear()
     
  def getPCAinfo(self):
   """get PCA channel from user"""
@@ -53,3 +54,13 @@ def getI2Cinfo(self):
   screen.addstr("Please enter the PCA9685 channel you want to send a signal to: ")
   screen.refresh()
   chnl = screen.getch() #get PCA9685 channel from user input
+  screen.clear()
+  
+  def sendSignal (self):
+    while True:
+      screen.clear()
+      screen.addstr("Please enter your pwm value: ")
+      screen.refresh()
+      val = screen.getch()
+      
+      
