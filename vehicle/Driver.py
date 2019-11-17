@@ -366,7 +366,7 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
-                img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f") + ".jpg"
+                img_path = self.__img_directory + img_name
                 self.__camera.capture(img_path)
 
                 with open(self.__log_path, "a", newline="") as log:
