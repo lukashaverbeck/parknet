@@ -7,8 +7,8 @@ methods = []
 args = ["unset"]
 
 
-class Communication:
-    def triggerEvent(topic, message):
+class Communication():
+    def triggerEvent(self, topic, message):
         """ This method triggers all events with the given topic and deliver the message to them
 
             Args:
@@ -21,7 +21,7 @@ class Communication:
             print("Sending Message: " + message + " Topic: " + item["topic"])
             if item["topic"] == topic:
                 item['callback'](message)
-    def subscribe(topic, callback):
+    def subscribe(self, topic, callback):
         """ This method allows to subscribe a method to a topic
 
             Args:
@@ -29,7 +29,7 @@ class Communication:
                 callback (Method): the method to run, when the event is triggered
         """
         methods.append({'callback': callback, 'topic': topic})
-    def send(topic , message):
+    def send(self, topic , message):
         """ This method sends a message under the given topic
 
             Args:
