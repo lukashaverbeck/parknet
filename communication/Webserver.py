@@ -1,6 +1,7 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from projektkurs.communication.Communication import Communication
+from projektkurs.communication.NetworkScan import NetworkScan
 
 
 class Serv(BaseHTTPRequestHandler):
@@ -24,9 +25,10 @@ class Serv(BaseHTTPRequestHandler):
         responseText = bytes(body).decode("utf-8")
         txtSplit = responseText.split("=" , 1)
         print("Content: " + str(txtSplit))
-        Communication.triggerEvent(txtSplit[0] , txtSplit[1])
+        com = Communication()
+        com.triggerEvent(txtSplit[0] , txtSplit[1])
         self.wfile.write(bytes("<h1> POST</h1>", 'utf-8'))
 
 
-httpd = HTTPServer(('192.168.178.156', 80), Serv)
+httpd = HTTPServer((NetworkScan.getLocalIP("e"), 80), Serv)
 httpd.serve_forever()
