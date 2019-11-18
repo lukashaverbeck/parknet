@@ -347,7 +347,7 @@ class Driver:
             super().__init__()
             self.__run = True
             self.__driver = driver
-            self.__camera = PiCamera()
+            self.__camera = PiCamera(resolution=(720,480), framerate=30)
             self.__log_path = log_path
             self.__img_directory = img_directory
 
@@ -360,20 +360,38 @@ class Driver:
 
             old_angle = self.__driver.get_angle()
             old_velocity = self.__driver.get_velocity()
+            data = []
 
             while self.__run:
-                img_name = datetime.today().strftime("%H-%M-%S-%f") + ".jpg"
+                img_name = datetime.today().strftime("%H-%M-%S-%f")
+                img_path = self.__img_directory + img_name
+                img_paths = [img_path + "-" + str(i) + ".jpg" for i in range(15)]
+                self.__camera.capture_sequence(img_paths)
+
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
-                img_path = self.__img_directory + img_name
-                self.__camera.capture(img_path)
+                data.append({
+                    "paths": img_paths,
+                    "angle": angle,
+                    "velocity": velocity,
+                    "old_angle": old_angle,
+                    "old_velocity": old_velocity
+                })
 
-                with open(self.__log_path, "a", newline="") as log:
-                    writer = csv.writer(log)
-                    writer.writerow([img_name, str(old_angle), str(angle), str(old_velocity), str(velocity)])
-                    old_angle = angle
-                    old_velocity = velocity
+                old_angle = angle
+                old_velocity = velocity
+
+            with open(self.__log_path, "a", newline="") as log:
+                writer = csv.writer(log)
+                
+                for row in data:
+                    for path in row["paths"]:
+                        angle = row["angle"]
+                        velocity = row["velocity"]
+                        old_angle = row["old_angle"]
+                        old_velocity = row["old_velocity"]
+                        writer.writerow([path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
 
         def stop(self) -> None:
             """ stops capturing the data """
