@@ -1,13 +1,7 @@
-import sys
-import os.path
-parent_path = os.path.abspath(os.path.join("."))
-sys.path.append(parent_path)
-
 import json
-from projektkurs.vehicle.Driver import Driver
-from projektkurs.vehicle.Formation import Formation
-from projektkurs.communication.Communication import Communication
-
+from Driver import Driver
+from Formation import Formation
+from Communication import Communication
 
 ATTRIBUTES_FILE = "./attributes.json"
 
