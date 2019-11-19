@@ -8,11 +8,6 @@
 # TODO implement DriveThread.angle_to_pwm()
 # TODO implement DriveThread.velocity_to_pwm()
 
-import sys
-import os.path
-parent_path = os.path.abspath(os.path.join("."))
-sys.path.append(parent_path)
-
 import os
 import csv
 import time
