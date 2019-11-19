@@ -1,3 +1,13 @@
+# controlls the driving behaviour of the pi car
+#
+# TODO implement enter_parking_lot()
+# TODO implement leave_parking_lot()
+# TODO implement follow_road()
+# TODO implement manual_driving()
+# TODO implement DriveThread.run()
+# TODO implement DriveThread.angle_to_pwm()
+# TODO implement DriveThread.velocity_to_pwm()
+
 import sys
 import os.path
 parent_path = os.path.abspath(os.path.join("."))
@@ -229,6 +239,7 @@ class Driver:
 
         self.stop_driving()
 
+    # TODO
     def manual_driving(self):
         """ steers the vehicle based on user inputs """
 
@@ -426,6 +437,28 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
+
+        # TODO
+        def angle_to_pmw(self):
+            """ converts the current steering angle to a pulse with modulation value that can be processed by that 
+                hardware
+
+                Returns:
+                    float: pwm value for the steering angle
+            """
+
+            pass
+
+        # TODO
+        def velocity_to_pmw(self):
+            """ converts the current velocity to a pulse with modulation value that can be processed by that 
+                hardware
+
+                Returns:
+                    float: pwm value for the velocity
+            """
+
+            pass
 
         def stop(self):
             """ stops the movement of the vehicle """
