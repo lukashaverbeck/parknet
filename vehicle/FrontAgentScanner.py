@@ -18,7 +18,7 @@ class FrontAgentScanner:
         refresh_thread = threading.Thread(target=self.refresh)
         refresh_thread.start()
 
-    def refresh(self) -> None:
+    def refresh(self):
         """ permanently updates the front agent ID based on the current video input """
 
         while True:
@@ -33,5 +33,5 @@ class FrontAgentScanner:
 
             time.sleep(self.REFRESH_INTERVAL)
 
-    def get_front_agent_id(self) -> str:
+    def get_front_agent_id(self):
         return self.__front_agent_id
