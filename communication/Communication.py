@@ -24,8 +24,8 @@ class Communication:
         """ subscribes to a topic by defining a callback function that is triggered when the event occours
 
             Args:
-                topic (String): topic of the event
-                callback (Method): the method to run when the event occours
+                topic (str): topic of the event
+                callback (function): the method to run when the event occours
         """
 
         self.__callbacks.append({"function": callback, "topic": topic})
@@ -34,8 +34,8 @@ class Communication:
         """ sends a message with a topic to all agents in the network
 
             Args:
-                topic (String): topic of the message
-                message (String): message to be transferred
+                topic (str): topic of the message
+                message (str): message to be transferred
         """
 
         # rt = requests.post("http://192.168.178.156", data={topic: message})
