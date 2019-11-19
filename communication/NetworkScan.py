@@ -12,10 +12,13 @@ def get_local_ip(self):
     return ip
 
 def check_if_up(self, ip_address):
-    """ This method returns if on a given ip adress a webserver is running
+    """ determines if there is a webserver is running on a given ip adress
         
         Args:
             ip_address (str): ip4 adress from the local network
+
+        Returns:
+            bool: Boolean whether the server is running (True) or not (False)
     """
 
     socket = socketlib.socket(socketlib.AF_INET, socketlib.SOCK_STREAM)
@@ -29,7 +32,7 @@ def check_if_up(self, ip_address):
         return False
 
 def scan_ips_from_network(self):
-    """ This method returns a list of used ips in the network
+    """ determines the used ip addresses in the network
 
         Returns:
             list: list of used ips in the network
