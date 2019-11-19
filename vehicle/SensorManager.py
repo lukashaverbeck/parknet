@@ -1,9 +1,5 @@
 # This class handles the three HC-SR04 modules connected to the Picar.
-# It is responsible for returning distance values requested by other classes. 
-
-# author:	@lukashaverbeck
-# author:	@LunaNordin
-# version:	1.0(08.11.2019)
+# It is responsible for returning distance values requested by other classes.
 
 import time
 import threading

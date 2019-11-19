@@ -38,6 +38,3 @@ class FrontAgentScanner:
 
     def get_front_agent_id(self):
         return self.__front_agent_id
-
-
-FrontAgentScanner()
