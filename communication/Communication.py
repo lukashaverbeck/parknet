@@ -1,47 +1,45 @@
 import requests
-
-from projektkurs.communication.NetworkScan import NetworkScan
-
-
-methods = []
-args = ["unset"]
+import NetworkScan
 
 
-class Communication():
-    def triggerEvent(self, topic, message):
-        """ This method triggers all events with the given topic and deliver the message to them
+class Communication:
+    def __init__(self):
+        self.__callbacks = []
+
+    def trigger_event(self, topic, message):
+        """ triggers all events with the given topic by calling the according callback function
 
             Args:
-                topic (String): topic for the event
-                message (String): message for the topic
+                topic (str): topic of the event
+                message (str): message of the event
         """
 
-        print ("Executing")
-        for item in methods:
-            print("Sending Message: " + message + " Topic: " + item["topic"])
-            if item["topic"] == topic:
-                item['callback'](message)
+        for callback in self.__callbacks:
+            print("Sending Message: " + message + " Topic: " + callback["topic"])
+
+            if callback["topic"] == topic:
+                callback["function"](message)
+
     def subscribe(self, topic, callback):
-        """ This method allows to subscribe a method to a topic
+        """ subscribes to a topic by defining a callback function that is triggered when the event occours
 
             Args:
-                topic (String): topic for the event
-                callback (Method): the method to run, when the event is triggered
+                topic (String): topic of the event
+                callback (Method): the method to run when the event occours
         """
-        methods.append({'callback': callback, 'topic': topic})
-    def send(self, topic , message):
-        """ This method sends a message under the given topic
+
+        self.__callbacks.append({"function": callback, "topic": topic})
+
+    def send(self, topic, message):
+        """ sends a message with a topic to all agents in the network
 
             Args:
-                topic (String): topic for the message
-                message (String): message to be delivered
+                topic (String): topic of the message
+                message (String): message to be transferred
         """
-        print (topic)
-        """rt = requests.post("http://192.168.178.156", data={topic: message})
-        """
-        list = NetworkScan.scanIPsFromNetwork("e")
-        for i in list:
-            print(i)
-            r = requests.post("http://" + i, data={topic: message})
 
+        # rt = requests.post("http://192.168.178.156", data={topic: message})
 
+        ips = NetworkScan.scan_ips_from_network("e")
+        for ip in ips:
+            requests.post("http://" + ip, data={topic: message})
