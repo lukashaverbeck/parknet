@@ -9,7 +9,6 @@ from projektkurs.vehicle.Formation import Formation
 from projektkurs.communication.Communication import Communication
 
 
-
 ATTRIBUTES_FILE = "./attributes.json"
 
 
@@ -21,9 +20,9 @@ class Agent:
             data = attributes_file.read()
             attributes = json.loads(data)
             
-            self.__id = attributes['id']
-            self.__length = attributes['length']
-            self.__width = attributes['width']
+            self.__id = attributes["id"]
+            self.__length = attributes["length"]
+            self.__width = attributes["width"]
 
         self.__communication = Communication()
         self.__formation = Formation()
