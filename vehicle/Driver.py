@@ -38,7 +38,7 @@ NEUTRAL_STEERING_ANGLE = 310
 class Driver:
     """ controls the steering of the vehicle """
 
-    def __init__(self, length: float, width: float, formation: object):
+    def __init__(self, length, width, formation):
         """ initializes the driver component of an agent
 
             Args:
@@ -75,7 +75,7 @@ class Driver:
         self.accelerate(0.0)
         self.steer(0.0)
 
-    def accelerate(self, velocity: float) -> None:
+    def accelerate(self, velocity):
         """ changes the velocity of the vehicle
 
             this method does not move the vehicle but instead works as a setter for the velocity
@@ -91,7 +91,7 @@ class Driver:
 
         self.__velocity = velocity
 
-    def steer(self, angle: float) -> None:
+    def steer(self, angle):
         """ changes the steering angle of the vehicle
 
             this method does not move the vehicle's steering axle but instead works as a setter
@@ -108,7 +108,7 @@ class Driver:
 
         self.__angle = angle
 
-    def change_mode(self, mode: str) -> None:
+    def change_mode(self, mode):
         """ updates the behaviour of the agent by changing its mode
 
             best practice is not to pass the desired mode directly as a string but instead
@@ -142,7 +142,7 @@ class Driver:
             self.move_back()
 
     # TODO
-    def enter_parking_lot(self) -> None:
+    def enter_parking_lot(self):
         """ parallel parking from a provided starting position
 
             for the algorithm to work the method assumes that the vehicle is parallel
@@ -152,12 +152,12 @@ class Driver:
         pass
 
     # TODO
-    def leave_parking_lot(self) -> None:
+    def leave_parking_lot(self):
         """ steers the vehicle out of the parking lot """
 
         pass
 
-    def search_parking_lot(self) -> None:
+    def search_parking_lot(self):
         """ drives straight while identifying possible parking lots and evaluating whether such a parking lot would fit
             the vehicle's dimensions for parallel parking
             after identifying a parking lot, the vehicle drives further until it reaches the start of the parking lot
@@ -189,7 +189,7 @@ class Driver:
             time.sleep(check_interval)
 
     # TODO
-    def follow_road(self) -> None:
+    def follow_road(self):
         """ drives autonomously without explicit instructions
             by feeding the camera input through a convolutional neural network
             that predicts a steering angle and a velocity for the vehicle
@@ -197,7 +197,7 @@ class Driver:
 
         pass
 
-    def move_up(self) -> None:
+    def move_up(self):
         """ drives as close to the front vehicle or obstacle as
             possible for the current vehicle formation
         """
@@ -213,8 +213,8 @@ class Driver:
 
         self.stop_driving()
 
-    def move_back(self) -> None:
-        """ drives as close to the rear vehicle or obstacle as
+    def move_back(self):
+        """ drives as close to the front vehicle or obstacle as
             possible for the current vehicle formation
         """
 
@@ -229,8 +229,9 @@ class Driver:
 
         self.stop_driving()
 
-    def manual_driving(self) -> None:
+    def manual_driving(self):
         """ steers the vehicle based on user inputs """
+
         screen = curses.initscr()
         curses.noecho()
         curses.cbreak()
@@ -289,8 +290,8 @@ class Driver:
             curses.echo()
             curses.endwin()
 
-    def start_recording(self) -> None:
-        """ saves an image of the current camera input and logs the corresponding
+    def start_recording(self):
+        """ saves a continuos stream image of the current camera input and logs the corresponding
             steering angle and velocity
         """
 
@@ -310,21 +311,21 @@ class Driver:
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
         self.__recorder.start()
 
-    def stop_recording(self) -> None:
-        """ stops the recording of the camera input and the corresponding log """
+    def stop_recording(self):
+        """ stops the capturing data """
 
         if isinstance(self.__recorder, self.RecorderThread):
             self.__recorder.stop()
 
         self.__recorder = None
 
-    def get_angle(self) -> float:
+    def get_angle(self):
         return self.__angle
 
-    def get_velocity(self) -> float:
+    def get_velocity(self):
         return self.__velocity
 
-    def get_sensor_manager(self) -> object:
+    def get_sensor_manager(self) :
         return self.__sensor_manager
 
     class RecorderThread(threading.Thread):
@@ -332,7 +333,7 @@ class Driver:
             and creates a log of the corresponding steering angle and velocity
         """
 
-        def __init__(self, driver: object, log_path: str, img_directory: str):
+        def __init__(self, driver, log_path, img_directory):
             """ initializes the thread without starting to capture the data
 
                 Args:
@@ -351,7 +352,7 @@ class Driver:
             self.__log_path = log_path
             self.__img_directory = img_directory
 
-        def run(self) -> None:
+        def run(self):
             """ starts capturing the data """
 
             with open(self.__log_path, "a", newline="") as log:
@@ -393,7 +394,7 @@ class Driver:
                         old_velocity = row["old_velocity"]
                         writer.writerow([path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
 
-        def stop(self) -> None:
+        def stop(self):
             """ stops capturing the data """
 
             self.__run = False
@@ -403,24 +404,21 @@ class Driver:
 
         DRIVING_INTERVAL = 1
 
-        def __init__(self, driver: object):
+        def __init__(self, driver):
             """ initializes the thread without starting to move the vehicle
 
                 Args:
                     driver (Driver): driver that dictates the vehicle's steering angle and velocity
             """
 
-            assert callable(driver.get_angle), "driver does not provide a getter for the steering angle"
-            assert callable(driver.get_velocity), "driver does not provide a getter for the steering angle"
-
             super().__init__()
             self.__driver = driver
             self.__drive = True
 
         # TODO
-        def run(self) -> None:
+        def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
-                the vehicle accordingly to the driver's steering angle and velocity by addressing
+                the vehicle according to the driver's steering angle and velocity by addressing
                 the vehicle's hardware
             """
 
@@ -430,6 +428,6 @@ class Driver:
                 time.sleep(self.DRIVING_INTERVAL)
 
         def stop(self):
-            """ permits the thread to move the vehicle """
+            """ stops the movement of the vehicle """
 
             self.__drive = False

@@ -1,14 +1,11 @@
 import sys
 import os.path
-
-from projektkurs.vehicle.Driver import Driver
-from projektkurs.vehicle.Formation import Formation
-
 parent_path = os.path.abspath(os.path.join("."))
 sys.path.append(parent_path)
 
 import json
-
+from projektkurs.vehicle.Driver import Driver
+from projektkurs.vehicle.Formation import Formation
 from projektkurs.communication.Communication import Communication
 
 

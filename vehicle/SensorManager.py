@@ -50,7 +50,7 @@ class SensorManager:
         refresh_thread = threading.Thread(target=self.refresh)
         refresh_thread.start()
         
-    def sensordistance (self, trigpin, echopin) -> float:
+    def sensordistance (self, trigpin, echopin):
         """ triggers the module at given pins and calculates distance """
         
         GPIO.output(trigpin, True)	#activate the trigger channel of HC-SR04 module
@@ -68,7 +68,7 @@ class SensorManager:
         distance = round(distance, 2)	#round the result
         return distance	#return the calculated distance value
     
-    def refresh(self) -> None:
+    def refresh(self):
         """ constantly updates the measured sensor data """
     
         while True:
@@ -77,7 +77,7 @@ class SensorManager:
             self.__distance_back = self.sensordistance(self.TRIG_3, self.ECHO_3) #call sensordetection function for back module
             time.sleep(self.REFRESH_INTERVAL)	#pause to keep timing in interval
     
-    def get_distance(self, direction: int) -> float or None:
+    def get_distance(self, direction):
         """ gives the latest measured distance in a certain direction
             
             Args:
@@ -88,7 +88,7 @@ class SensorManager:
                 None: if an unknown direction was provided
         """
     
-            #the input request is analyzed and the corresponding value is returned
+        #the input request is analyzed and the corresponding value is returned
         if direction == FRONT:
             return self.__distance_front
         elif direction == RIGHT:
