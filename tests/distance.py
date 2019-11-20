@@ -1,7 +1,7 @@
 #This script calcuates the distance between an HC-SR04 module and the nearest object.
 #It is capable of handling multiple modules simultaneously.
 #author: @LunaNordin
-#version: 2.1(08.11.2019)
+#version: 2.1.1(20.11.2019)
 
 import RPi.GPIO as GPIO	#library for GPIO control
 import time
@@ -17,12 +17,13 @@ GPIO.setmode(GPIO.BCM)	#set GPIO mode
 
 TRIG_1 = 23 #trigger pin of HC-SR04 module(front)
 TRIG_2 = 22 #trigger pin of HC-SR04 module(side)
-TRIG_3 = 2  #trigger pin of HC-SR04 module(back)
+TRIG_3 = 4  #trigger pin of HC-SR04 module(back)
 ECHO_1 = 24 #echo pin of HC-SR04 module(front)
 ECHO_2 = 27 #echo pin of HC-SR04 module(side)
 ECHO_3 = 17 #echo pin of HC-SR04 module(back)
 
 #define all trigger pins as outputs and all echo pins as inputs
+#make shure all pins ar free to use to avaoid data collision
 GPIO.setup(TRIG_1,GPIO.OUT)	
 GPIO.setup(ECHO_1,GPIO.IN)	
 GPIO.setup(TRIG_2,GPIO.OUT)	
