@@ -1,7 +1,7 @@
 import socket as socketlib
 from contextlib import closing
 
-def get_local_ip(self):
+def get_local_ip():
     """ determines the local IP of the current device
 
         Returns:
@@ -11,7 +11,7 @@ def get_local_ip(self):
     ip = socketlib.gethostbyname(socketlib.gethostname())
     return ip
 
-def check_if_up(self, ip_address):
+def check_if_up(ip_address):
     """ determines if there is a webserver is running on a given ip adress
         
         Args:
@@ -31,7 +31,7 @@ def check_if_up(self, ip_address):
     except socketlib.error:
         return False
 
-def scan_ips_from_network(self):
+def scan_ips_from_network():
     """ determines the used ip addresses in the network
 
         Returns:
@@ -39,7 +39,7 @@ def scan_ips_from_network(self):
     """
 
     ips = []
-    local_ip = get_local_ip("t")
+    local_ip = get_local_ip()
     ip_parts = local_ip.split(".")
     ip_network = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + "."
 
