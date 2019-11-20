@@ -1,5 +1,5 @@
 import requests
-import NetworkScan
+import communication.NetworkScan
 
 
 class Communication:
