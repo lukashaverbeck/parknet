@@ -1,7 +1,7 @@
 import json
-from Driver import Driver
-from Formation import Formation
-from Communication import Communication
+from vehicle.Driver import Driver
+from vehicle.Formation import Formation
+from communication.Communication import Communication
 
 ATTRIBUTES_FILE = "./attributes.json"
 
