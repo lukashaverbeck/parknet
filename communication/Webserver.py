@@ -30,5 +30,5 @@ class Serv(BaseHTTPRequestHandler):
         communication.trigger_event(response_data[0] , response_data[1])
 
 
-httpd = HTTPServer((NetworkScan.get_local_ip("e"), 80), Serv)
+httpd = HTTPServer((NetworkScan.get_local_ip(), 80), Serv)
 httpd.serve_forever()

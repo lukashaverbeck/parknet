@@ -40,6 +40,6 @@ class Communication:
 
         # rt = requests.post("http://192.168.178.156", data={topic: message})
 
-        ips = NetworkScan.scan_ips_from_network("e")
+        ips = NetworkScan.scan_ips_from_network()
         for ip in ips:
             requests.post("http://" + ip, data={topic: message})
