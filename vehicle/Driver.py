@@ -259,7 +259,7 @@ class Driver:
             screen.clear()
             screen.addstr("Press 'W'/'S' to change velocity and 'A'/'D' to change steering angle. Press 'E' for emergency stop and 'Q' in order to exit.")
             screen.refresh()
-            move = False
+            move = False    #initialize variable to make shure it has value if first loop is passed without input
             while True:
             
                 char = screen.getch()  # get keyboard input
