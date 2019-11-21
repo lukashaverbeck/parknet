@@ -18,7 +18,7 @@ pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  #create PCA9685-object a
 throttle_stop = 340    #stop acceleration
 throttle_max = 355     #maximum throttle    
 steering_left = 270    #steer to maximum left
-steering_nutral = 310  #steer to nutral position
+steering_nutral = 310  #steer to neutral position
 steering_right = 380   #steer to maximum right
 pulse_freq = 50        #I2C communication frequency
 pwm.set_pwm_freq(pulse_freq)  #set frequency
