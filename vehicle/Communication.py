@@ -3,6 +3,7 @@
 # TODO remove unnecessary GET handling
 # TODO clean Serv.do_POST -> unnecessary wfile writing ?
 
+import json
 import socket as socketlib
 import requests
 import threading
@@ -69,26 +70,33 @@ class Communication:
         functions to certain events 
     """
 
-    def __init__(self):
+    def __init__(self, agent_id):
+        """ initializes the communication component by starting a local webserver
+
+            Args:
+                agent_id (str): ID of the agent sending and receiving messages
+        """
+
         Serv.communication = self
         self.__server = HTTPServer((get_local_ip(), 80), Serv)
         self.__callbacks = []
+        self.__agent_id = agent_id
 
         server_thread = threading.Thread(target=self.__server.serve_forever)
         server_thread.start()
 
-    def trigger_event(self, topic, message):
+    def trigger_event(self, message):
         """ triggers all events with the given topic by calling the according callback function
 
             Args:
-                topic (str): topic of the event
-                message (str): message of the event
+                message (str): JSON serialized string of the transferred message object
         """
 
-        for callback in self.__callbacks:
-            print("Sending Message: " + message + " Topic: " + callback["topic"])
+        data = json.loads(message)
+        message = Message.loads(message)
 
-            if callback["topic"] == topic:
+        for callback in self.__callbacks:
+            if callback["topic"] == data["topic"]:
                 callback["function"](message)
 
     def subscribe(self, topic, callback):
@@ -101,19 +109,66 @@ class Communication:
 
         self.__callbacks.append({"function": callback, "topic": topic})
 
-    def send(self, topic, message):
+    def send(self, topic, content, receiver=None):
         """ sends a message with a topic to all agents in the network
 
             Args:
                 topic (str): topic of the message
-                message (str): message to be transferred
+                content (object): JSON compatible object to be transferred within the network
+                receiver (str or None): specifies a agent for the message to be processed by only
         """
 
-        rt = requests.post("http://" + get_local_ip(), data={topic: message})
+        message = Message(self.__agent_id, topic, content, receiver)
+        data = message.json_data()
+
+        rt = requests.post("http://" + get_local_ip(), data=data)  # only for test purposes
 
         ips = scan_ips_from_network()
         for ip in ips:
-            requests.post("http://" + ip, data={topic: message})
+            requests.post("http://" + ip, data=data)
+
+
+class Message:
+    """ helper class wrapping a transferrable message """
+
+    def __init__(self, sender, topic, content, receiver=None):
+        """ initializes a message
+
+            Args:
+                sender (str): ID of the agent sending the message
+                topic (str): name of the message type
+                content (object): JSON serializable object that is actually delivered through the message
+                receiver (str or None): specifies a agent for the message to be processed by only
+        """
+
+        self.__sender = sender
+        self.__topic = topic
+        self.__content = content
+        self.__receiver = receiver
+
+    @staticmethod
+    def loads(json_message):
+        message = json.loads(json_message)
+        data = message["data"]
+        return Message(data["sender"], message["topic"], data["content"], data["receiver"])
+
+    def json_data(self):
+        """ created a JSON serialized string of the wrapped data
+            
+            Returns:
+                str: JSON string representing the message data
+        """
+
+        data = {
+            "topic": self.__topic,
+            "data": {
+                "sender": self.__sender,
+                "content": self.__content,
+                "receiver": self.__receiver
+            }
+        }
+
+        return json.dumps(data)
 
 
 class Serv(BaseHTTPRequestHandler):
@@ -145,6 +200,7 @@ class Serv(BaseHTTPRequestHandler):
         response = bytes(body).decode("utf-8")
         response_data = response.split("=" , 1)
         print("Content: " + str(response_data))
-        
+
         if self.communication:
-            self.communication.trigger_event(response_data[0] , response_data[1])
+            for data in response_data:
+                self.communication.trigger_event(data)
