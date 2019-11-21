@@ -11,7 +11,7 @@ FRONT, RIGHT, BACK = 0, 1, 2
 class SensorManager:
     """ controls the measured distances to the vehicle's front, right and back """
             
-    REFRESH_INTERVAL = 0.2	# interval in which new values are calculated
+    REFRESH_INTERVAL = 0.1	# interval in which new values are calculated
         
     TRIG_1 = 23  # trigger pin of HC-SR04 module(front)
     TRIG_2 = 22  # trigger pin of HC-SR04 module(side)
