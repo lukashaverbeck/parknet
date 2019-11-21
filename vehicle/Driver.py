@@ -1,4 +1,4 @@
-# controlls the driving behaviour of the pi car
+# controlls the driving behaviour of the picar
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
@@ -242,6 +242,9 @@ class Driver:
         curses.noecho()
         curses.cbreak()
         screen.keypad(True)
+        #imortant to make shure commandline printouts do not interfere with curses-window
+        #window gets cleared at maximum refreshrate because .getch() does not block while-loop
+        screen.nodelay(True)  
 
         pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
         pulse_freq = 50
@@ -253,11 +256,14 @@ class Driver:
         pwm.set_pwm(0, 0, NEUTRAL_STEERING_ANGLE)
 
         try:
+            screen.clear()
+            screen.addstr("Press 'W'/'S' to change velocity and 'A'/'D' to change steering angle. Press 'E' for emergency stop and 'Q' in order to exit.")
+            screen.refresh()
+            move = False
             while True:
-                screen.refresh()
+            
                 char = screen.getch()  # get keyboard input
-                screen.clear()
-                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering PWM: " + str(steering))
+                
                 if char == ord('q'):  # pressing q stops the script
                     pwm.set_pwm(1, 0, 340)
                     break
@@ -290,6 +296,10 @@ class Driver:
                 if move:  # move converts input to motor control
                     pwm.set_pwm(1, 0, velocity)
                     pwm.set_pwm(0, 0, steering)
+                
+                screen.clear()
+                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering PWM: " + str(steering))
+                screen.refresh()
         finally:
             curses.nocbreak()
             screen.keypad(0)
