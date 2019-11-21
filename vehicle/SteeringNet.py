@@ -2,6 +2,7 @@
 # It includes the training, evaluating and predicting process for the according neural net.
 #
 # TODO add functionality for setting chechpoints while training
+# TODO substitute randomly generated steering data with real data
 
 import os
 import math
@@ -243,3 +244,8 @@ def generate_data(root_directory, csv_file, batch_size):
                     batch_image = []
                     batch_angle = []
                     batch_old_angle = []
+
+
+net = SteeringNet()
+net.train(7360, "./data/", "./data/train.csv", 676, "./data/test.csv", epochs=5)
+net.save("model_2")

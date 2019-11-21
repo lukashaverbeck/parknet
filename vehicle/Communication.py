@@ -148,6 +148,15 @@ class Message:
 
     @staticmethod
     def loads(json_message):
+        """ created message object from JSON serialzed message
+
+            Args:
+                json_message (str): JSON representation of a message
+
+            Returns:
+                Message: message object
+        """
+
         message = json.loads(json_message)
         data = message["data"]
         return Message(data["sender"], message["topic"], data["content"], data["receiver"])
@@ -170,6 +179,17 @@ class Message:
 
         return json.dumps(data)
 
+    def sender(self):
+        return self.__sender
+
+    def topic(self):
+        return self.__topic
+
+    def content(self):
+        return self.__content
+
+    def receiver(self):
+        return self.__receiver
 
 class Serv(BaseHTTPRequestHandler):
     """ custom http server handling POST or GET requests """ 
