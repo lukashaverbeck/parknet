@@ -43,7 +43,9 @@ class Controller:
     if answ == ord('y'):  #user confirms to use default values
       self.addr = 0x40  #default I2C address
       self.bus = 1 #default I2C busnumber (for Raspberry Pi's newer than model 1)
-      
+    
+    #do not use this yet, it potentially breaks the script
+    #use default I2C data instead
     elif answ != ord('y'):  #user hands over I2C information manually
       screen.addstr("Please enter the I2C-address of your PCA9685 module: ")
       screen.refresh()
