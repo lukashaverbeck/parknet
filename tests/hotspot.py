@@ -13,7 +13,7 @@ access_point = pyaccesspoint.AccessPoint(ip="192.168.2.116")  #create AccessPoin
 thread = threading.Thread(target=access_point.start)  #start a thread on running network
 
 print("Creating access point at port: 22 with IP-address: 192.168.2.116 and passwort: 1234567890")
-print("In order to connect to your picar via SSH use network information and standart user information for login.")
+print("In order to connect to your picar via SSH use network information and standard user information for login.")
 
 access_point.stop()  #stop potential legacy acces points
 thread.start()  #start thread
