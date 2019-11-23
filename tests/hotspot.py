@@ -1,4 +1,4 @@
-#Opens up a standalone Wifi Network with user determined network information
+#Opens up a standalone Wifi network with user determined network information
 #author:  @LukasGra
 #author:  @lukashaverbeck
 #author:  @LunaNordin
@@ -6,7 +6,7 @@
 
 import time
 import threading
-from PyAccessPoint import pyaccesspoint  #PiAccesPoint library
+from PyAccessPoint import pyaccesspoint  #PyAccesPoint library
 
 
 access_point = pyaccesspoint.AccessPoint(ip="192.168.2.116")  #create AccessPoint-object with determined ip
