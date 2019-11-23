@@ -2,6 +2,7 @@ import time
 import threading
 
 from Communication import Communication
+from vehicle.FrontAgentScanner import FrontAgentScanner
 
 TOPIC_CONFIRMATION = "formation/confirm-backward-pass"
 TOPIC_FORWARD_PASS = "formation/forward-pass"
@@ -11,7 +12,7 @@ TOPIC_BACKWARD_PASS = "formation/backward-pass"
 class Formation:
     """ keeps track of the relative position of multiple agents within an agent network """
 
-    UPDATE_INTERVAL = 2
+    UPDATE_INTERVAL = 3
     AWAIT_CONFIRMATION = 3
 
     def __init__(self, agent):
@@ -27,9 +28,11 @@ class Formation:
         self.__agent = agent
         self.__tmp_agents = []
         self.__communication = Communication(self.__agent.get_id())
+        self.__front_agent_scanner = FrontAgentScanner()
         self.__confirmed_backpass = False
 
-        self.update()
+        update_thread = threading.Thread(target=self.update)
+        update_thread.start()
 
     def calc_gap(self):
         """ calculates the minimal gap between two agents
@@ -70,7 +73,7 @@ class Formation:
         self.__communication.subscribe(TOPIC_CONFIRMATION, self.receive_confirmation)
 
         while True:
-            front_agent_id = None  # TODO
+            front_agent_id = self.__front_agent_scanner.get_front_agent_id()
 
             if front_agent_id == None:
                 self.__tmp_agents = [self.__agent.get_id()]
@@ -79,7 +82,6 @@ class Formation:
                 time.sleep(self.AWAIT_CONFIRMATION)
 
                 if not self.__confirmed:
-                    print("set", self.__agents, "to", self.__tmp_agents)
                     self.__agents = self.__tmp_agents
                     self.send_forward_pass()
 
@@ -94,7 +96,7 @@ class Formation:
                 message (Message): message containing the formation's agent list
         """
 
-        front_agent_id = None  # TODO
+        front_agent_id = self.__front_agent_scanner.get_front_agent_id()
 
         # check if the formation was sent to this specific agent
         if front_agent_id == message.sender():
