@@ -1,3 +1,5 @@
+# allows to identify other agents
+
 import time
 import threading
 import pyzbar.pyzbar as pyzbar
@@ -6,6 +8,7 @@ import picamera.array
 
 
 class FrontAgentScanner:
+    """ keeps track of other agents in the camera image by scanning agent ID QR codes """
 
     REFRESH_INTERVAL = 1
 
@@ -31,8 +34,6 @@ class FrontAgentScanner:
                         self.__front_agent_id = data_bytes.decode("utf-8")
                     else:
                         self.__front_agent_id = None
-
-                    print(self.__front_agent_id)
 
                     time.sleep(self.REFRESH_INTERVAL)
 
