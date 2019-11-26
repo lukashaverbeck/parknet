@@ -223,9 +223,11 @@ class Driver:
             possible for the current vehicle formation
         """
 
+        # slowly drive backwards
         self.accelerate(-1 * CAUTIOUS_VELOCITY)
         self.steer(0.0)
 
+        # drive as long there is enough space to the next vehicle or obstacle
         gap = self.__formation.calc_gap()
         self.start_driving()
 
@@ -313,17 +315,19 @@ class Driver:
 
         self.stop_recording()
 
+        # specifies where to save the images and the log file
         data_directory = "./recorded_data/"
         log_directory = data_directory + datetime.today().strftime("%Y-%m-%d-%H-%M-%S") + "/"
         img_directory = log_directory + "img/"
         log_path = log_directory + "log.csv"
 
+        # create the needed directories 
         if not os.path.isdir(data_directory):
             os.mkdir(data_directory)
-
         os.mkdir(log_directory)
         os.mkdir(img_directory)
 
+        # start recording in a separate thread
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
         self.__recorder.start()
 
@@ -335,6 +339,8 @@ class Driver:
 
         self.__recorder = None
 
+    # -- getters --
+
     def get_angle(self):
         return self.__angle
 
@@ -343,6 +349,8 @@ class Driver:
 
     def get_sensor_manager(self) :
         return self.__sensor_manager
+
+    # -- inner classes --
 
     class RecorderThread(threading.Thread):
         """ thread that captures the current video input, saves it to memory
@@ -358,9 +366,6 @@ class Driver:
                     img_directory (str): path to the directory in which the images are saved
             """
 
-            assert os.path.isdir(img_directory), "given image directory does not exist"
-            assert isinstance(driver, Driver), "driver is not of type Driver"
-
             super().__init__()
             self.__run = True
             self.__driver = driver
@@ -371,6 +376,7 @@ class Driver:
         def run(self):
             """ starts capturing the data """
 
+            # write column names to log file
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
                 writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
@@ -380,6 +386,7 @@ class Driver:
             data = []
 
             while self.__run:
+                # save 15 images to the according directory
                 img_name = datetime.today().strftime("%H-%M-%S-%f")
                 img_path = self.__img_directory + img_name
                 img_paths = [img_path + "-" + str(i) + ".jpg" for i in range(15)]
@@ -388,6 +395,7 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
+                # save the captured data to a local variable
                 data.append({
                     "paths": img_paths,
                     "angle": angle,
@@ -399,6 +407,7 @@ class Driver:
                 old_angle = angle
                 old_velocity = velocity
 
+            # write numerical data to log file
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
                 
@@ -418,7 +427,7 @@ class Driver:
     class DriveThread(threading.Thread):
         """ thread that moves the vehicle """
 
-        DRIVING_INTERVAL = 1
+        DRIVING_INTERVAL = 1  # seconds to wait after adjusting the steering
 
         def __init__(self, driver):
             """ initializes the thread without starting to move the vehicle
