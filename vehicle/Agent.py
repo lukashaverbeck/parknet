@@ -10,6 +10,7 @@ class Agent:
     def __init__(self):
         """ initializes a specific car agent based on his attributes file """
 
+        # read in ID, length and with from the according file
         with open(ATTRIBUTES_FILE) as attributes_file:
             data = attributes_file.read()
             attributes = json.loads(data)
@@ -21,6 +22,8 @@ class Agent:
         self.__communication = Communication()
         self.__formation = Formation()
         self.__driver = Driver(self.__length, self.__width, self.__formation)
+
+    # -- getters --
 
     def driver(self):
         return self.__driver
