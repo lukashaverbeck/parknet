@@ -82,6 +82,7 @@ class Communication:
         self.__callbacks = []
         self.__agent_id = agent_id
 
+        # start server in a separate thread
         server_thread = threading.Thread(target=self.__server.serve_forever)
         server_thread.start()
 
@@ -92,9 +93,11 @@ class Communication:
                 message (str): JSON serialized string of the transferred message object
         """
 
+        # create Message object from its JSON representation
         data = json.loads(message)
         message = Message.loads(message)
 
+        # call callback functions for the event
         for callback in self.__callbacks:
             if callback["topic"] == data["topic"]:
                 callback["function"](message)
@@ -123,6 +126,7 @@ class Communication:
 
         rt = requests.post("http://" + get_local_ip(), data=data)  # only for test purposes
 
+        # send message to every agent in the network
         ips = scan_ips_from_network()
         for ip in ips:
             requests.post("http://" + ip, data=data)
@@ -178,6 +182,8 @@ class Message:
         }
 
         return json.dumps(data)
+
+    # -- getters --
 
     def sender(self):
         return self.__sender
