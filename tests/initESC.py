@@ -1,5 +1,6 @@
 # Script for initializing the ESC build into a picar with an activation pulse.
 # Run this script before using any other PWM related ESC controls.
+# NOTE: not necessary with Driver.py=>1.1
 
 # author: @LunaNordin
 # version: 1.0(03.11.2019)
