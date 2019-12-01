@@ -5,8 +5,8 @@
 import time
 import threading
 
-from vehicle.Communication import Communication
-from vehicle.FrontAgentScanner import FrontAgentScanner
+from .Communication import Communication
+from .FrontAgentScanner import FrontAgentScanner
 
 TOPIC_CONFIRMATION = "formation/confirm-backward-pass"
 TOPIC_FORWARD_PASS = "formation/forward-pass"
@@ -138,7 +138,7 @@ class Formation:
         # wait for a possible receiver to confirm the backpass
         time.sleep(self.AWAIT_CONFIRMATION)
 
-        if not self.__confirmed:
+        if not self.__confirmed_backpass:
             # last in line -> formation complete -> send forwards
             self.__agents = self.__tmp_agents
             self.send_forward_pass()
