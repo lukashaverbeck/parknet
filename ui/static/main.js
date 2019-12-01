@@ -1,247 +1,244 @@
-let standbyContainer = document.getElementById("container-standby");
-let closeButton = document.getElementById("btn-close");
+const UPDATE_INTERVAL = 1000;
 
 
-class Mode {
-    constructor(id, name, active = false) {
-        this.id = id;
-        this.name = name;
-        this.active = active;
-        this.container = document.getElementById("container-" + name);
-    }
-
-    activate() {
-        this.active = true;
-        this.container.classList.remove("no-display");
-    }
-
-    deactivate() {
-        this.active = false;
-        this.container.classList.add("no-display");
-    }
-}
-
-
-class ManualMode extends Mode {
+class FullscreenButton {
     constructor() {
-        super("drive/manual", "manual");
+        this.button = document.getElementById("btn-fullscreen");
+        this.icon = this.button.querySelector("i");
+        this.isFullscreen = false;
 
-        this.keyUp = document.getElementById("key-forward");
-        this.keyDown = document.getElementById("key-backward");
-        this.keyLeft = document.getElementById("key-left");
-        this.keyRight = document.getElementById("key-right");
-
-        this.run();
+        this.button.addEventListener("click", () => {
+           this.toggle() 
+        });
     }
 
-    run() {
-        document.onkeydown = (event) => {
-            event = event || window.event;
-
-            if (event.key == "ArrowUp" || event.key == "w") {
-                this.keyUp.classList.add("active");
-            }
-
-            if (event.key == "ArrowDown" || event.key == "s") {
-                this.keyDown.classList.add("active");
-            }
-
-            if (event.key == "ArrowLeft" || event.key == "a") {
-                this.keyLeft.classList.add("active");
-            }
-
-            if (event.key == "ArrowRight" || event.key == "d") {
-                this.keyRight.classList.add("active");
-            }
+    toggle() {
+        if (this.isFullscreen) {
+            document.exitFullscreen();
+            this.icon.innerText = "fullscreen";
+        } else {
+            document.documentElement.requestFullscreen();
+            this.icon.innerText = "fullscreen_exit";
         }
 
-        document.onkeyup = (event) => {
-            event = event || window.event;
+        this.isFullscreen = !this.isFullscreen;
+    }
 
-            if (event.key == "ArrowUp" || event.key == "w") {
-                this.keyUp.classList.remove("active");
-            }
-
-            if (event.key == "ArrowDown" || event.key == "s") {
-                this.keyDown.classList.remove("active");
-            }
-
-            if (event.key == "ArrowLeft" || event.key == "a") {
-                this.keyLeft.classList.remove("active");
-            }
-
-            if (event.key == "ArrowRight" || event.key == "d") {
-                this.keyRight.classList.remove("active");
-            }
+    updateIcon() {
+        if (this.isFullscreen) {
+            this.icon.innerText = "fullscreen_exit";
+        } else {
+            this.icon.innerText = "fullscreen";
         }
     }
 }
 
 
-class AutonomousMode extends Mode {
+class VideoButton {
     constructor() {
-        super("drive/follow-road", "autonomous");
+        this.button = document.getElementById("btn-video");
+        this.icon = this.button.querySelector("i");
+        this.isRecording = false;
 
-        this.stopButton = document.getElementById("btn-stop-autonomous");
-        this.restartButton = document.getElementById("btn-restart-autonomous");
-
-        this.stopButton.addEventListener("click", () => {
-            this.stopButton.classList.add("no-display");
-            this.restartButton.classList.remove("no-display");
-
-            sendRequest("emergency-stop")
+        this.button.addEventListener("click", () => {
+           this.toggle() 
         });
+    }
 
-        this.restartButton.addEventListener("click", () => {
-            this.restartButton.classList.add("no-display");
-            this.stopButton.classList.remove("no-display");
+    toggle() {
+        this.isRecording = !this.isRecording;
 
-            sendRequest("change-mode", { mode: "drive/follow-road" })
+        if (this.isRecording) {
+            sendRequest("./start-recording");
+        } else {
+            sendRequest("./stop-recording");
+        }
+
+        this.updateIcon();
+    }
+
+    updateIcon() {
+        if (this.isRecording) {
+            this.icon.innerText = "stop";
+            this.button.classList.add("active");
+        } else {
+            this.icon.innerText = "videocam";
+            this.button.classList.remove("active");
+        }
+    }
+}
+
+
+class ModeFeed {
+    constructor() {
+        this.activeMode = undefined;        
+        this.startButtons = document.getElementById("container-cards").querySelectorAll("button");
+        this.progressCircles = document.getElementById("container-progress").querySelectorAll(".circle");
+        
+        for (let i = 0; i < this.startButtons.length; i++) {
+            const button = this.startButtons[i];
+            const circle = this.progressCircles[i];
+            const mode = button.getAttribute("data-mode");
+
+            button.addEventListener("click", () => {
+                for (let j = 0; j < this.startButtons.length; j++) {
+                    this.startButtons[j].classList.remove("active")
+                    this.progressCircles[j].classList.remove("active")
+                }
+                
+                if (this.activeMode != mode) {
+                    this.activeMode = mode;
+                    sendRequest("./change-mode", { "mode": mode });
+                    
+                    button.classList.add("active");
+                    circle.classList.add("active");
+
+                    if (mode == "driving/manual") 
+                        Message.show("Tipp", "Nutze die Tastem WASD, um das Fahrzeug zu steuern.");
+                } else {
+                    this.activeMode = undefined;
+                    sendRequest("./change-mode", { "mode": null });
+                }
+            });
+        }
+
+        this.manualDriving();
+    }
+
+    manualDriving() {
+        document.addEventListener("keydown", event => {
+            if (this.activeMode != "driving/manual") return;
+
+            if (["w", "W", "8", "ArrowUp"].includes(event.key))
+                sendRequest("./accelerate-forward");
+            else if (["s", "S", "2", "ArrowDown"].includes(event.key))
+                sendRequest("./accelerate-backward");
+
+            if (["a", "A", "4", "ArrowLeft"].includes(event.key))
+                sendRequest("./steer-left");
+            else if (["d", "D", "6", "ArrowRight"].includes(event.key))
+                sendRequest("./steer-right");
         });
     }
 }
 
 
-class ParkingMode extends Mode {
-    constructor() {
-        super("parking/search", "parking");
-    }
-}
+class Message {
+    static show(title, content) {
+        const message = new Message(title, content);
+        message.show();
 
-
-const MODES = [
-    new ManualMode(),
-    new AutonomousMode(),
-    new ParkingMode()
-];
-
-
-class Menu {
-    constructor() {
-        this.buttons = [];
-
-        MODES.forEach(mode => {
-            let button = document.querySelector("nav button[data-mode=" + mode.name + "]");
-            this.buttons.push(button);
-
-            button.addEventListener("click", () => this.toggle(mode, button));
-        });
-
-        closeButton.addEventListener("click", () => {
-            MODES.forEach(mode => {
-                mode.deactivate();
-            });
-
-            this.buttons.forEach(button => {
-                button.classList.remove("active");
-            });
-
-            standbyContainer.classList.remove("no-display");
-            closeButton.classList.add("no-display");
-
-            sendRequest("change-mode", { mode: "parking/standby" })
-        });
+        setTimeout(() => {
+            message.remove();
+        }, 3000);
     }
 
-    toggle(mode, button) {
-        this.buttons.forEach(btn => {
-            btn.classList.remove("active");
-        });
+    constructor(title, content) {
+        this.container = document.createElement("div");
+        this.container.classList.add("dialog");
 
-        MODES.forEach(mode => {
-            mode.deactivate();
-        });
+        const closeButton = document.createElement("button");
+        closeButton.addEventListener("click", this.remove.bind(this));
+        this.container.appendChild(closeButton);
 
-        button.classList.add("active");
-        mode.activate();
+        const closeButtonIcon = document.createElement("i");
+        closeButtonIcon.classList.add("material-icons");
+        closeButtonIcon.innerText = "expand_more";
+        closeButton.appendChild(closeButtonIcon);
 
-        standbyContainer.classList.add("no-display");
-        closeButton.classList.remove("no-display")
+        const heading = document.createElement("h1");
+        heading.innerText = title;
+        this.container.appendChild(heading);
 
-        sendRequest("change-mode", { mode: mode.id })
+        const text = document.createElement("p");
+        text.innerText = content;
+        this.container.appendChild(text);
+    }
+
+    show() {
+        document.body.appendChild(this.container);
+    }
+
+    remove() {
+        this.container.style.bottom = "-100%";
+        setTimeout(() => {
+            this.container.remove()
+        }, 1000);
     }
 }
 
 
 function sendRequest(url, data = {}) {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
 
     xhr.open("POST", url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(data));
 }
 
 
 function getJSON(url, callback) {
-    let xhr = new XMLHttpRequest();
-
+    const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
     xhr.onload = () => {
-        let status = xhr.status;
-
-        if (status === 200) {
-            callback(xhr.response);
-        }
+        const status = xhr.status;
+        if (status === 200) callback(xhr.response);
     };
 
     xhr.send();
-};
+}
 
+
+new VideoButton();
+new FullscreenButton();
+new ModeFeed();
+
+document.getElementById("btn-emergency-stop").addEventListener("click", () => {
+    sendRequest("./emergency-stop")
+});
+
+const carContainer = document.getElementById("container-car");
+const velocityDisplay = document.getElementById("velocity").querySelector("span");
+const steeringAngleDisplay = document.getElementById("steering-angle").querySelector("span");
+const distanceTopDisplay = document.getElementById("distance-top").querySelector("span");
+const distanceRightDisplay = document.getElementById("distance-right").querySelector("span");
+const distanceBottomDisplay = document.getElementById("distance-bottom").querySelector("span");
 
 setInterval(() => {
-    getJSON("./data-internal", (response) => {
-        response.forEach(data => {
-            let valueContainer = document.getElementById("data-" + data.id).querySelector("span");
-            valueContainer.innerText = data.value + " " + data.unit;
-        })
+    getJSON("./data-interval", data => {
+        data.forEach(item => {
+            let display;
+
+            switch (item.id) {
+                case "velocity":
+                    display = velocityDisplay;
+                    break;
+
+                case "steering-angle":
+                    carContainer.style.transform = "rotate(" + item.value + "deg)"
+
+                    display = steeringAngleDisplay;
+                    break;
+
+                case "distance-front":
+                    display = distanceTopDisplay;
+                    break;
+
+                case "distance-right":
+                    display = distanceRightDisplay;
+                    break;
+
+                case "distane-back":
+                    display = distanceBottomDisplay;
+                    break;
+            
+                default:
+                    return;
+            }
+
+            display.innerText = item.value + " " + item.unit;
+        });
     });
-}, 1000);
-
-
-let startRecordingButton = document.getElementById("btn-start-recording");
-let stopRecordingButton = document.getElementById("btn-stop-recording");
-
-startRecordingButton.addEventListener("click", () => {
-    startRecordingButton.classList.add("no-display");
-    stopRecordingButton.classList.remove("no-display");
-
-    sendRequest("start-recording");
-});
-
-stopRecordingButton.addEventListener("click", () => {
-    stopRecordingButton.classList.add("no-display");
-    startRecordingButton.classList.remove("no-display");
-
-    sendRequest("stop-recording");
-});
-
-let menuContainer = document.querySelector("nav");
-let dataContainer = document.getElementById("container-data");
-let dataButton = document.getElementById("btn-toggle-data");
-let dataToggled = false;
-
-dataButton.addEventListener("click", () => {
-    dataToggled = !dataToggled;
-    icon = "menu";
-
-    if (dataToggled) {
-        icon = "close";
-    }
-
-    dataButton.querySelector("i").innerHTML = icon
-    if (dataToggled) {
-        menuContainer.classList.remove("opened")
-        menuContainer.classList.add("closed")
-
-        dataContainer.classList.remove("closed")
-        dataContainer.classList.add("opened")
-    } else {
-        dataContainer.classList.remove("opened")
-        dataContainer.classList.add("closed")
-
-        menuContainer.classList.remove("closed")
-        menuContainer.classList.add("opened")
-    }
-});
+}, UPDATE_INTERVAL);
