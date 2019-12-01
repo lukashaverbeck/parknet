@@ -1,8 +1,11 @@
+import sys
+sys.path.append(sys.path[0][:-3])
+
 from flask import Flask, request, jsonify, render_template
 from vehicle.Agent import Agent
 
 app = Flask(__name__)
-agent = Agent()
+agent = None
 
 
 @app.route("/")
@@ -12,12 +15,14 @@ def ui():
 
 
 def open_interface(debug=False):
+    global agent
+
     ip_address = "192.168.2.116"
     port = "5000"
+    agent = Agent()
     app.run(host=ip_address, port=port, debug=debug)
 
 
-# TODO get the agent's real data
 @app.route("/data-interval")
 def data():
     driver = agent.driver()
@@ -103,4 +108,4 @@ def steer_right():
     return ""
 
 
-open_interface(True)
+open_interface()

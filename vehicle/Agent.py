@@ -1,7 +1,6 @@
 import json
 from .Driver import Driver
 from .Formation import Formation
-from .Communication import Communication
 
 ATTRIBUTES_FILE = "./attributes.json"
 
@@ -19,8 +18,7 @@ class Agent:
             self.__length = attributes["length"]
             self.__width = attributes["width"]
 
-        self.__communication = Communication()
-        self.__formation = Formation()
+        self.__formation = Formation(self)
         self.__driver = Driver(self.__length, self.__width, self.__formation)
 
     # -- getters --
@@ -30,3 +28,6 @@ class Agent:
 
     def communication(self):
         return self.__communication
+
+    def get_id(self):
+        return self.__id
