@@ -88,12 +88,14 @@ class Driver:
                 velocity (float): desired velocity change
         """
 
-        if velocity_change > MAX_VELOCITY:
-            velocity_change = MAX_VELOCITY
-        elif velocity_change < MIN_VELOCITY:
-            velocity_change = MIN_VELOCITY
+        velocity = self.__velocity + velocity_change
 
-        self.__velocity += velocity_change
+        if velocity > MAX_VELOCITY:
+            velocity = MAX_VELOCITY
+        elif velocity < MIN_VELOCITY:
+            velocity = MIN_VELOCITY
+
+        self.__velocity = velocity
 
     def steer(self, angle_change):
         """ changes the steering angle of the vehicle
@@ -104,12 +106,14 @@ class Driver:
                 angle (float): desired angle change
         """
 
-        if angle_change > MAX_STEERING_ANGLE:
-            angle_change = MAX_STEERING_ANGLE
-        elif angle_change < MIN_STEERING_ANGLE:
-            angle_change = MIN_STEERING_ANGLE
+        angle = self.__angle + angle_change
 
-        self.__angle += angle_change
+        if angle > MAX_STEERING_ANGLE:
+            angle = MAX_STEERING_ANGLE
+        elif angle < MIN_STEERING_ANGLE:
+            angle = MIN_STEERING_ANGLE
+
+        self.__angle = angle
 
     def change_mode(self, mode):
         """ updates the behaviour of the agent by changing its mode
