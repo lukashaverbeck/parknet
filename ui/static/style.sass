@@ -7,28 +7,41 @@
     font-family: "Segoe UI Bold"
     font-display: swap
     src: url("./fonts/Segoe-UI-Bold.ttf") format("truetype")
-    
+
+@font-face
+    font-family: 'Material Icons'
+    font-style: normal
+    font-weight: 400
+    src: url(https://example.com/MaterialIcons-Regular.eot)
+    src: local("Material Icons"), local("Material-Icons-Regular"), url("./fonts/Material-Icons-Regular.woff2") format("woff2")
+
+.material-icons
+    font-family: "Material Icons"
+    font-weight: normal
+    font-style: normal
+    font-size: 48px
+    display: inline-block
+    line-height: 1
+    text-transform: none
+    letter-spacing: normal
+    word-wrap: normal
+    white-space: nowrap
+    direction: ltr
+    -webkit-font-smoothing: antialiased
+    text-rendering: optimizeLegibility
+    -moz-osx-font-smoothing: grayscale
+    font-feature-settings: "liga"
+
+
 $large : 720px
-
 $color-primary : #EF476F
-$color-primary-bright : #F6AEBF
 $color-secondary : #FFD166
-$color-secondary-bright : #F5E6C4
 $color-accent-dark : #073B4C
-$color-accent-grey : #F5F5F5
-$color-accent-shadow : transparentize($color-accent-dark, 0.84)
-
+$color-accent-grey : #F9F9F9
+$color-accent-shadow : #E9E3E3
 $font-black : "Segoe UI Black"
 $font-bold : "Segoe UI Bold"
 
-@mixin center
-    top: 50%
-    left: 50%
-    transform: translate(-50%, -50%)
-
-@mixin center-horizontal
-    left: 50%
-    transform: translateX(-50%)
 
 @keyframes recording
     0%
@@ -37,6 +50,7 @@ $font-bold : "Segoe UI Bold"
         opacity: 1
     100%
         opacity: 0
+
 
 *, *:focus
     outline: none !important
@@ -52,14 +66,18 @@ body
     height: 100%
     margin: 0
     padding: 0
-    overflow-y: scroll
+    overflow-y: hidden
 
     *
         transition: all 300ms
 
-h1, h2, h3, h4, h5, h6
+h1, h2, span
     font-family: $font-black
     padding: 0
+    margin: 0
+
+p
+    font-family: $font-bold
 
 button
     background: transparent
@@ -68,217 +86,202 @@ button
     margin: 0
     cursor: pointer
 
-nav, main, #container-data
-    height: 100%
-    padding: 60px
+    i
+        margin-top: 5px
+
+section
+    position: relative
+    height: 100vh
+    display: inline-block
     float: left
+    padding: 60px
     box-sizing: border-box
 
-nav, #container-data
-    position: absolute
-    border-top-right-radius: 60px
-    border-bottom-right-radius: 60px
-    border-bottom-left-radius: 60px
-    box-shadow: 3px 0 12px 0 $color-accent-shadow
-
-    h1
-        text-align: center
-        margin: 60px 0 30px 0
-
-    hr
-        width: 60px
-        border: 6px solid $color-accent-dark
-        border-radius: 6px
-
-nav
+#container-mode
     width: 38.2%
+    min-width: 600px
     background: $color-accent-grey
 
-    section
-        position: absolute
-        width: 240px
-        @include center
+#container-vehicle
+    width: 61.8%
+    max-width: calc(100% - 600px)
+
+#container-options, #container-cards, #container-progress
+    position: relative
+    box-sizing: border-box
+
+#container-controll
+    height: 80%
+    overflow-y: auto
+
+#container-cards, #container-progress
+    display: inline-block
+
+#container-progress
+    width: 90px
+    float: left
+    padding: 25px 0
+
+    .circle
+        width: 30px
+        height: 30px
+        margin: 30px 38px
+        border-radius: 50%
+        border: 6px solid $color-accent-dark
+        box-sizing: border-box
+    
+        &.active
+            border: none
+            background: $color-primary
+
+    .line
+        width: 7px
+        height: 81px
+        margin: 0 50px
+        background: $color-accent-dark
+        border-radius: 4px
+
+#container-cards
+    width: calc(100% - 100px)
+    float: right
+    padding: 0 6px
+
+    .card
+        width: 100%
+        height: 140px
+        margin-bottom: 30px
+        border-radius: 30px
 
         button
-            position: relative
-            display: block
-            width: 240px
-            height: 60px
-            margin-bottom: 15px
-            background: white
-            border-radius: 30px
-            box-shadow: $color-accent-shadow 3px 3px 6px 0
-            font-family: $font-bold
-            font-size: 18px
+            width: 80px
+            height: 80px
+            margin: 30px
+            background: $color-secondary
+            border-radius: 50%
+            box-shadow: 3px 6px 12px 0 $color-accent-shadow
 
-            &:last-of-type
-                margin: 0
+        button:hover, button:focus
+            box-shadow: 0 0 12px 0 $color-accent-shadow
 
-            &.active
-                background: radial-gradient($color-primary, $color-primary-bright 161%)
+        button.active
+            background: linear-gradient(315deg, $color-primary, lighten($color-primary, 10))
+
+            i
                 color: white
-                box-shadow: none
 
-            &:hover:not(.active)
-                box-shadow: $color-accent-shadow 0 0 6px 0
+        h1
+            display: inline-block
+            font-size: 20px
+            vertical-align: top
+            margin: 55px 0
 
-    .btn-record
-        position: absolute
-        width: 80px
-        height: 80px
-        bottom: 60px
-        border-radius: 50%
-        box-shadow: $color-accent-shadow 3px 3px 12px 0
-        @include center-horizontal
+    .card:last-of-type
+        margin-bottom: 0
+
+#btn-video.active
+    background: linear-gradient(315deg, $color-primary, lighten($color-primary, 10))
+
+    i
+        color: white
+        animation: 4s recording cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite
 
         &:hover, &:focus
-            box-shadow: $color-accent-shadow 0 0 12px 0
+            animation: none !important
+
+#container-options
+    width: 100%
+    display: inline-block
+    height: 20%
+    bottom: 0
+    padding-left: 10px
+
+    button
+        position: relative
+        display: inline-block
+        width: 80px
+        height: 80px
+        margin-right: 30px
+        background: white
+        border-radius: 50%
+        box-shadow: 0 0 18px 0 $color-accent-shadow
+        top: 50%
+        transform: translateY(-50%)
 
         i
-            font-size: 48px
+            font-size: 36px
 
-    #btn-start-recording
-        background: white
+    button:last-of-type
+        margin: 0
 
-    #btn-stop-recording
-        background: linear-gradient(315deg, $color-primary, $color-primary-bright)
+    button:hover, button:focus
+        box-shadow: 0 0 6px 0 $color-accent-shadow
+
+@keyframes sensor
+    0%
+        transform: scale(0)
+
+    30%
+        transform: scale(1)  
+
+#container-car
+    position: relative
+    width: 100%
+    height: 100%
+
+    #car
+        position: relative
+        height: 48vh
+        width: 25vh
+        border-radius: 30px
+        background: linear-gradient($color-primary, lighten($color-primary, 12))
+        box-shadow: 0 0 18px 9px $color-accent-shadow
+        top: 50%
+        left: 50%
+        transform: translate(-50%, -50%)
+
+    #distance-top, #distance-right, #distance-bottom
+        position: absolute
+        top: 50%
+        left: 50%
+
+    #distance-top
+        transform: translate(-50%, calc(-50% - 30vh))
+
+    #distance-right
+        transform: translate(calc(-50% + 21vh), -50%)
+    
+    #distance-bottom
+        transform: translate(-50%, calc(-50% + 30vh))
+
+#velocity, #steering-angle
+    position: fixed
+    top: 60px
+
+#velocity
+    right: 120px
+
+#steering-angle
+    right: 60px
+
+.dialog
+    position: absolute
+    width: 600px
+    min-height: 100px
+    margin: 0
+    padding: 30px 60px
+    right: 30px
+    bottom: 30px
+    box-sizing: border-box
+    background: $color-accent-dark
+    border-radius: 30px
+
+    button
+        position: absolute
+        top: 15px
+        right: 15px
 
         i
             color: white
-            animation: 4s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite recording
 
-        &:hover, &:focus
-            i
-                animation: none
-main
-    width: 61.8%
-
-    section
-        position: relative
-        width: 100%
-        height: 100%
-
-.no-display
-    display: none
-
-.closed
-    transform: translateX(-100%)
-
-.opened
-    transform: translateX(0)
-
-#btn-toggle-data
-    position: absolute
-    width: 60px
-    height: 60px
-    top: 15px
-    left: 15px
-    background: white
-    border-radius: 50%
-    box-shadow: $color-accent-shadow 3px 3px 12px 0
-    z-index: 10
-
-    &:hover, &:focus
-        box-shadow: $color-accent-shadow 0 0 12px 0
-
-#container-data
-    position: relative
-    height: 100%
-    width: 38.2%
-    top: 0
-    left: 0
-    background: white
-    z-index: 9
-
-    #data
-        position: relative
-        display: table
-        @include center
-
-        div
-            display: inline-block
-            height: 60px
-            float: left
-            clear: left
-
-            i
-                width: 60px
-                height: 60px
-                padding: 15px 12px
-                color: #909495
-                font-size: 32px
-                box-sizing: border-box
-
-            span
-                display: inline-block
-                height: 60px
-                padding: 20px 0
-                box-sizing: border-box
-                font-family: $font-bold
-                vertical-align: top
-                margin-right: 30px
-
-#container-standby
-    img
-        position: relative
-        width: 61.8%
-        @include center
-
-#btn-close
-    position: absolute
-    right: 60px
-    z-index: 99
-
-#keyboard
-    position: relative
-    width: 560px
-    height: 360px
-    @include center
-
-    .key
-        position: absolute
-        width: 160px
-        height: 160px
-        padding: 48px
-        border-radius: 30px
-        box-shadow: $color-accent-shadow 0 6px 16px 0
-        box-sizing: border-box
-
-        i
-            font-size: 64px
-
-        &.active
-            background: linear-gradient(225deg, $color-primary, $color-primary-bright 162%)
-            box-shadow: $color-accent-shadow 0 0 16px 0
-
-            i
-                color: white
-
-    #key-forward, #key-backward
-        left: 200px
-
-    #key-left, #key-right, #key-backward
-        bottom: 0
-
-    #key-forward
-        top: 0
-
-    #key-left
-        left: 0
-
-    #key-right
-        right: 0
-
-#btn-stop-autonomous, #btn-restart-autonomous
-    position: absolute
-    width: 80px
-    height: 80px
-    border-radius: 50%
-    box-shadow: $color-accent-shadow 3px 3px 12px 0
-    @include center
-
-    i
-        font-size: 32px
-
-    &:hover, &:focus
-        box-shadow: $color-accent-shadow 0 0 12px 0
+    h1, p
+        color: white
