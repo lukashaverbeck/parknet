@@ -1,6 +1,3 @@
-import sys
-sys.path.append(sys.path[0][:-3])
-
 from flask import Flask, request, jsonify, render_template
 from vehicle.Agent import Agent
 
@@ -10,12 +7,18 @@ agent = Agent()
 
 @app.route("/")
 @app.route("/UI")
-def home():
+def ui():
     return render_template("UI.html")
 
 
+def open_interface(debug=False):
+    ip_address = "192.168.2.116"
+    port = "5000"
+    app.run(host=ip_address, port=port, debug=debug)
+
+
 # TODO get the agent's real data
-@app.route("/data-internal")
+@app.route("/data-interval")
 def data():
     driver = agent.driver()
     sensors = driver.get_sensor_manager()
@@ -50,6 +53,26 @@ def data():
 
     return jsonify(data)
 
+
+@app.route("/start-recording", methods=["POST"])
+def start_recording():
+    agent.driver().start_recording()
+    return ""
+
+
+@app.route("/stop-recording", methods=["POST"])
+def stop_recording():
+    agent.driver().stop_recording()
+    return ""
+
+
+@app.route("/emergency-stop", methods=["POST"])
+def emergency_stop():
+    agent.driver().stop_recording()
+    agent.driver().stop_driving()
+    return ""
+
+
 @app.route("/change-mode", methods=["POST"])
 def change_mode():
     data = request.get_json(silent=True)
@@ -59,30 +82,25 @@ def change_mode():
 
     return ""
 
-@app.route("/start-recording", methods=["POST"])
-def start_recording():
-    agent.driver().start_recording()
-
+@app.route("/accelerate-forward", methods=["POST"])
+def accelerate_forward():
+    agent.driver().accelerate(0.05)
     return ""
 
-@app.route("/stop-recording", methods=["POST"])
-def stop_recording():
-    agent.driver().stop_recording()
-
+@app.route("/accelerate-backward", methods=["POST"])
+def accelerate_backward():
+    agent.driver().accelerate(-0.05)
     return ""
 
-@app.route("/emergency-stop", methods=["POST"])
-def emergency_stop():
-    agent.driver().stop_recording()
-    agent.driver().accelerate(0.0)
-    agent.driver().stop_driving()
-
+@app.route("/steer-left", methods=["POST"])
+def steer_left():
+    agent.driver().steer(-1)
     return ""
 
-def open_interface(debug=False):
-    ip_address = "192.168.2.116"
-    port = "5000"
-    app.run(host=ip_address, port=port, debug=debug)
+@app.route("/steer-right", methods=["POST"])
+def steer_right():
+    agent.driver().steer(1)
+    return ""
 
 
 open_interface(True)

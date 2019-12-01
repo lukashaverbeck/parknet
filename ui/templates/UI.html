@@ -1,111 +1,96 @@
-<html lang="de">
+<!DOCTYPE html>
+<html>
     <head>
-        <title>Steuerung</title>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <title>parknet - Websteuerung</title>
         <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}"></script>
     </head>
 
     <body>
-        <button id="btn-toggle-data">
-            <i class="material-icons"> menu </i>
-        </button>
+        <section id="container-mode">
+            <div id="container-controll">
+                <div id="container-progress">
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+    
+                <div id="container-cards">
+                    <div class="card">
+                        <button data-mode="driving/manual">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+            
+                        <h1>Manuell fahren</h1>
+                    </div>
 
-        <section id="container-data" class="closed">
-            <section id="data">
-                <div id="data-velocity">
-                    <i class="material-icons"> speed </i>
-                    <span>3 m/s</span>
+                    <div class="card">
+                        <button data-mode="parking/search">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+    
+                        <h1>Parkplatz suchen</h1>
+                    </div>
+    
+                    <div class="card">
+                        <button data-mode="parking/enter">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+        
+                        <h1>Einparken</h1>
+                    </div>
+    
+                    <div class="card">
+                        <button data-mode="parking/leave">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+        
+                        <h1>Ausparken</h1>
+                    </div>
                 </div>
+            </div>
 
-                <div id="data-steering-angle">
-                    <i class="material-icons"> screen_rotation </i>
-                    <span>21,29 °</span>
-                </div>
+            <div id="container-options">
+                <button id="btn-video">
+                    <i class="material-icons">videocam</i>
+                </button>
 
-                <div id="data-distance-front">
-                    <i class="material-icons"> arrow_upward </i>
-                    <span>0,10 m</span>
-                </div>
-                
-                <div id="data-distance-right">
-                    <i class="material-icons"> arrow_forward </i>
-                    <span>0,10 m</span>
-                </div>
+                <button id="btn-emergency-stop">
+                    <i class="material-icons">power_settings_new</i>
+                </button>
 
-                <div id="data-distance-back">
-                    <i class="material-icons"> arrow_downward </i>
-                    <span>0,10 m</span>
-                </div>
-            </section>
+                <button id="btn-fullscreen">
+                    <i class="material-icons">fullscreen</i>
+                </button>
+            </div>
         </section>
 
-        <nav class="opened">
-            <h1>Modus auswählen</h1>
-            <hr>
+        <section id="container-vehicle">
+            <div id="velocity">
+                <span>3,45 m/s</span>
+            </div>
+            <div id="steering-angle">
+                <span>0 °</span>
+            </div>
 
-            <section>
-                <button data-mode="manual">manuelles Fahren</button>
-                <button data-mode="autonomous">autonomes Fahren</button>
-                <button data-mode="parking">Parken</button>
-            </section>
-
-            <button id="btn-start-recording" class="btn-record">
-                <i class="material-icons"> play_arrow </i>
-            </button>
-
-            <button id="btn-stop-recording" class="btn-record no-display">
-                <i class="material-icons"> stop </i>
-            </button>
-        </nav>
-
-        <main>
-            <button id="btn-close" class="no-display">
-                <i class="material-icons"> close </i>
-            </button>
-
-            <section id="container-standby">
-                <img src="{{url_for('static', filename='img/car.svg')}}">
-            </section>
-
-            <section id="container-manual" class="no-display">
-                <div id="keyboard">
-                    <div class="key" id="key-forward">
-                        <i class="material-icons"> keyboard_arrow_up </i>
-                    </div>
-
-                    <div class="key" id="key-backward">
-                        <i class="material-icons"> keyboard_arrow_down </i>
-                    </div>
-                    
-                    <div class="key" id="key-left">
-                        <i class="material-icons"> keyboard_arrow_left </i>
-                    </div>
-                    
-                    <div class="key" id="key-right">
-                        <i class="material-icons"> keyboard_arrow_right </i>
-                    </div>
+            <div id="container-car">
+                <div id="distance-top">
+                    <span>3,46 m</span>
                 </div>
-            </section>
+                <div id="distance-right">
+                    <span>0,34 m</span>
+                </div>
+                <div id="distance-bottom">
+                    <span>2,00 m</span>
+                </div>
 
-            <section id="container-autonomous" class="no-display">
-                <button id="btn-stop-autonomous">
-                    <i class="material-icons"> power_settings_new </i>
-                </button>
-
-                <button id="btn-restart-autonomous" class="no-display">
-                    <i class="material-icons"> replay </i>
-                </button>
-            </section>
-
-            <section id="container-parking" class="no-display">
-                <h1>PARKEN</h1>
-            </section>
-        </main>
+                <div id="car"></div>
+            </div>
+        </section>
     </body>
 
     <script src="{{url_for('static', filename='main.js')}}"></script>
-
-    <script>
-        new Menu();
-    </script>
 </html>
