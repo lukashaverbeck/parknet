@@ -9,14 +9,14 @@ from PyAccessPoint import pyaccesspoint  #PyAccesPoint library
 
 
 logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s",
-                        level=logging.DEBUG)
+                        level=logging.DEBUG)  #Enable Debug
 
 access_point = pyaccesspoint.AccessPoint(ssid="Test123" , password="Hallo123")  #create AccessPoint-object with determined ip
-access_point.start()  #start a thread on running network
+access_point.start()  #start a  network
 
 print (access_point.is_running());
 
-print("Creating access point at port: 22 with IP-address: 192.168.1.001 and passwort: 1234567890")
+print("Creating access point ssid: Test123 and passwort: Hallo123")
 print("In order to connect to your picar via SSH use network information and standard user information for login.")
 
 
