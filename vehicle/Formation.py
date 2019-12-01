@@ -5,7 +5,7 @@
 import time
 import threading
 
-from Communication import Communication
+from vehicle.Communication import Communication
 from vehicle.FrontAgentScanner import FrontAgentScanner
 
 TOPIC_CONFIRMATION = "formation/confirm-backward-pass"
