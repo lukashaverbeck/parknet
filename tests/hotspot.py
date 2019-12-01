@@ -1,5 +1,5 @@
 #Opens up a standalone Wifi network with user determined network information
-#version:  1.0(23.11.2019)
+#version:  1.1(02.12.2019)
 
 import time
 import threading
