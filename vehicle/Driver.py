@@ -77,41 +77,39 @@ class Driver:
             self.__drive_thread.stop()
             self.__drive_thread = None
 
-        self.accelerate(0.0)
-        self.steer(0.0)
+        self.set_velocity(0.0)
+        self.set_steering_angle(0.0)
 
-    def accelerate(self, velocity):
+    def accelerate(self, velocity_change):
         """ changes the velocity of the vehicle
-
-            this method does not move the vehicle but instead works as a setter for the velocity
+            this method does not move the vehicle but instead changes the velocity relatively
 
             Args:
-                velocity (float): desired absolute velocity
+                velocity (float): desired velocity change
         """
 
-        if velocity > MAX_VELOCITY:
-            velocity = MAX_VELOCITY
-        elif velocity < MIN_VELOCITY:
-            velocity = MIN_VELOCITY
+        if velocity_change > MAX_VELOCITY:
+            velocity_change = MAX_VELOCITY
+        elif velocity_change < MIN_VELOCITY:
+            velocity_change = MIN_VELOCITY
 
-        self.__velocity = velocity
+        self.__velocity += velocity_change
 
-    def steer(self, angle):
+    def steer(self, angle_change):
         """ changes the steering angle of the vehicle
-
-            this method does not move the vehicle's steering axle but instead works as a setter
-            for the steering angle
+            this method does not move the vehicle's steering axle but instead changes the steering
+            angle relatively
 
             Args:
-                angle (float): desired absolute steering angle
+                angle (float): desired angle change
         """
 
-        if angle > MAX_STEERING_ANGLE:
-            angle = MAX_STEERING_ANGLE
-        elif angle < MIN_STEERING_ANGLE:
-            angle = MIN_STEERING_ANGLE
+        if angle_change > MAX_STEERING_ANGLE:
+            angle_change = MAX_STEERING_ANGLE
+        elif angle_change < MIN_STEERING_ANGLE:
+            angle_change = MIN_STEERING_ANGLE
 
-        self.__angle = angle
+        self.__angle += angle_change
 
     def change_mode(self, mode):
         """ updates the behaviour of the agent by changing its mode
@@ -174,8 +172,8 @@ class Driver:
         required_lot_length = self.__length * 1.4
         required_lot_width = self.__width * 1.2
 
-        self.accelerate(velocity)
-        self.steer(0.0)
+        self.set_velocity(velocity)
+        self.set_steering_angle(0.0)
         self.start_driving()
 
         # evaluate whether there would be enough space in terms of width and length for parallel parking
@@ -207,8 +205,8 @@ class Driver:
             possible for the current vehicle formation
         """
 
-        self.accelerate(CAUTIOUS_VELOCITY)
-        self.steer(0.0)
+        self.set_velocity(CAUTIOUS_VELOCITY)
+        self.set_steering_angle(0.0)
 
         gap = self.__formation.calc_gap()
         self.start_driving()
@@ -224,8 +222,8 @@ class Driver:
         """
 
         # slowly drive backwards
-        self.accelerate(-1 * CAUTIOUS_VELOCITY)
-        self.steer(0.0)
+        self.set_velocity(-1 * CAUTIOUS_VELOCITY)
+        self.set_steering_angle(0.0)
 
         # drive as long there is enough space to the next vehicle or obstacle
         gap = self.__formation.calc_gap()
@@ -349,6 +347,24 @@ class Driver:
 
     def get_sensor_manager(self) :
         return self.__sensor_manager
+
+    # -- setters --
+
+    def set_velocity(self, velocity):
+        if velocity > MAX_VELOCITY:
+            velocity = MAX_VELOCITY
+        elif velocity < MIN_VELOCITY:
+            velocity = MIN_VELOCITY
+
+        self.__velocity = velocity
+
+    def set_steering_angle(self, angle):
+        if angle > MAX_STEERING_ANGLE:
+            angle = MAX_STEERING_ANGLE
+        elif angle < MIN_STEERING_ANGLE:
+            angle = MIN_STEERING_ANGLE
+
+        self.__angle = angle
 
     # -- inner classes --
 
