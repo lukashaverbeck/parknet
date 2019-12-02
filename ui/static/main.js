@@ -1,4 +1,4 @@
-const UPDATE_INTERVAL = 1000;
+const UPDATE_INTERVAL = 50;
 
 
 class FullscreenButton {
