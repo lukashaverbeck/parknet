@@ -130,7 +130,8 @@ class Driver:
             Args:
                 mode (str): desired mode
         """
-		self.stop_driving()
+        
+        self.stop_driving()
 
         if mode not in MODES:
             mode = MODE_DEFAULT
