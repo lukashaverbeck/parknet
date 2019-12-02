@@ -3,7 +3,6 @@
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
 # TODO implement follow_road()
-# TODO implement manual_driving()
 # TODO implement DriveThread.velocity_to_pwm()
 
 # author: 	@lukashaverbeck
@@ -399,11 +398,10 @@ class Driver:
             self.__driver = driver
             self.__drive = True
 			
-	    pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-	    pulse_freq = 50
-	    pwm.set_pwm_freq(pulse_freq)
+        pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+        pulse_freq = 50
+        pwm.set_pwm_freq(pulse_freq)
 
-        # TODO
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
@@ -421,7 +419,6 @@ class Driver:
                 pwm.set_pwm(1, 0, velocity)
                 pwm.set_pwm(0, 0, int(steering_pwm_calc))
 
-        # TODO
         def angle_to_pmw(self, x):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the 
                 hardware
