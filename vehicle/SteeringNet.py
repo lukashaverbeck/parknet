@@ -147,19 +147,19 @@ class SteeringNet:
 
             super().__init__()
 
-            self.conv1 = tf.keras.layers.Conv2D(3, (5, 5), activation="elu")
-            self.conv1 = tf.keras.layers.Conv2D(24, (5, 5), activation="elu")
-            self.conv2 = tf.keras.layers.Conv2D(36, (5, 5), activation="elu")
-            self.conv3 = tf.keras.layers.Conv2D(48, (3, 3), activation="elu")
-            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3), activation="elu")
-            self.conv5 = tf.keras.layers.Conv2D(64, (3, 3), activation="elu")
+            self.conv1 = tf.keras.layers.Conv2D(3, (5, 5))
+            self.conv1 = tf.keras.layers.Conv2D(24, (5, 5))
+            self.conv2 = tf.keras.layers.Conv2D(36, (5, 5))
+            self.conv3 = tf.keras.layers.Conv2D(48, (3, 3))
+            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3))
+            self.conv5 = tf.keras.layers.Conv2D(64, (3, 3))
             self.pool1 = tf.keras.layers.MaxPool2D((2, 2))
 
             self.flat1 = tf.keras.layers.Flatten()
             self.flcn1 = tf.keras.layers.Dense(100, activation="elu")
             self.flcn2 = tf.keras.layers.Dense(50, activation="elu")
             self.flcn3 = tf.keras.layers.Dense(10, activation="elu")
-            self.flcn4 = tf.keras.layers.Dense(1)
+            self.flcn4 = tf.keras.layers.Dense(1, activation="relu")
 
             self.dense_layers = [self.flcn1, self.flcn2, self.flcn3, self.flcn4]
 
@@ -228,12 +228,15 @@ def generate_data(root_directory, csv_file, batch_size):
                 image = imread(image)
                 image = image / 255.0
 
-                angle = float(cells[1])
-                old_angle = angle * random.uniform(0.90, 1.1)
-                batch_angle.append(angle)
+                try:
+                    angle = float(cells[1])
+                    old_angle = angle * random.uniform(0.90, 1.1)
+                    batch_angle.append(angle)
 
-                batch_image.append(image)
-                batch_old_angle.append(old_angle)
+                    batch_image.append(image)
+                    batch_old_angle.append(old_angle)
+                except ValueError as error:
+                    continue
 
                 if len(batch_image) == batch_size:
                     inputs = {"image": np.array(batch_image), "old_angle": np.array(batch_old_angle)}
@@ -247,5 +250,9 @@ def generate_data(root_directory, csv_file, batch_size):
 
 
 net = SteeringNet()
-net.train(7360, "./data/", "./data/train.csv", 676, "./data/test.csv", epochs=5)
-net.save("model_2")
+net.loss = "mean_absolute_error"
+net.load("./models/model_udacity_1.h5", "./data/udacity/", "./data/udacity/train.csv")
+# net.load("./models/model_nvidia_1.h5", "./data/nvidia-dataset-1/images/", "./data/nvidia-dataset-1/data.csv" )
+# net.train(45406, "./data/nvidia-dataset-1/images/", "./data/nvidia-dataset-1/data.csv", epochs=3)
+net.train(4700, "./data/udacity/", "./data/udacity/train.csv", epochs=3, batch_size=256, lr=0.0005)
+net.save("model_udacity_2")
