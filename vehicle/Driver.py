@@ -4,9 +4,11 @@
 # TODO implement leave_parking_lot()
 # TODO implement follow_road()
 # TODO implement manual_driving()
-# TODO implement DriveThread.run()
-# TODO implement DriveThread.angle_to_pwm()
 # TODO implement DriveThread.velocity_to_pwm()
+
+# author: 	@lukashaverbeck
+# author:	@LunaNordin
+# version: 	2.0(02.12.2019)
 
 import os
 import csv
@@ -35,9 +37,9 @@ CAUTIOUS_VELOCITY = 0.3  # m/s
 MIN_VELOCITY = 345  # pwm
 MAX_VELOCITY = 355  # pwm
 
-MIN_STEERING_ANGLE = 270
-MAX_STEERING_ANGLE = 380
-NEUTRAL_STEERING_ANGLE = 310
+MIN_STEERING_ANGLE = -35
+MAX_STEERING_ANGLE = 35
+NEUTRAL_STEERING_ANGLE = 0
 
 
 class Driver:
@@ -256,8 +258,7 @@ class Driver:
 
         velocity = MIN_VELOCITY
         steering = NEUTRAL_STEERING_ANGLE
-        pwm.set_pwm(1, 0, MIN_VELOCITY)
-        pwm.set_pwm(0, 0, NEUTRAL_STEERING_ANGLE)
+		self.start_driving()
 
         try:
             screen.clear()
@@ -283,13 +284,13 @@ class Driver:
                         move = True
                 elif char == ord('a'):  # pressing a steers left
                    #screen.addstr("A pressed")
-                    if steering > MIN_STEERING_ANGLE:
-                        steering -= 10
+                    if steering < MIN_STEERING_ANGLE:
+                        steering += 7
                         move = True
                 elif char == ord('d'):  # pressing d steers right
                     #screen.addstr("D pressed")
-                    if steering < MAX_STEERING_ANGLE:
-                        steering += 10
+                    if steering > MAX_STEERING_ANGLE:
+                        steering -= 7
                         move = True
                 elif char == ord('e'):  # pressing e returns car to start condition
                     #screen.addstr("E pressed")
@@ -298,13 +299,14 @@ class Driver:
                     move = True
 
                 if move:  # move converts input to motor control
-                    pwm.set_pwm(1, 0, velocity)
-                    pwm.set_pwm(0, 0, steering)
+                    self.set_velocity(velocity)
+					self.set_steering_angle(steering)
                 
                 screen.clear()
-                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering PWM: " + str(steering))
+                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering angle: " + str(steering))
                 screen.refresh()
         finally:
+			self.stop_driving()
             curses.nocbreak()
             screen.keypad(0)
             curses.echo()
@@ -471,16 +473,24 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
+				
+				steering_pwm_calc = self.angle_to_pmw(self, angle):
+				
+				pwm.set_pwm(1, 0, velocity)
+                pwm.set_pwm(0, 0, int(steering_pwm_calc))
+				
+				
 
         # TODO
-        def angle_to_pmw(self):
-            """ converts the current steering angle to a pulse with modulation value that can be processed by that 
+        def angle_to_pmw(self, x):
+            """ converts the current steering angle to a pulse width modulation value that can be processed by the 
                 hardware
 
                 Returns:
                     float: pwm value for the steering angle
             """
-            #coming soon, function in progress
+            val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
+			return val
 
             pass
 
