@@ -32,7 +32,7 @@ def data():
         {
             "id": "velocity",
             "value": driver.get_velocity(),
-            "unit": "m/s"
+            "unit": "PWM"
         },
         {
             "id": "steering-angle",
@@ -89,12 +89,12 @@ def change_mode():
 
 @app.route("/accelerate-forward", methods=["POST"])
 def accelerate_forward():
-    agent.driver().accelerate(0.05)
+    agent.driver().accelerate(1)
     return ""
 
 @app.route("/accelerate-backward", methods=["POST"])
 def accelerate_backward():
-    agent.driver().accelerate(-0.05)
+    agent.driver().accelerate(-1)
     return ""
 
 @app.route("/steer-left", methods=["POST"])
