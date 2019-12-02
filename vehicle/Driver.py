@@ -130,7 +130,8 @@ class Driver:
             Args:
                 mode (str): desired mode
         """
-	self.stop_driving()
+
+        self.stop_driving()
 
         if mode not in MODES:
             mode = MODE_DEFAULT
@@ -263,9 +264,9 @@ class Driver:
 
         # create the needed directories 
         if not os.path.isdir(data_directory):
-        os.mkdir(data_directory)
-        os.mkdir(log_directory)
-        os.mkdir(img_directory)
+            os.mkdir(data_directory)
+            os.mkdir(log_directory)
+            os.mkdir(img_directory)
 
         # start recording in a separate thread
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
