@@ -13,6 +13,7 @@
 import os
 import csv
 import time
+import math
 import curses
 import threading
 import Adafruit_PCA9685
@@ -247,10 +248,6 @@ class Driver:
 
 		self.start_driving()
 
-        self.set_velocity(velocity)
-		self.set_steering_angle(angle)
-                
-
     def start_recording(self):
         """ saves a continuos stream image of the current camera input and logs the corresponding
             steering angle and velocity
@@ -401,9 +398,9 @@ class Driver:
             self.__driver = driver
             self.__drive = True
 			
-			pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-			pulse_freq = 50
-			pwm.set_pwm_freq(pulse_freq)
+	    pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+	    pulse_freq = 50
+	    pwm.set_pwm_freq(pulse_freq)
 
         # TODO
         def run(self):
@@ -418,9 +415,9 @@ class Driver:
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
 				
-				steering_pwm_calc = self.angle_to_pmw(self, angle):
+		steering_pwm_calc = self.angle_to_pmw(self, angle):
 				
-				pwm.set_pwm(1, 0, velocity)
+		pwm.set_pwm(1, 0, velocity)
                 pwm.set_pwm(0, 0, int(steering_pwm_calc))
 				
 				
