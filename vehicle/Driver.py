@@ -395,15 +395,13 @@ class Driver:
                     driver (Driver): driver that dictates the vehicle's steering angle and velocity
             """
 
-            super().__init__()
             self.__driver = driver
             self.__drive = True
 			
-	    self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-	    self.__pulse_freq = 50
-	    self.__pwm.set_pwm_freq(pulse_freq)
+            self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+            self.__pulse_freq = 50
+            self.__pwm.set_pwm_freq(self.__pulse_freq)
 
-        # TODO
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
