@@ -13,6 +13,7 @@
 import os
 import csv
 import time
+import math
 import curses
 import threading
 import Adafruit_PCA9685
@@ -258,7 +259,7 @@ class Driver:
 
         velocity = MIN_VELOCITY
         steering = NEUTRAL_STEERING_ANGLE
-		self.start_driving()
+        self.start_driving()
 
         try:
             screen.clear()
@@ -300,13 +301,13 @@ class Driver:
 
                 if move:  # move converts input to motor control
                     self.set_velocity(velocity)
-					self.set_steering_angle(steering)
+                    self.set_steering_angle(steering)
                 
                 screen.clear()
                 screen.addstr("Velocity PWM: " + str(velocity) + "         Steering angle: " + str(steering))
                 screen.refresh()
         finally:
-			self.stop_driving()
+            self.stop_driving()
             curses.nocbreak()
             screen.keypad(0)
             curses.echo()
@@ -474,9 +475,9 @@ class Driver:
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
 				
-				steering_pwm_calc = self.angle_to_pmw(self, angle):
-				
-				pwm.set_pwm(1, 0, velocity)
+                steering_pwm_calc = self.angle_to_pmw(self, angle)
+                
+                pwm.set_pwm(1, 0, velocity)
                 pwm.set_pwm(0, 0, int(steering_pwm_calc))
 				
 				
@@ -489,10 +490,9 @@ class Driver:
                 Returns:
                     float: pwm value for the steering angle
             """
+            
             val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
-			return val
-
-            pass
+            return val
 
         # TODO
         def velocity_to_pmw(self):
