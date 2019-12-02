@@ -129,6 +129,7 @@ class Driver:
             Args:
                 mode (str): desired mode
         """
+		self.stop_driving()
 
         if mode not in MODES:
             mode = MODE_DEFAULT
@@ -241,76 +242,14 @@ class Driver:
         self.stop_driving()
 
     # TODO
-    def manual_driving(self):
+    def manual_driving(self, velocity, angle):
         """ steers the vehicle based on user inputs """
 
-        screen = curses.initscr()
-        curses.noecho()
-        curses.cbreak()
-        screen.keypad(True)
-        #imortant to make shure commandline printouts do not interfere with curses-window
-        #window gets cleared at maximum refreshrate because .getch() does not block while-loop
-        screen.nodelay(True)  
-
-        pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-        pulse_freq = 50
-        pwm.set_pwm_freq(pulse_freq)
-
-        velocity = MIN_VELOCITY
-        steering = NEUTRAL_STEERING_ANGLE
 		self.start_driving()
 
-        try:
-            screen.clear()
-            screen.addstr("Press 'W'/'S' to change velocity and 'A'/'D' to change steering angle. Press 'E' for emergency stop and 'Q' in order to exit.")
-            screen.refresh()
-            move = False    #initialize variable to make shure it has value if first loop is passed without input
-            while True:
-            
-                char = screen.getch()  # get keyboard input
+        self.set_velocity(velocity)
+		self.set_steering_angle(angle)
                 
-                if char == ord('q'):  # pressing q stops the script
-                    pwm.set_pwm(1, 0, 340)
-                    break
-                elif char == ord('w'):  # pressing w increases speed
-                    #screen.addstr("W pressed")
-                    if velocity < MAX_VELOCITY:
-                        velocity += 1
-                        move = True
-                elif char == ord('s'):  # pressing s decreases speed
-                    #screen.addstr("S pressed")
-                    if velocity > MIN_VELOCITY:
-                        velocity -= 1
-                        move = True
-                elif char == ord('a'):  # pressing a steers left
-                   #screen.addstr("A pressed")
-                    if steering < MIN_STEERING_ANGLE:
-                        steering += 7
-                        move = True
-                elif char == ord('d'):  # pressing d steers right
-                    #screen.addstr("D pressed")
-                    if steering > MAX_STEERING_ANGLE:
-                        steering -= 7
-                        move = True
-                elif char == ord('e'):  # pressing e returns car to start condition
-                    #screen.addstr("E pressed")
-                    velocity = MIN_VELOCITY
-                    steering = NEUTRAL_STEERING_ANGLE
-                    move = True
-
-                if move:  # move converts input to motor control
-                    self.set_velocity(velocity)
-					self.set_steering_angle(steering)
-                
-                screen.clear()
-                screen.addstr("Velocity PWM: " + str(velocity) + "         Steering angle: " + str(steering))
-                screen.refresh()
-        finally:
-			self.stop_driving()
-            curses.nocbreak()
-            screen.keypad(0)
-            curses.echo()
-            curses.endwin()
 
     def start_recording(self):
         """ saves a continuos stream image of the current camera input and logs the corresponding
@@ -461,6 +400,10 @@ class Driver:
             super().__init__()
             self.__driver = driver
             self.__drive = True
+			
+			pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+			pulse_freq = 50
+			pwm.set_pwm_freq(pulse_freq)
 
         # TODO
         def run(self):
@@ -468,6 +411,7 @@ class Driver:
                 the vehicle according to the driver's steering angle and velocity by addressing
                 the vehicle's hardware
             """
+			
 
             while self.__drive:
                 angle = self.__driver.get_angle()
@@ -499,7 +443,7 @@ class Driver:
             """ converts the current velocity to a pulse with modulation value that can be processed by that 
                 hardware
 
-                Returns:
+                Returns:	
                     float: pwm value for the velocity
             """
 
