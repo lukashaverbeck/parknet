@@ -1,7 +1,7 @@
 #Script for testing relation between pwm and steering or velocity.
 #Gets user input and calculates pwm values based on determined function.
 
-#NOTICE: This script is based on angle.py version: 2.0(01.12.2019) 
+#NOTICE: This script is based on angle.py version: 2.0(01.12.2019). 
 
 #author:   @Lunanordin
 #version:  1.0(03.12.2019)  
