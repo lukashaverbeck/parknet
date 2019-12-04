@@ -1,14 +1,13 @@
 # controlls the driving behaviour of the picar
-#
+
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
 # TODO implement follow_road()
-# TODO implement manual_driving()
 # TODO implement DriveThread.velocity_to_pwm()
 
 # author: 	@lukashaverbeck
 # author:	@LunaNordin
-# version: 	2.0(02.12.2019)
+# version: 	2.1(04.12.2019)
 
 import os
 import csv
@@ -35,8 +34,9 @@ MODE_DEFAULT = MODE_MANUAL
 MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
 
 CAUTIOUS_VELOCITY = 0.3  # m/s
-MIN_VELOCITY = 345  # pwm
-MAX_VELOCITY = 355  # pwm
+STOP_VELOCITY = 340  # pwm
+MAX_VELOCITY = 360  # pwm
+MIN_VELOCITY = 320 #pwm
 
 MIN_STEERING_ANGLE = -35
 MAX_STEERING_ANGLE = 35
@@ -95,7 +95,7 @@ class Driver:
 
         if velocity > MAX_VELOCITY:
             velocity = MAX_VELOCITY
-        elif velocity < MIN_VELOCITY:
+		if velocity < MIN_VELOCITY_VELOCITY:
             velocity = MIN_VELOCITY
 
         self.__velocity = velocity
@@ -130,8 +130,7 @@ class Driver:
             Args:
                 mode (str): desired mode
         """
-
-        self.stop_driving()
+		self.stop_driving()
 
         if mode not in MODES:
             mode = MODE_DEFAULT
@@ -247,7 +246,8 @@ class Driver:
     def manual_driving(self, velocity, angle):
         """ steers the vehicle based on user inputs """
 
-        self.start_driving()
+	self.start_driving()
+                
 
     def start_recording(self):
         """ saves a continuos stream image of the current camera input and logs the corresponding
@@ -265,8 +265,8 @@ class Driver:
         # create the needed directories 
         if not os.path.isdir(data_directory):
             os.mkdir(data_directory)
-            os.mkdir(log_directory)
-            os.mkdir(img_directory)
+        os.mkdir(log_directory)
+        os.mkdir(img_directory)
 
         # start recording in a separate thread
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
@@ -395,13 +395,15 @@ class Driver:
                     driver (Driver): driver that dictates the vehicle's steering angle and velocity
             """
 
+            super().__init__()
             self.__driver = driver
             self.__drive = True
 			
-            self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-            self.__pulse_freq = 50
-            self.__pwm.set_pwm_freq(self.__pulse_freq)
+	    self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+	    self.__pulse_freq = 50
+	    self.__pwm.set_pwm_freq(pulse_freq)
 
+        # TODO
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
@@ -414,10 +416,12 @@ class Driver:
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
 				
-                steering_pwm_calc = self.angle_to_pmw(self, angle)
-                
-                self.__pwm.set_pwm(1, 0, velocity)
+		steering_pwm_calc = self.angle_to_pmw(self, angle):
+				
+		self.__pwm.set_pwm(1, 0, velocity)
                 self.__pwm.set_pwm(0, 0, int(steering_pwm_calc))
+				
+				
 
         # TODO
         def angle_to_pmw(self, x):
@@ -427,20 +431,30 @@ class Driver:
                 Returns:
                     float: pwm value for the steering angle
             """
-            
             val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
-            return val
+	    return val
+
+            pass
 
         # TODO
         def velocity_to_pmw(self):
             """ converts the current velocity to a pulse with modulation value that can be processed by that 
                 hardware
 
-                Returns:	
+                Returns:
                     float: pwm value for the velocity
             """
 
             pass
+
+		def reverse_esc(self):
+		   '''reverses direction of esc to make driving backwards possible'''
+		   pwm.set_pwm(1, 0, STOP_VELOCITY)
+		   time.sleep(0.1)
+		   pwm.set_pwm(1, 0, 310)
+		   time.sleep(0.1)
+		   pwm.set_pwm(1, 0, STOP_VELOCITY)
+		   time.sleep(0.1)
 
         def stop(self):
             """ stops the movement of the vehicle """
