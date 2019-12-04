@@ -1,8 +1,8 @@
 #This script controls a picar with keyboard input via ssh-console.
-#Now working with angles.
+#Now working with angles and reverse velocities.
 #
 #author: @LunaNordin
-#version: 2.0(02.12.2019)
+#version: 3.0(04.12.2019)
 
 from __future__ import division
 import time
@@ -18,7 +18,7 @@ screen.keypad(True)  #enable special-keys
 pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  #create PCA9685-object at I2C-port
 
 throttle_stop = 340    #stop acceleration
-throttle_max = 355     #maximum throttle    
+throttle_max = 360     #maximum throttle    
 steering_left = 35    #steer to maximum left
 steering_nutral = 0  #steer to neutral position
 steering_right = -35   #steer to maximum right
@@ -34,6 +34,15 @@ def calc_angle(x):
  val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
  return val
 
+def reverse():
+  '''reverses direction of esc to make driving backwards possible'''
+  pwm.set_pwm(1, 0, throttle_stop)  #send stop signal
+  time.sleep(0.1)
+  pwm.set_pwm(1, 0, 310)  #send reverse signal
+  time.sleep(0.1)
+  pwm.set_pwm(1, 0, throttle_stop)  #send stop signal
+  time.sleep(0.1)
+
 #controls:
 try:
   while True:
@@ -45,13 +54,16 @@ try:
     elif char == ord('w'):                    #pressing w increases speed
       #screen.addstr("W pressed")
       if current_movement < throttle_max:
-        current_movement += 1
+        current_movement += 2
         move = True
     elif char == ord('s'):                    #pressing s decreases speed
       #screen.addstr("S pressed")
-      if current_movement > throttle_stop:    
-        current_movement -= 1
-        move = True
+      if current_movement > throttle_stop or current_movement < throttle_stop:    
+        current_movement -= 2
+      elif current_movement == throttle_stop:  #in case of a border-crossing case  
+        reverse()  #reverse esc direction
+        current_movement -= 2
+      move = True
     elif char == ord('a'):                    #pressing a steers left
       #screen.addstr("A pressed")
       if current_steering < steering_left:
@@ -85,6 +97,3 @@ finally:
   screen.keypad(0)
   curses.echo()
   curses.endwin()
-  
-
-
