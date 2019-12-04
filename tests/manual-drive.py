@@ -1,5 +1,5 @@
 #This script controls a picar with keyboard input via ssh-console.
-#Now working with angles and reverse velocities.
+#Now working with angles and automatic reverse of velocities.
 #
 #author: @LunaNordin
 #version: 3.0(04.12.2019)
@@ -7,7 +7,7 @@
 from __future__ import division
 import time
 import curses  #import for keyboard input
-import math
+import math		#math for calculating functions
 import Adafruit_PCA9685  #import of library for PCA9685-module
 
 screen = curses.initscr()  #create new screen
@@ -37,7 +37,7 @@ def calc_angle(x):
 def reverse():
   '''reverses direction of esc to make driving backwards possible'''
   pwm.set_pwm(1, 0, throttle_stop)  #send stop signal
-  time.sleep(0.1)
+  time.sleep(0.1)	#use tight timing to reduce method runtime
   pwm.set_pwm(1, 0, 310)  #send reverse signal
   time.sleep(0.1)
   pwm.set_pwm(1, 0, throttle_stop)  #send stop signal
@@ -60,7 +60,7 @@ try:
       #screen.addstr("S pressed")
       if current_movement > throttle_stop or current_movement < throttle_stop:    
         current_movement -= 2
-      elif current_movement == throttle_stop:  #in case of a border-crossing case  
+      elif current_movement == throttle_stop:  #in case of a border-crossing  
         reverse()  #reverse esc direction
         current_movement -= 2
       move = True
