@@ -5,8 +5,8 @@
 import time
 import threading
 
-from .Communication import Communication
-from .FrontAgentScanner import FrontAgentScanner
+from Communication import Communication
+from FrontAgentScanner import FrontAgentScanner
 
 TOPIC_CONFIRMATION = "formation/confirm-backward-pass"
 TOPIC_FORWARD_PASS = "formation/forward-pass"

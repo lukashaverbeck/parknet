@@ -2,25 +2,26 @@ import sys
 sys.path.append(sys.path[0][:-3])
 
 from flask import Flask, request, jsonify, render_template
-from vehicle.Agent import Agent
 
 app = Flask(__name__)
 agent = None
+
+
+class WebInterface:
+    def __init__(self, agent_instance):
+        global agent
+        agent = agent_instance
+
+    def start(self, debug=False):
+        ip_address = "192.168.2.116"
+        port = "5000"
+        app.run(host=ip_address, port=port, debug=debug)
 
 
 @app.route("/")
 @app.route("/UI")
 def ui():
     return render_template("UI.html")
-
-
-def open_interface(debug=False):
-    global agent
-
-    ip_address = "192.168.2.116"
-    port = "5000"
-    agent = Agent()
-    app.run(host=ip_address, port=port, debug=debug)
 
 
 @app.route("/data-interval")
@@ -106,6 +107,3 @@ def steer_left():
 def steer_right():
     agent.driver().steer(1)
     return ""
-
-
-open_interface()

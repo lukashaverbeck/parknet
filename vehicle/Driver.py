@@ -16,9 +16,9 @@ import math
 import curses
 import threading
 import Adafruit_PCA9685
-import vehicle.SensorManager as sm
+import SensorManager as sm
 from datetime import datetime
-from .Camera import Camera, save_img_array
+from Camera import Camera, save_img_array
 
 
 MODE_ENTER = "parking/enter"
@@ -418,7 +418,7 @@ class Driver:
                 velocity = self.__driver.get_velocity()
                 time.sleep(self.DRIVING_INTERVAL)
 				
-            steering_pwm_calc = self.angle_to_pmw(self, angle)
+            steering_pwm_calc = self.angle_to_pmw(angle)
             
             self.__pwm.set_pwm(1, 0, velocity)
             self.__pwm.set_pwm(0, 0, int(steering_pwm_calc))
@@ -426,15 +426,18 @@ class Driver:
 				
 
         # TODO
-        def angle_to_pmw(self, x):
+        def angle_to_pmw(self, angle):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the 
                 hardware
+
+                Args:
+                    angle (int): angle in degrees to be converted to pwm
 
                 Returns:
                     float: pwm value for the steering angle
             """
 
-            val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
+            val = 0.000002*(math.pow(angle,4))+0.000002*(math.pow(angle,3))+0.005766*(math.pow(angle,2))-(1.81281*angle)+324.149
             return val
 
         # TODO

@@ -1,6 +1,7 @@
 import json
-from .Driver import Driver
-from .Formation import Formation
+from Driver import Driver
+from Formation import Formation
+from ui.Interface import WebInterface
 
 ATTRIBUTES_FILE = "./attributes.json"
 
@@ -20,6 +21,9 @@ class Agent:
 
         self.__formation = Formation(self)
         self.__driver = Driver(self.__length, self.__width, self.__formation)
+        self.__interface = WebInterface(self)
+
+        self.__interface.start()
 
     # -- getters --
 
