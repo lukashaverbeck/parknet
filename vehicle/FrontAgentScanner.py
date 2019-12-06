@@ -3,8 +3,7 @@
 import time
 import threading
 import pyzbar.pyzbar as pyzbar
-import picamera
-import picamera.array
+from .Camera import Camera
 
 
 class FrontAgentScanner:
@@ -16,6 +15,7 @@ class FrontAgentScanner:
         """ initializes the scanner and starts to refresh the front agent ID """
 
         self.__front_agent_id = None
+        self.__camera = Camera()
 
         # start updating the front agent ID in a separate thread
         refresh_thread = threading.Thread(target=self.refresh)
@@ -24,20 +24,19 @@ class FrontAgentScanner:
     def refresh(self):
         """ permanently updates the front agent ID based on the current video input """
 
-        with picamera.PiCamera() as camera:
-            while True:
-                with picamera.array.PiRGBArray(camera) as frame:
-                    # analyze the camera input with respect to QR Codes representing an agent ID
-                    camera.capture(frame, "rgb")
-                    decoded_objects = pyzbar.decode(frame.array)
+        self.__camera.start()
 
-                    if len(decoded_objects) > 0:
-                        data_bytes = decoded_objects[0].data
-                        self.__front_agent_id = data_bytes.decode("utf-8")
-                    else:
-                        self.__front_agent_id = None
+        while True:
+            # analyze the camera input with respect to QR Codes representing an agent ID
+            decoded_objects = pyzbar.decode(self.__camera.get_image())
 
-                time.sleep(self.REFRESH_INTERVAL)
+            if len(decoded_objects) > 0:
+                data_bytes = decoded_objects[0].data
+                self.__front_agent_id = data_bytes.decode("utf-8")
+            else:
+                self.__front_agent_id = None
+
+            time.sleep(self.REFRESH_INTERVAL)
 
     # -- getters --
 
