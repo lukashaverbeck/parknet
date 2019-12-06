@@ -3,7 +3,7 @@
 import time
 import threading
 import pyzbar.pyzbar as pyzbar
-from .Camera import Camera
+from Camera import Camera
 
 
 class FrontAgentScanner:
