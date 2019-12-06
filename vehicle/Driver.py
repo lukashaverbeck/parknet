@@ -246,7 +246,7 @@ class Driver:
     def manual_driving(self):
         """ starts the driving thread and relies on user intefaces to change the steering data """
 
-	self.start_driving()
+        self.start_driving()
                 
 
     def start_recording(self):
@@ -329,9 +329,10 @@ class Driver:
             super().__init__()
             self.__run = True
             self.__driver = driver
-            self.__camera = Camera()
+            self.__camera = Camera.instance()
             self.__log_path = log_path
             self.__img_directory = img_directory
+            self.__img_extension = ".jpg"
 
         def run(self):
             """ starts capturing the data """
@@ -375,7 +376,7 @@ class Driver:
                     old_angle = row["old_angle"]
                     old_velocity = row["old_velocity"]
                     
-                    img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f")
+                    img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f") + self.__img_extension
                     if save_img_array(img, img_path):
                         writer.writerow([img_path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
 
@@ -400,9 +401,9 @@ class Driver:
             self.__driver = driver
             self.__drive = True
 			
-	    self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-	    self.__pulse_freq = 50
-	    self.__pwm.set_pwm_freq(pulse_freq)
+            self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
+            self.__pulse_freq = 50
+            self.__pwm.set_pwm_freq(self.__pulse_freq)
 
         # TODO
         def run(self):
@@ -432,10 +433,9 @@ class Driver:
                 Returns:
                     float: pwm value for the steering angle
             """
-            val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
-	    return val
 
-            pass
+            val = 0.000002*(math.pow(x,4))+0.000002*(math.pow(x,3))+0.005766*(math.pow(x,2))-(1.81281*x)+324.149
+            return val
 
         # TODO
         def velocity_to_pmw(self):
@@ -449,14 +449,14 @@ class Driver:
             pass
 
         def reverse_esc(self):
-		   """ reverses direction of esc to make driving backwards possible """
+            """ reverses direction of esc to make driving backwards possible """
 
-		   self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
-		   time.sleep(0.1)
-		   self.__pwm.set_pwm(1, 0, 310)
-		   time.sleep(0.1)
-		   self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
-		   time.sleep(0.1)
+            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            time.sleep(0.1)
+            self.__pwm.set_pwm(1, 0, 310)
+            time.sleep(0.1)
+            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            time.sleep(0.1)
 
         def stop(self):
             """ stops the movement of the vehicle """
