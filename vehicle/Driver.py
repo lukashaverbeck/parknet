@@ -19,7 +19,7 @@ import threading
 import Adafruit_PCA9685
 import vehicle.SensorManager as sm
 from datetime import datetime
-from picamera import PiCamera
+from .Camera import Camera, save_img_array
 
 
 MODE_ENTER = "parking/enter"
@@ -243,9 +243,8 @@ class Driver:
 
         self.stop_driving()
 
-    # TODO
-    def manual_driving(self, velocity, angle):
-        """ steers the vehicle based on user inputs """
+    def manual_driving(self):
+        """ starts the driving thread and relies on user intefaces to change the steering data """
 
         self.start_driving()
 
@@ -265,8 +264,9 @@ class Driver:
         # create the needed directories 
         if not os.path.isdir(data_directory):
             os.mkdir(data_directory)
-            os.mkdir(log_directory)
-            os.mkdir(img_directory)
+
+        os.mkdir(log_directory)
+        os.mkdir(img_directory)
 
         # start recording in a separate thread
         self.__recorder = self.RecorderThread(self, log_path, img_directory)
@@ -328,7 +328,7 @@ class Driver:
             super().__init__()
             self.__run = True
             self.__driver = driver
-            self.__camera = PiCamera(resolution=(720,480), framerate=30)
+            self.__camera = Camera()
             self.__log_path = log_path
             self.__img_directory = img_directory
 
@@ -340,23 +340,20 @@ class Driver:
                 writer = csv.writer(log)
                 writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
 
+            self.__camera.start()
+
             old_angle = self.__driver.get_angle()
             old_velocity = self.__driver.get_velocity()
             data = []
 
             while self.__run:
-                # save 15 images to the according directory
-                img_name = datetime.today().strftime("%H-%M-%S-%f")
-                img_path = self.__img_directory + img_name
-                img_paths = [img_path + "-" + str(i) + ".jpg" for i in range(15)]
-                self.__camera.capture_sequence(img_paths)
-
+                img = self.__camera.get_image()
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
                 # save the captured data to a local variable
                 data.append({
-                    "paths": img_paths,
+                    "image": img,
                     "angle": angle,
                     "velocity": velocity,
                     "old_angle": old_angle,
@@ -366,17 +363,20 @@ class Driver:
                 old_angle = angle
                 old_velocity = velocity
 
-            # write numerical data to log file
+            # write numerical data to log file and save images
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
                 
                 for row in data:
-                    for path in row["paths"]:
-                        angle = row["angle"]
-                        velocity = row["velocity"]
-                        old_angle = row["old_angle"]
-                        old_velocity = row["old_velocity"]
-                        writer.writerow([path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
+                    img = row["image"]
+                    angle = row["angle"]
+                    velocity = row["velocity"]
+                    old_angle = row["old_angle"]
+                    old_velocity = row["old_velocity"]
+                    
+                    img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f")
+                    if save_img_array(img, img_path):
+                        writer.writerow([img_path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
 
         def stop(self):
             """ stops capturing the data """
