@@ -30,8 +30,5 @@ class Agent:
     def driver(self):
         return self.__driver
 
-    def communication(self):
-        return self.__communication
-
     def get_id(self):
         return self.__id
