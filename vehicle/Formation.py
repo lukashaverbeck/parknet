@@ -64,12 +64,6 @@ class Formation:
         if agent["length"] > self.__longest:
             self.__longest = agent["length"]
 
-    def clear(self):
-        """ resets the formation to its default values """
-
-        self.__agents = []
-        self.__longest = 0
-
     def update(self):
         """ constantly updates the current formation by exchanging data with other agents within a network """
 
