@@ -46,19 +46,19 @@ class SensorManager:
         refresh_thread = threading.Thread(target=self.refresh)
         refresh_thread.start()
         
-    def sensordistance (self, trigpin, echopin):
+    def sensor_distance(self, trig_pin, echo_pin):
         """ triggers the module at given pins and calculates distance """
         
-        GPIO.output(trigpin, True)	# activate the trigger channel of HC-SR04 module
+        GPIO.output(trig_pin, True)	# activate the trigger channel of HC-SR04 module
         time.sleep(0.00001)	 # 10μs pulse activates 8 ultrasound bursts at 40 kHz
-        GPIO.output(trigpin, False)	 # deactivate trigger channel
+        GPIO.output(trig_pin, False)	 # deactivate trigger channel
     
         # measure time in which echo signal is detected
-        while GPIO.input(echopin) == 0:
+        while GPIO.input(echo_pin) == 0:
             pulse_start = time.time()
     
         # measure the time of the echo signal
-        while GPIO.input(echopin) == 1:
+        while GPIO.input(echo_pin) == 1:
             pulse_end = time.time()
     
         pulse_duration = pulse_end - pulse_start  # time it took the signal to hit the objectand return to sensor   
@@ -70,9 +70,9 @@ class SensorManager:
         """ constantly updates the measured sensor data """
     
         while True:
-            self.__distance_front = self.sensordistance(self.TRIG_1, self.ECHO_1)
-            self.__distance_right = self.sensordistance(self.TRIG_2, self.ECHO_2)
-            self.__distance_back = self.sensordistance(self.TRIG_3, self.ECHO_3)
+            self.__distance_front = self.sensor_distance(self.TRIG_1, self.ECHO_1)
+            self.__distance_right = self.sensor_distance(self.TRIG_2, self.ECHO_2)
+            self.__distance_back = self.sensor_distance(self.TRIG_3, self.ECHO_3)
             time.sleep(self.REFRESH_INTERVAL)  # pause to keep timing in interval
     
     def get_distance(self, direction):
