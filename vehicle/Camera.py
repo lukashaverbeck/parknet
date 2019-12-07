@@ -6,7 +6,7 @@ from PIL import Image
 
 
 def save_img_array(img_array, path):
-    """ saves an given rgb image array to disk
+    """ saves a given rgb image array to disk
     
         Args:
             img_array (numpy.ndarray): array representing the image's pixels
@@ -26,14 +26,14 @@ def save_img_array(img_array, path):
 
 
 class Singleton:
-    """ helper class ensuring that classes decorated with it can only be instanciated one single time """
+    """ helper class ensuring that classes decorated with it can only be instantiated one single time """
 
     def __init__(self, decorated):
         self.__instance = None
         self.__decorated = decorated
 
     def instance(self):
-        """ gets the same instance of a particluar class every time when called
+        """ gets the same instance of a particluar class every time it is called
 
             returns:
                 object: any object decorated with `Singleton` but the same instance of it every time
