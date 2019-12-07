@@ -1,10 +1,11 @@
 # controlls the driving behaviour of the picar
-
+#
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
 # TODO implement follow_road()
 # TODO implement DriveThread.velocity_to_pwm()
-
+# TODO remove unnecessary method manual_driving()
+# 
 # author: 	@lukashaverbeck
 # author:	@LunaNordin
 # version: 	2.1(04.12.2019)
