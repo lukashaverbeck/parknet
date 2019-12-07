@@ -1,5 +1,4 @@
 #Opens up a standalone Wifi network with user determined network information
-#version:  1.2(02.12.2019)
 
 import time
 import threading
@@ -14,7 +13,7 @@ logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s",
 access_point = pyaccesspoint.AccessPoint(ssid="Test123" , password="Hallo123")  #create AccessPoint-object with determined ip
 access_point.start()  #start a  network
 
-print (access_point.is_running());
+print (access_point.is_running())
 
 print("Creating access point ssid: Test123 and passwort: Hallo123")
 print("In order to connect to your picar via SSH use network information and standard user information for login.")
