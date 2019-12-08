@@ -1,6 +1,10 @@
 # This module handles the three HC-SR04 modules connected to the Picar.
 # It is responsible for returning distance values requested by other classes.
 
+# author:	@lukashaverbeck
+# author:	@LunaNordin
+# version:	1.1
+
 import time
 import threading
 import RPi.GPIO as GPIO	 # library for GPIO control
