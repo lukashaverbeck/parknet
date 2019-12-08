@@ -15,7 +15,7 @@ class SensorManager:
         
     TRIG_1 = 23  # trigger pin of HC-SR04 module (front)
     TRIG_2 = 22  # trigger pin of HC-SR04 module (side)
-    TRIG_3 = 2   # trigger pin of HC-SR04 module (back)
+    TRIG_3 = 4   # trigger pin of HC-SR04 module (back)
     ECHO_1 = 24  # echo pin of HC-SR04 module (front)
     ECHO_2 = 27  # echo pin of HC-SR04 module (side)
     ECHO_3 = 17  # echo pin of HC-SR04 module (back)
@@ -27,6 +27,7 @@ class SensorManager:
         GPIO.setwarnings(False)
             
         # define all trigger pins as outputs and all echo pins as inputs
+        # make shure all pins ar free to use to avaoid data collision
         GPIO.setup(self.TRIG_1, GPIO.OUT)	
         GPIO.setup(self.ECHO_1, GPIO.IN)	
         GPIO.setup(self.TRIG_2, GPIO.OUT)	
