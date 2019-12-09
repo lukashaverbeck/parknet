@@ -5,7 +5,7 @@ class Singleton:
         self.__instance = None
         self.__decorated = decorated
 
-    def instance(self):
+    def instance(self, *args, **kwargs):
         """ gets the same instance of a particluar class every time it is called
 
             returns:
@@ -13,7 +13,7 @@ class Singleton:
         """
 
         if self.__instance is None:
-            self.__instance = self.__decorated()
+            self.__instance = self.__decorated(*args, **kwargs)
             return self.__instance
         
         return self.__instance

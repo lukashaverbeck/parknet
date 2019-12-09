@@ -31,7 +31,7 @@ class Formation:
 
         self.__agent = agent
         self.__tmp_agents = []
-        self.__communication = Communication(self.__agent.get_id())
+        self.__communication = Communication.instance(self.__agent.get_id())
         self.__front_agent_scanner = FrontAgentScanner()
         self.__confirmed_backpass = False
 
