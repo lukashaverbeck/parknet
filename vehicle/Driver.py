@@ -318,6 +318,8 @@ class Driver:
             and creates a log of the corresponding steering angle and velocity
         """
 
+        WAIT_INTERVAL = 0.1  # seconds to wait after recording an image
+
         def __init__(self, driver, log_path, img_directory):
             """ initializes the thread without starting to capture the data
 
@@ -338,48 +340,30 @@ class Driver:
         def run(self):
             """ starts capturing the data """
 
-            # write column names to log file
-            with open(self.__log_path, "a", newline="") as log:
-                writer = csv.writer(log)
-                writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
-
             self.__camera.start()
 
             old_angle = self.__driver.get_angle()
             old_velocity = self.__driver.get_velocity()
-            data = []
 
-            while self.__run:
-                img = self.__camera.get_image()
-                angle = self.__driver.get_angle()
-                velocity = self.__driver.get_velocity()
-
-                # save the captured data to a local variable
-                data.append({
-                    "image": img,
-                    "angle": angle,
-                    "velocity": velocity,
-                    "old_angle": old_angle,
-                    "old_velocity": old_velocity
-                })
-
-                old_angle = angle
-                old_velocity = velocity
-
-            # write numerical data to log file and save images
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
+                writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
                 
-                for row in data:
-                    img = row["image"]
-                    angle = row["angle"]
-                    velocity = row["velocity"]
-                    old_angle = row["old_angle"]
-                    old_velocity = row["old_velocity"]
-                    
+                while self.__run:
+                    img = self.__camera.get_image()
+                    angle = self.__driver.get_angle()
+                    velocity = self.__driver.get_velocity()
+
                     img_path = self.__img_directory + datetime.today().strftime("%H-%M-%S-%f") + self.__img_extension
-                    if save_img_array(img, img_path):
-                        writer.writerow([img_path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
+                    save_img_array(img, img_path)
+                    writer.writerow([img_path, str(old_angle), str(angle), str(old_velocity), str(velocity)])
+
+                    old_angle = angle
+                    old_velocity = velocity
+
+                    time.sleep(self.WAIT_INTERVAL)
+
+            return
 
         def stop(self):
             """ stops capturing the data """
