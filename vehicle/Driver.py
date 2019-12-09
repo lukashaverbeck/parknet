@@ -37,7 +37,7 @@ MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MOD
 CAUTIOUS_VELOCITY = 0.3  # m/s
 STOP_VELOCITY = 340  # pwm
 MAX_VELOCITY = 360  # pwm
-MIN_VELOCITY = 320 #pwm
+MIN_VELOCITY = 320 # pwm
 
 MIN_STEERING_ANGLE = -35
 MAX_STEERING_ANGLE = 35
@@ -58,8 +58,8 @@ class Driver:
 
         self.__drive_thread = None
         self.__sensor_manager = sm.SensorManager()
-        self.__velocity = 0.0
-        self.__angle = 0.0
+        self.__velocity = STOP_VELOCITY
+        self.__angle = NEUTRAL_STEERING_ANGLE
         self.__mode = MODE_DEFAULT
         self.__length = length
         self.__width = width
