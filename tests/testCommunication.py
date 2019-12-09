@@ -8,7 +8,7 @@ def test(hallo):
     #rt = requests.post("http://" + "192.168.178.156", data={"e": "e"})
     #rt = requests.get("http://192.168.178.156")
 
-com = Communication(1)
+com = Communication.instance(1)
 com.subscribe("Hallo" , test)
 com.send("Hallo", "test",1)
   # only for test purposes
