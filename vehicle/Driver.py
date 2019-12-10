@@ -76,7 +76,7 @@ class Driver:
             it also sets the velocity and steering angle to 0
         """
 	
-	self.set_velocity(STOP_VELOCITY)
+        self.set_velocity(STOP_VELOCITY)
         self.set_steering_angle(0.0)
 
         if self.__drive_thread is not None:
@@ -164,7 +164,7 @@ class Driver:
             to the front vehicle or obstacle with their back fronts at the same height
         """
 	
-	self.start_driving()
+        self.start_driving()
         self.set_velocity(STOP_VELOCITY)
         time.sleep(1)
         self.set_steering_angle(-35)
@@ -428,8 +428,6 @@ class Driver:
             self.__pwm.set_pwm(1, 0, velocity)
             self.__pwm.set_pwm(0, 0, int(steering_pwm_calc))
 				
-				
-
         # TODO
         def angle_to_pmw(self, angle):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the 
