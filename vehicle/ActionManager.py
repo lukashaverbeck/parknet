@@ -1,8 +1,7 @@
 # handles the coordination of different agent's behaviour
 #
-# TODO implement exection of real actions by addressing the agent's driver
-# TODO add functionality for canceling a local action
-# TODO add functionality for assigning multiple local actions in order
+# TODO implement execution of real actions by addressing the agent's driver
+# TODO implement critical error for the case that an agent loses its network connection
 
 
 import time
@@ -22,6 +21,7 @@ class ActionManager:
     WAIT_SEND_GLOBAL = 1
     WAIT_CHECK_PERMISSION = 1
     WAIT_VERIFY_FIRST_IN_QUEUE = 2
+    WAIT_PRIORITIZE_PRIOR = 3
 
     def __init__(self, agent):
         """ initializes the action manager
@@ -33,6 +33,7 @@ class ActionManager:
         self.__agent = agent
         self.__global_action = None
         self.__local_action = None
+        self.__future_local_actions = []
         self.__critical_error = False
         self.__communication = Communication.instance(self.__agent.get_id())
 
@@ -80,10 +81,6 @@ class ActionManager:
     def send_completion(self):
         """ informs every agent in the network that the global action the agent was taking has terminated """
 
-        # check if the agent is allowed to complete the global action
-        if not self.__global_action.is_owner(self.__agent):
-            return
-
         # reset global action and share completion within network
         self.__global_action = None
         self.__communication.send(self.TOPIC_GLOBAL_ACTION_COMPLETED, None)
@@ -103,8 +100,13 @@ class ActionManager:
         """
 
         while True:
+            if self.__local_action is None and len(self.__future_local_actions) > 0:
+                next_local_action = self.__future_local_actions.pop(0)
+                time.sleep(self.WAIT_PRIORITIZE_PRIOR)
+                self.__local_action = Action(next_local_action, self.__agent.get_id(), time.time())
+
             if self.local_allowed_global():
-                # share the agent's action in order to determine wether it is actually the foremost
+                # share the agent's action in order to determine whether it is actually the foremost
                 self.__global_action = self.__local_action
                 self.send_global_action()
 
@@ -117,6 +119,9 @@ class ActionManager:
                 self.__local_action = None
                 self.execute_global_action()
             
+            if self.__global_action is not None:
+                print(self.__agent.get_id(), "is global with", self.__global_action.get_task())
+
             time.sleep(self.WAIT_CHECK_PERMISSION)
 
     def local_allowed_global(self):
@@ -157,10 +162,14 @@ class ActionManager:
         self.__global_action = None
         self.send_completion()
 
-    # -- setters --
+    def add_local_action(self, task):
+        self.__future_local_actions.append(task)
 
-    def set_local_action(self, task):
-        self.__local_action = Action(task, self.__agent.get_id(), time.time())
+    def remove_local_action(self, task):
+        self.__future_local_actions = [x for x in self.__future_local_actions if x != task]
+        
+        if self.__local_action == task:
+            self.__local_action = None
 
 
 class Action:

@@ -14,7 +14,10 @@ class TestAgent:
         return self.__id
 
     def start_action(self, name):
-        self.__action_manager.set_local_action(name)
+        self.__action_manager.add_local_action(name)
+
+    def stop_action(self, name):
+        self.__action_manager.remove_local_action(name)
 
 
 agent1 = TestAgent("Agent-1")
@@ -24,6 +27,8 @@ agent3 = TestAgent("Agent-3")
 time.sleep(2)
 
 agent2.start_action("TEST 1")
+agent2.start_action("TEST 1.1")
+agent2.stop_action("TEST 1.1")
 agent3.start_action("TEST 2")
 
 time.sleep(16)
