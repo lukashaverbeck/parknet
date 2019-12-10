@@ -4,11 +4,10 @@
 # TODO implement leave_parking_lot()
 # TODO implement follow_road()
 # TODO implement DriveThread.velocity_to_pwm()
-# TODO remove unnecessary method manual_driving()
 # 
 # author: 	@lukashaverbeck
 # author:	@LunaNordin
-# version: 	2.1(04.12.2019)
+# version: 	2.1.1(10.12.2019)
 
 import os
 import csv
@@ -34,7 +33,7 @@ MODE_MOVE_BACK = "react/move-back"
 MODE_DEFAULT = MODE_MANUAL
 MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
 
-CAUTIOUS_VELOCITY = 0.3  # m/s
+CAUTIOUS_VELOCITY = 308  # pwm
 STOP_VELOCITY = 340  # pwm
 MAX_VELOCITY = 360  # pwm
 MIN_VELOCITY = 320 # pwm
