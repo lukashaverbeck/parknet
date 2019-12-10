@@ -215,6 +215,9 @@ class Driver:
         while self.__sensor_manager.get_distance(sm.RIGHT) >= required_lot_width:
             time.sleep(check_interval)
 
+        self.set_velocity(STOP_VELOCITY)
+        self.stop_driving()
+
     # TODO
     def follow_road(self):
         """ drives autonomously without explicit instructions
