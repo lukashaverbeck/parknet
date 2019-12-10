@@ -227,7 +227,6 @@ class Serv(BaseHTTPRequestHandler):
         
         response = bytes(body).decode("utf-8")
         response_data = response.split("=" , 1)
-        print("Content: " + str(response_data))
 
         if self.communication:
             for data in response_data:
