@@ -1,3 +1,10 @@
+# handles the coordination of different agent's behaviour
+#
+# TODO implement exection of real actions by addressing the agent's driver
+# TODO add functionality for canceling a local action
+# TODO add functionality for assigning multiple local actions in order
+
+
 import time
 import json
 import threading
@@ -37,6 +44,7 @@ class ActionManager:
         check_thread = threading.Thread(target=self.check_global_permission)
         check_thread.start()
 
+        # subscribe to completion and global action messages
         self.__communication.subscribe(self.TOPIC_GLOBAL_ACTION_COMPLETED, self.receive_completion)
         self.__communication.subscribe(self.TOPIC_GLOBAL_ACTION_ACTIVE, self.receive_global_action)
 
@@ -46,6 +54,7 @@ class ActionManager:
         """
 
         while True:
+            # share current global action if it is the agent's current action
             if self.__global_action is not None:
                 if self.__global_action.is_owner(self.__agent):
                     self.send_global_action()            
@@ -71,9 +80,11 @@ class ActionManager:
     def send_completion(self):
         """ informs every agent in the network that the global action the agent was taking has terminated """
 
+        # check if the agent is allowed to complete the global action
         if not self.__global_action.is_owner(self.__agent):
             return
 
+        # reset global action and share completion within network
         self.__global_action = None
         self.__communication.send(self.TOPIC_GLOBAL_ACTION_COMPLETED, None)
 
@@ -93,15 +104,17 @@ class ActionManager:
 
         while True:
             if self.local_allowed_global():
+                # share the agent's action in order to determine wether it is actually the foremost
                 self.__global_action = self.__local_action
                 self.send_global_action()
 
+                # wait to validate wether the global action was overwritten with a prior action
                 time.sleep(self.WAIT_VERIFY_FIRST_IN_QUEUE)
                 if not self.__global_action.is_owner(self.__agent):
                     continue
 
+                # reset local action and execute the action
                 self.__local_action = None
-
                 self.execute_global_action()
             
             time.sleep(self.WAIT_CHECK_PERMISSION)
@@ -124,21 +137,22 @@ class ActionManager:
     def execute_global_action(self):
         """ actually takes the global action by addressing the driver accordingly to the task of the global action """
 
+        # check if a global action exists and may be executed by the agent
         if self.__global_action is None:
             return
-
-        if not self.__global_action.is_owner(self.__agent):
+        elif not self.__global_action.is_owner(self.__agent):
             return
         
-        task = self.__global_action.get_task()
-
+        # exeute the action by addressing the agent's driver
         # TODO implement execution of real tasks
+        task = self.__global_action.get_task()
         if task == "parking/enter":
             time.sleep(4)
         else:
             print(self.__agent.get_id(), "- do " + task + " with timestamp", self.__global_action.get_timestamp())
             time.sleep(4)
 
+        # reset global action and share completion
         print(self.__agent.get_id(), "finished task")
         self.__global_action = None
         self.send_completion()
@@ -229,8 +243,8 @@ class Action:
                 action2 (Action): second action
 
             Returns:
-                Action: the latest action out of the two - if the actions have the exact same timestamp the action with
-                        alphabetically lower agent ID is returned
+                Action: the foremost action out of the two - if the actions have the exact same timestamp the action 
+                        with alphabetically lower agent ID is returned
 
                 Note that if one of the actions is None, the other action is returned in every case
         """
