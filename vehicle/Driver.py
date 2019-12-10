@@ -75,6 +75,9 @@ class Driver:
         """ stops and deletes the thread that moves the vehicle
             it also sets the velocity and steering angle to 0
         """
+	
+	self.set_velocity(STOP_VELOCITY)
+        self.set_steering_angle(0.0)
 
         if self.__drive_thread is not None:
             self.__drive_thread.stop()
@@ -467,3 +470,5 @@ class Driver:
             """ stops the movement of the vehicle """
 
             self.__drive = False
+	    self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            self.__pwm.set_pwm(0, 0, int(self.angle_to_pmw(NEUTRAL_STEERING_ANGLE)))
