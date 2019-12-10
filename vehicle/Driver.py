@@ -160,6 +160,21 @@ class Driver:
             for the algorithm to work the method assumes that the vehicle is parallel
             to the front vehicle or obstacle with their back fronts at the same height
         """
+	
+	self.start_driving()
+        self.set_velocity(STOP_VELOCITY)
+        time.sleep(1)
+        self.set_steering_angle(-35)
+        self.set_velocity(CAUTIOUS_VELOCITY)
+        time.sleep(2)
+        self.set_velocity(STOP_VELOCITY)
+        self.set_steering_angle(NEUTRAL_STEERING_ANGLE)
+        time.sleep(1)
+        self.set_velocity(CAUTIOUS_VELOCITY)
+        while self.__sensor_manager.get_distance(sm.BACK) >= 35:
+            continue
+        self.set_velocity(STOP_VELOCITY)
+        self.stop_driving()
 
         pass
 
