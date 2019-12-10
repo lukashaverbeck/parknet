@@ -18,10 +18,9 @@ class ActionManager:
     TOPIC_GLOBAL_ACTION_ACTIVE = "action/active-global"
     TOPIC_GLOBAL_ACTION_COMPLETED = "action/completed-global"
 
-    WAIT_SEND_GLOBAL = 1
-    WAIT_CHECK_PERMISSION = 1
+    WAIT_SEND_GLOBAL = 0.5
+    WAIT_CHECK_PERMISSION = 0.5
     WAIT_VERIFY_FIRST_IN_QUEUE = 2
-    WAIT_PRIORITIZE_PRIOR = 3
 
     def __init__(self, agent):
         """ initializes the action manager
@@ -102,7 +101,6 @@ class ActionManager:
         while True:
             if self.__local_action is None and len(self.__future_local_actions) > 0:
                 next_local_action = self.__future_local_actions.pop(0)
-                time.sleep(self.WAIT_PRIORITIZE_PRIOR)
                 self.__local_action = Action(next_local_action, self.__agent.get_id(), time.time())
 
             if self.local_allowed_global():
@@ -120,7 +118,7 @@ class ActionManager:
                 self.execute_global_action()
             
             if self.__global_action is not None:
-                print(self.__agent.get_id(), "is global with", self.__global_action.get_task())
+                print(self.__global_action.get_agent_id(), "is global with", self.__global_action.get_task())
 
             time.sleep(self.WAIT_CHECK_PERMISSION)
 
