@@ -230,7 +230,7 @@ setInterval(() => {
                     display = distanceRightDisplay;
                     break;
 
-                case "distane-back":
+                case "distance-back":
                     display = distanceBottomDisplay;
                     break;
             
