@@ -468,5 +468,5 @@ class Driver:
             """ stops the movement of the vehicle """
 
             self.__drive = False
-	    self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
             self.__pwm.set_pwm(0, 0, int(self.angle_to_pmw(NEUTRAL_STEERING_ANGLE)))
