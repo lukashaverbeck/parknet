@@ -13,3 +13,4 @@ wireless
 PyAccessPoint
 netifaces
 psutil
+netifaces

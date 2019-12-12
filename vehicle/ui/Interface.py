@@ -1,6 +1,7 @@
 import sys
 sys.path.append(sys.path[0][:-3])
 
+import netifaces as ni
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
@@ -13,7 +14,8 @@ class WebInterface:
         agent = agent_instance
 
     def start(self, debug=False):
-        ip_address = "192.168.2.116"
+        ni.ifaddresses("wlan0")
+        ip_address = ni.ifaddresses("wlan0")[ni.AF_INET][0]["addr"]
         port = "5000"
         app.run(host=ip_address, port=port, debug=debug)
 
