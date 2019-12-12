@@ -4,13 +4,10 @@
 
 import time
 import threading
-
+import constants as const
 from Communication import Communication
 from FrontAgentScanner import FrontAgentScanner
 
-TOPIC_CONFIRMATION = "formation/confirm-backward-pass"
-TOPIC_FORWARD_PASS = "formation/forward-pass"
-TOPIC_BACKWARD_PASS = "formation/backward-pass"
 
 
 class Formation:
@@ -68,9 +65,9 @@ class Formation:
         """ constantly updates the current formation by exchanging data with other agents within a network """
 
         # subscribe to the relevant event topics
-        self.__communication.subscribe(TOPIC_BACKWARD_PASS, self.receive_backward_pass)
-        self.__communication.subscribe(TOPIC_FORWARD_PASS, self.receive_forward_pass)
-        self.__communication.subscribe(TOPIC_CONFIRMATION, self.receive_confirmation)
+        self.__communication.subscribe(const.Topic.FORMATION_BACKWARD_PASS, self.receive_backward_pass)
+        self.__communication.subscribe(const.Topic.FORMATION_FORWARD_PASS, self.receive_forward_pass)
+        self.__communication.subscribe(const.Topic.FORMATION_CONFIRMATION, self.receive_confirmation)
 
         while True:
             front_agent_id = self.__front_agent_scanner.get_front_agent_id()
@@ -126,7 +123,7 @@ class Formation:
         """ sends an agent list backwards to other agents within the network """
 
         # send the message in a separate thread
-        thread = threading.Thread(target=lambda: self.__communication.send(TOPIC_BACKWARD_PASS, self.__tmp_agents))
+        thread = threading.Thread(target=lambda: self.__communication.send(const.Topic.FORMATION_BACKWARD_PASS, self.__tmp_agents))
         thread.start()
 
         # wait for a possible receiver to confirm the backpass
@@ -143,7 +140,7 @@ class Formation:
         """ sends an agent list forwards to other agents within the network """
 
         # send the message in a separate thread
-        thread = threading.Thread(target=lambda: self.__communication.send(TOPIC_FORWARD_PASS, self.__tmp_agents))
+        thread = threading.Thread(target=lambda: self.__communication.send(const.Topic.FORMATION_FORWARD_PASS, self.__tmp_agents))
         thread.start()
 
     def send_confirmation(self, sender):
@@ -154,5 +151,5 @@ class Formation:
         """
 
         # send the message in a separate thread
-        thread = threading.Thread(target=lambda: self.__communication.send(TOPIC_CONFIRMATION, None, sender))
+        thread = threading.Thread(target=lambda: self.__communication.send(const.Topic.FORMATION_CONFIRMATION, None, sender))
         thread.start()
