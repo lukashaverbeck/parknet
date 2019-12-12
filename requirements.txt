@@ -8,3 +8,8 @@ pandas
 curses
 RPi.GPIO
 Adafruit_PCA9685
+wifi
+wireless
+PyAccessPoint
+netifaces
+psutil
