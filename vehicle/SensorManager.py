@@ -8,8 +8,7 @@
 import time
 import threading
 import RPi.GPIO as GPIO	 # library for GPIO control
-
-FRONT, RIGHT, BACK = 0, 1, 2
+import constants as const
 
 
 class SensorManager:
@@ -17,13 +16,6 @@ class SensorManager:
             
     REFRESH_INTERVAL = 0.1	# interval in which new values are calculated
         
-    TRIG_1 = 23  # trigger pin of HC-SR04 module (front)
-    TRIG_2 = 22  # trigger pin of HC-SR04 module (side)
-    TRIG_3 = 4   # trigger pin of HC-SR04 module (back)
-    ECHO_1 = 24  # echo pin of HC-SR04 module (front)
-    ECHO_2 = 27  # echo pin of HC-SR04 module (side)
-    ECHO_3 = 17  # echo pin of HC-SR04 module (back)
-
     def __init__(self):
         """ initializes the sensor manager and starts the thread that refreshes the sensor data """
             
@@ -32,14 +24,14 @@ class SensorManager:
             
         # define all trigger pins as outputs and all echo pins as inputs
         # make shure all pins ar free to use to avaoid data collision
-        GPIO.setup(self.TRIG_1, GPIO.OUT)	
-        GPIO.setup(self.ECHO_1, GPIO.IN)	
-        GPIO.setup(self.TRIG_2, GPIO.OUT)	
-        GPIO.setup(self.ECHO_2, GPIO.IN)
-        GPIO.setup(self.TRIG_3, GPIO.OUT)	
-        GPIO.setup(self.ECHO_3, GPIO.IN)	
+        GPIO.setup(const.TriggerPin.HC_SR04_FRONT, GPIO.OUT)	
+        GPIO.setup(const.EchoPin.HC_SR04_FRONT, GPIO.IN)	
+        GPIO.setup(const.TriggerPin.HC_SR04_RIGHT, GPIO.OUT)	
+        GPIO.setup(const.EchoPin.HC_SR04_RIGHT, GPIO.IN)
+        GPIO.setup(const.TriggerPin.HC_SR04_BACK, GPIO.OUT)	
+        GPIO.setup(const.EchoPin.HC_SR04_BACK, GPIO.IN)	
             
-        GPIO.output(self.TRIG_1, False)	 # pull down trigger pin in case the pin is still activated
+        GPIO.output(const.TriggerPin.HC_SR04_FRONT, False)	 # pull down trigger pin in case the pin is still activated
         time.sleep(2)  # wait two seconds to make sure there are no signal fragments which could be detected
     
         # start values for the three distances
@@ -75,9 +67,9 @@ class SensorManager:
         """ constantly updates the measured sensor data """
     
         while True:
-            self.__distance_front = self.sensor_distance(self.TRIG_1, self.ECHO_1)
-            self.__distance_right = self.sensor_distance(self.TRIG_2, self.ECHO_2)
-            self.__distance_back = self.sensor_distance(self.TRIG_3, self.ECHO_3)
+            self.__distance_front = self.sensor_distance(const.TriggerPin.HC_SR04_FRONT, const.EchoPin.HC_SR04_FRONT)
+            self.__distance_right = self.sensor_distance(const.TriggerPin.HC_SR04_RIGHT, const.EchoPin.HC_SR04_RIGHT)
+            self.__distance_back = self.sensor_distance(const.TriggerPin.HC_SR04_BACK, const.EchoPin.HC_SR04_BACK)
             time.sleep(self.REFRESH_INTERVAL)  # pause to keep timing in interval
     
     def get_distance(self, direction):
@@ -92,11 +84,11 @@ class SensorManager:
         """
     
         # the input request is analyzed and the corresponding value is returned
-        if direction == FRONT:
+        if direction == const.Direction.FRONT:
             return self.__distance_front
-        elif direction == RIGHT:
+        elif direction == const.Direction.RIGHT:
             return self.__distance_right
-        elif direction == BACK:
+        elif direction == const.Direction.BACK:
             return self.__distance_back
         else:
             return None
