@@ -4,7 +4,7 @@
 # NOTICE: This script is based on angle.py version: 2.0(01.12.2019).
 
 # author:   @LunaNordin
-# version:  1.1(10.12.2019)
+# version:  1.1.1(13.12.2019)
 
 import sys
 import time
