@@ -11,6 +11,7 @@ import time
 import math  # math is used for calculating with functions
 import Adafruit_PCA9685  # import of library for PCA9685-module
 
+
 __mode = ""  # global value for mode chosen by user
 
 pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
@@ -57,6 +58,11 @@ def input_value():
                 sys.exit()
             elif user_input == "r":  # return to "home menu"
                 setup()
+            elif user_input == "e":  # emergency stop option
+                pwm.set_pwm(0, 0, 325)  # set steering neutral
+                pwm.set_pwm(1, 0, 340)  # set esc to zero
+                print("Emergency stopped vehicle!")
+                input_value()   # restart input method
 
             input_int = int(user_input)  # cast user input into int for further processing
 
@@ -75,6 +81,11 @@ def input_value():
                 sys.exit()
             elif user_input == "r":  # return to "home menu"
                 setup()
+            elif user_input == "e":  # emergency stop option
+                pwm.set_pwm(0, 0, 325)  # set steering neutral
+                pwm.set_pwm(1, 0, 340)  # set esc to zero
+                print("Emergency stopped vehicle!")
+                input_value()   # restart input method
     
             input_int = int(user_input)  # cast user input into int for further processing
 
