@@ -1,9 +1,8 @@
 import json
+import constants as const
 from Driver import Driver
 from Formation import Formation
 from ui.Interface import WebInterface
-
-ATTRIBUTES_FILE = "./attributes.json"
 
 
 class Agent:
@@ -11,7 +10,7 @@ class Agent:
         """ initializes a specific car agent based on his attributes file """
 
         # read in ID, length and with from the according file
-        with open(ATTRIBUTES_FILE) as attributes_file:
+        with open(const.File.ATTRIBUTES) as attributes_file:
             data = attributes_file.read()
             attributes = json.loads(data)
             
@@ -32,3 +31,6 @@ class Agent:
 
     def get_id(self):
         return self.__id
+
+
+Agent()
