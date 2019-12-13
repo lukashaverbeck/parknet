@@ -16,31 +16,10 @@ import math
 import curses
 import threading
 import Adafruit_PCA9685
-import SensorManager as sm
+import constants as const
 from datetime import datetime
+from SensorManager import SensorManager
 from Camera import Camera, save_img_array
-
-
-MODE_ENTER = "parking/enter"
-MODE_LEAVE = "parking/leave"
-MODE_SEARCH = "parking/search"
-MODE_STANDBY = "parking/standby"
-MODE_AUTONOMOUS = "drive/follow-road"
-MODE_MANUAL = "drive/manual"
-MODE_MOVE_UP = "react/move-up"
-MODE_MOVE_BACK = "react/move-back"
-
-MODE_DEFAULT = MODE_MANUAL
-MODES = [MODE_ENTER, MODE_LEAVE, MODE_SEARCH, MODE_STANDBY, MODE_AUTONOMOUS, MODE_MANUAL, MODE_MOVE_UP, MODE_MOVE_BACK]
-
-CAUTIOUS_VELOCITY = 308  # pwm
-STOP_VELOCITY = 340  # pwm
-MAX_VELOCITY = 360  # pwm
-MIN_VELOCITY = 320 # pwm
-
-MIN_STEERING_ANGLE = -35
-MAX_STEERING_ANGLE = 35
-NEUTRAL_STEERING_ANGLE = 0
 
 
 class Driver:
@@ -56,10 +35,10 @@ class Driver:
         """
 
         self.__drive_thread = None
-        self.__sensor_manager = sm.SensorManager()
-        self.__velocity = STOP_VELOCITY
-        self.__angle = NEUTRAL_STEERING_ANGLE
-        self.__mode = MODE_DEFAULT
+        self.__sensor_manager = SensorManager()
+        self.__velocity = const.Driving.STOP_VELOCITY
+        self.__angle = const.Driving.NEUTRAL_STEERING_ANGLE
+        self.__mode = const.Mode.DEFAULT
         self.__length = length
         self.__width = width
         self.__formation = formation
@@ -76,7 +55,7 @@ class Driver:
             it also sets the velocity and steering angle to 0
         """
 	
-        self.set_velocity(STOP_VELOCITY)
+        self.set_velocity(const.Driving.STOP_VELOCITY)
         self.set_steering_angle(0.0)
 
         if self.__drive_thread is not None:
@@ -96,10 +75,10 @@ class Driver:
 
         velocity = self.__velocity + velocity_change
 
-        if velocity > MAX_VELOCITY:
-            velocity = MAX_VELOCITY
-        if velocity < MIN_VELOCITY:
-            velocity = MIN_VELOCITY
+        if velocity > const.Driving.MAX_VELOCITY:
+            velocity = const.Driving.MAX_VELOCITY
+        if velocity < const.Driving.MIN_VELOCITY:
+            velocity = const.Driving.MIN_VELOCITY
 
         self.__velocity = velocity
 
@@ -114,10 +93,10 @@ class Driver:
 
         angle = self.__angle + angle_change
 
-        if angle > MAX_STEERING_ANGLE:
-            angle = MAX_STEERING_ANGLE
-        elif angle < MIN_STEERING_ANGLE:
-            angle = MIN_STEERING_ANGLE
+        if angle > const.Driving.MAX_STEERING_ANGLE:
+            angle = const.Driving.MAX_STEERING_ANGLE
+        elif angle < const.Driving.MIN_STEERING_ANGLE:
+            angle = const.Driving.MIN_STEERING_ANGLE
 
         self.__angle = angle
 
@@ -136,24 +115,24 @@ class Driver:
         
         self.stop_driving()
 
-        if mode not in MODES:
-            mode = MODE_DEFAULT
+        if mode not in const.Mode.ALL:
+            mode = const.Mode.DEFAULT
 
         self.__mode = mode
 
-        if mode == MODE_ENTER:
+        if mode == const.Mode.ENTER:
             self.enter_parking_lot()
-        elif mode == MODE_LEAVE:
+        elif mode == const.Mode.LEAVE:
             self.leave_parking_lot()
-        elif mode == MODE_SEARCH:
+        elif mode == const.Mode.SEARCH:
             self.search_parking_lot()
-        elif mode == MODE_AUTONOMOUS:
+        elif mode == const.Mode.AUTONOMOUS:
             self.follow_road()
-        elif mode == MODE_MANUAL:
+        elif mode == const.Mode.MANUAL:
             self.manual_driving()
-        elif mode == MODE_MOVE_UP:
+        elif mode == const.Mode.MOVE_UP:
             self.move_up()
-        elif mode == MODE_MOVE_UP:
+        elif mode == const.Mode.MOVE_UP:
             self.move_back()
 
     # TODO
@@ -165,18 +144,18 @@ class Driver:
         """
 	
         self.start_driving()
-        self.set_velocity(STOP_VELOCITY)
+        self.set_velocity(const.Driving.STOP_VELOCITY)
         time.sleep(1)
         self.set_steering_angle(-35)
-        self.set_velocity(CAUTIOUS_VELOCITY)
+        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
         time.sleep(2)
-        self.set_velocity(STOP_VELOCITY)
-        self.set_steering_angle(NEUTRAL_STEERING_ANGLE)
+        self.set_velocity(const.Driving.STOP_VELOCITY)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
         time.sleep(1)
-        self.set_velocity(CAUTIOUS_VELOCITY)
-        while self.__sensor_manager.get_distance(sm.BACK) >= 35:
+        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
+        while self.__sensor_manager.get_distance(const.Direction.BACK) >= 35:
             continue
-        self.set_velocity(STOP_VELOCITY)
+        self.set_velocity(const.Driving.STOP_VELOCITY)
         self.stop_driving()
 
         pass
@@ -194,7 +173,7 @@ class Driver:
         """
 
         check_interval = 1
-        velocity = CAUTIOUS_VELOCITY
+        velocity = const.Driving.CAUTIOUS_VELOCITY
         intervals_with_matching_space = 0
         required_lot_length = self.__length * 1.4
         required_lot_width = self.__width * 1.2
@@ -205,7 +184,7 @@ class Driver:
 
         # evaluate whether there would be enough space in terms of width and length for parallel parking
         while True:
-            if self.__sensor_manager.get_distance(sm.RIGHT) >= required_lot_width:
+            if self.__sensor_manager.get_distance(const.Direction.RIGHT) >= required_lot_width:
                 intervals_with_matching_space += 1
                 length_with_matching_space = intervals_with_matching_space * velocity * check_interval
 
@@ -215,10 +194,10 @@ class Driver:
             time.sleep(check_interval)
 
         # drive further until the vehicle reaches the start of the parking lot
-        while self.__sensor_manager.get_distance(sm.RIGHT) >= required_lot_width:
+        while self.__sensor_manager.get_distance(const.Direction.RIGHT) >= required_lot_width:
             time.sleep(check_interval)
 
-        self.set_velocity(STOP_VELOCITY)
+        self.set_velocity(const.Driving.STOP_VELOCITY)
         self.stop_driving()
 
     # TODO
@@ -235,13 +214,13 @@ class Driver:
             possible for the current vehicle formation
         """
 
-        self.set_velocity(CAUTIOUS_VELOCITY)
+        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
         self.set_steering_angle(0.0)
 
         gap = self.__formation.calc_gap()
         self.start_driving()
 
-        while self.__sensor_manager.get_distance(sm.FRONT) > gap:
+        while self.__sensor_manager.get_distance(const.Direction.FRONT) > gap:
             time.sleep(0.5)
 
         self.stop_driving()
@@ -252,14 +231,14 @@ class Driver:
         """
 
         # slowly drive backwards
-        self.set_velocity(-1 * CAUTIOUS_VELOCITY)
+        self.set_velocity(-1 * const.Driving.CAUTIOUS_VELOCITY)
         self.set_steering_angle(0.0)
 
         # drive as long there is enough space to the next vehicle or obstacle
         gap = self.__formation.calc_gap()
         self.start_driving()
 
-        while self.__sensor_manager.get_distance(sm.FRONT) > gap:
+        while self.__sensor_manager.get_distance(const.Direction.FRONT) > gap:
             time.sleep(0.5)
 
         self.stop_driving()
@@ -316,18 +295,18 @@ class Driver:
     # -- setters --
 
     def set_velocity(self, velocity):
-        if velocity > MAX_VELOCITY:
-            velocity = MAX_VELOCITY
-        elif velocity < MIN_VELOCITY:
-            velocity = MIN_VELOCITY
+        if velocity > const.Driving.MAX_VELOCITY:
+            velocity = const.Driving.MAX_VELOCITY
+        elif velocity < const.Driving.MIN_VELOCITY:
+            velocity = const.Driving.MIN_VELOCITY
 
         self.__velocity = velocity
 
     def set_steering_angle(self, angle):
-        if angle > MAX_STEERING_ANGLE:
-            angle = MAX_STEERING_ANGLE
-        elif angle < MIN_STEERING_ANGLE:
-            angle = MIN_STEERING_ANGLE
+        if angle > const.Driving.MAX_STEERING_ANGLE:
+            angle = const.Driving.MAX_STEERING_ANGLE
+        elif angle < const.Driving.MIN_STEERING_ANGLE:
+            angle = const.Driving.MIN_STEERING_ANGLE
 
         self.__angle = angle
 
@@ -457,16 +436,16 @@ class Driver:
         def reverse_esc(self):
             """ reverses direction of esc to make driving backwards possible """
 
-            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
             time.sleep(0.1)
             self.__pwm.set_pwm(1, 0, 310)
             time.sleep(0.1)
-            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
+            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
             time.sleep(0.1)
 
         def stop(self):
             """ stops the movement of the vehicle """
 
             self.__drive = False
-            self.__pwm.set_pwm(1, 0, STOP_VELOCITY)
-            self.__pwm.set_pwm(0, 0, int(self.angle_to_pmw(NEUTRAL_STEERING_ANGLE)))
+            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
+            self.__pwm.set_pwm(0, 0, int(self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE)))

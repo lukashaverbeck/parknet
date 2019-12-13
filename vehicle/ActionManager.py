@@ -7,6 +7,7 @@
 import time
 import json
 import threading
+import constants as const
 from Communication import Communication
 
 
@@ -14,9 +15,6 @@ class ActionManager:
     """ coordinates the interactive behaviour of multiple agents by determining which agent is allowed to execute which
         action at what time
     """
-
-    TOPIC_GLOBAL_ACTION_ACTIVE = "action/active-global"
-    TOPIC_GLOBAL_ACTION_COMPLETED = "action/completed-global"
 
     WAIT_SEND_GLOBAL = 0.5
     WAIT_CHECK_PERMISSION = 0.5
@@ -45,8 +43,8 @@ class ActionManager:
         check_thread.start()
 
         # subscribe to completion and global action messages
-        self.__communication.subscribe(self.TOPIC_GLOBAL_ACTION_COMPLETED, self.receive_completion)
-        self.__communication.subscribe(self.TOPIC_GLOBAL_ACTION_ACTIVE, self.receive_global_action)
+        self.__communication.subscribe(const.Topic.GLOBAL_ACTION_COMPLETED, self.receive_completion)
+        self.__communication.subscribe(const.Topic.GLOBAL_ACTION_ACTIVE, self.receive_global_action)
 
     def update_global_action(self):
         """ continuously checks if the agent is currently taking an action and in this case sends it to every agent in
@@ -65,7 +63,7 @@ class ActionManager:
         """ sends the current global action to every agent in the nework """
 
         action_data = self.__global_action.dumps()
-        self.__communication.send(self.TOPIC_GLOBAL_ACTION_ACTIVE, action_data)
+        self.__communication.send(const.Topic.GLOBAL_ACTION_ACTIVE, action_data)
 
     def receive_global_action(self, message):
         """ handles the receivement of the currently globally executed action
@@ -82,7 +80,7 @@ class ActionManager:
 
         # reset global action and share completion within network
         self.__global_action = None
-        self.__communication.send(self.TOPIC_GLOBAL_ACTION_COMPLETED, None)
+        self.__communication.send(const.Topic.GLOBAL_ACTION_COMPLETED, None)
 
     def receive_completion(self, message):
         """ handles the receivement of the information that the global action has terminated
