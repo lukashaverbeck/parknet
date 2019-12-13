@@ -159,6 +159,9 @@ class AutoConnector(Thread):
                 self.is_blocked(block_obj.get_ssid)))
 
 
+def startAutoConnector():
+    pass
+
 stopFlag = Event()
 thread = AutoConnector(stopFlag)
 thread.start()
