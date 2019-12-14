@@ -115,9 +115,6 @@ class ActionManager:
                 self.__local_action = None
                 self.execute_global_action()
             
-            if self.__global_action is not None:
-                print(self.__global_action.get_agent_id(), "is global with", self.__global_action.get_task())
-
             time.sleep(self.WAIT_CHECK_PERMISSION)
 
     def local_allowed_global(self):
@@ -143,18 +140,26 @@ class ActionManager:
             return
         elif not self.__global_action.is_owner(self.__agent):
             return
-        
+
         # exeute the action by addressing the agent's driver
-        # TODO implement execution of real tasks
         task = self.__global_action.get_task()
-        if task == "parking/enter":
-            time.sleep(4)
-        else:
-            print(self.__agent.get_id(), "- do " + task + " with timestamp", self.__global_action.get_timestamp())
-            time.sleep(4)
+        driver = self.__agent.driver()
+        if task == const.Mode.AUTONOMOUS:
+            driver.follow_road()
+        elif task == const.Mode.ENTER:
+            driver.enter_parking_lot()
+        elif task == const.Mode.LEAVE:
+            driver.leave_parking_lot()
+        elif task == const.Mode.MANUAL:
+            driver.manual_driving()
+        elif task == const.Mode.MOVE_BACK:
+            driver.move_back()
+        elif task == const.Mode.MOVE_UP:
+            driver.move_up()
+        elif task == const.Mode.SEARCH:
+            driver.search_parking_lot()
 
         # reset global action and share completion
-        print(self.__agent.get_id(), "finished task")
         self.__global_action = None
         self.send_completion()
 

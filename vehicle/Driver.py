@@ -19,6 +19,7 @@ import Adafruit_PCA9685
 import constants as const
 from datetime import datetime
 from SensorManager import SensorManager
+from ActionManager import ActionManager
 from Camera import Camera, save_img_array
 
 
@@ -36,9 +37,9 @@ class Driver:
 
         self.__drive_thread = None
         self.__sensor_manager = SensorManager()
+        self.__action_manager = ActionManager()
         self.__velocity = const.Driving.STOP_VELOCITY
         self.__angle = const.Driving.NEUTRAL_STEERING_ANGLE
-        self.__mode = const.Mode.DEFAULT
         self.__length = length
         self.__width = width
         self.__formation = formation
@@ -101,7 +102,7 @@ class Driver:
         self.__angle = angle
 
     def change_mode(self, mode):
-        """ updates the behaviour of the agent by changing its mode
+        """ updates the behaviour of the agent by assigning an additional local action to its action manager
 
             best practice is not to pass the desired mode directly as a string but instead
             passing it as one of the global mode constants defined at the top of this file
@@ -113,27 +114,10 @@ class Driver:
                 mode (str): desired mode
         """
         
-        self.stop_driving()
-
         if mode not in const.Mode.ALL:
             mode = const.Mode.DEFAULT
 
-        self.__mode = mode
-
-        if mode == const.Mode.ENTER:
-            self.enter_parking_lot()
-        elif mode == const.Mode.LEAVE:
-            self.leave_parking_lot()
-        elif mode == const.Mode.SEARCH:
-            self.search_parking_lot()
-        elif mode == const.Mode.AUTONOMOUS:
-            self.follow_road()
-        elif mode == const.Mode.MANUAL:
-            self.manual_driving()
-        elif mode == const.Mode.MOVE_UP:
-            self.move_up()
-        elif mode == const.Mode.MOVE_UP:
-            self.move_back()
+        self.__action_manager.add_local_action(mode)
 
     # TODO
     def enter_parking_lot(self):
@@ -157,8 +141,6 @@ class Driver:
             continue
         self.set_velocity(const.Driving.STOP_VELOCITY)
         self.stop_driving()
-
-        pass
 
     # TODO
     def leave_parking_lot(self):
