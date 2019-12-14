@@ -19,6 +19,9 @@ class TestAgent:
     def stop_action(self, name):
         self.__action_manager.remove_local_action(name)
 
+    def driver(self):
+        return None
+
 
 agent1 = TestAgent("Agent-1")
 agent2 = TestAgent("Agent-2")
