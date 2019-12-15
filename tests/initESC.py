@@ -2,7 +2,7 @@
 # Run this script before using any other PWM related ESC controls.
 
 # author: @LunaNordin
-# version: 1.0(03.11.2019)
+# version: 2.0(15.11.2019)
 
 import time
 import Adafruit_PCA9685  # Import the PCA9685 module
