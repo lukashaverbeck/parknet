@@ -144,6 +144,8 @@ class ActionManager:
         # exeute the action by addressing the agent's driver
         task = self.__global_action.get_task()
         driver = self.__agent.driver()
+        driver.set_mode(task)
+
         if task == const.Mode.AUTONOMOUS:
             driver.follow_road()
         elif task == const.Mode.ENTER:
@@ -160,6 +162,7 @@ class ActionManager:
             driver.search_parking_lot()
 
         # reset global action and share completion
+        driver.set_mode(const.Mode.DEFAULT)
         self.__global_action = None
         self.send_completion()
 
