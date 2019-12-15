@@ -2,7 +2,6 @@
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
-# TODO Driver.follow_road() -> embed steering net
 # TODO Driver.follow_road() -> add validation if a predicted angle is reasonable
 # TODO implement DriveThread.velocity_to_pwm()
 # 
@@ -22,6 +21,7 @@ from datetime import datetime
 from SensorManager import SensorManager
 from ActionManager import ActionManager
 from Camera import Camera, save_img_array
+from SteeringNet import SteeringNet
 
 
 class Driver:
@@ -189,11 +189,10 @@ class Driver:
             by feeding the camera input through a convolutional neural network
             that predicts a steering angle and a velocity for the vehicle
 
-            TODO embed steering net
             TODO add validation if a predicted angle is reasonable
         """
 
-        steering_net = None
+        steering_net = SteeringNet()
         camera = Camera.instance()
 
         self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
