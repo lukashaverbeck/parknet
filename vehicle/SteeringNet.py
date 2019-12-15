@@ -6,11 +6,17 @@
 
 import os
 import math
+import scipy
 import random
 import datetime
+import skimage.io
+import skimage.util
+import skimage.color
+import skimage.feature
 import numpy as np
 import tensorflow as tf
-from skimage.io import imread
+
+INPUT_SHAPE = (160, 320, 3)
 
 
 class SteeringNet:
@@ -38,14 +44,14 @@ class SteeringNet:
         validation_data = None
         validation_steps = None
         if csv_file_validation and num_samples_validation:
-            validation_data = generate_data(root_directory, csv_file_validation, batch_size)
+            validation_data = generate_data(root_directory, csv_file_validation, batch_size, True)
             validation_steps = math.ceil(num_samples_validation / batch_size)
 
         log_dir = os.path.join("logs", "fit", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
 
         optimizer = tf.optimizers.Adam(lr)
-        data_generator = generate_data(root_directory, csv_file_train, batch_size)
+        data_generator = generate_data(root_directory, csv_file_train, batch_size, True)
         self.model.compile(loss=self.loss, optimizer=optimizer, batch_size=batch_size)
         self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples_train / batch_size), epochs=epochs, validation_data=validation_data, validation_steps=validation_steps, callbacks=[tensorboard_callback], verbose=verbose)
 
@@ -59,7 +65,7 @@ class SteeringNet:
                 batch_size (int): number of samples per batch
         """
 
-        data_generator = generate_data(root_directory, csv_file, batch_size)
+        data_generator = generate_data(root_directory, csv_file, batch_size, False)
         self.model.compile(loss=self.loss, batch_size=batch_size)
         self.model.fit_generator(data_generator, steps_per_epoch=math.ceil(num_samples / batch_size))
 
@@ -76,7 +82,7 @@ class SteeringNet:
                 float: average deviation of the predicted steering angle from the real value
         """
 
-        data_generator = generate_data(root_directory, csv_file, batch_size)
+        data_generator = generate_data(root_directory, csv_file, batch_size, False)
         steps = 0
         deviation_angle = 0.0
 
@@ -96,21 +102,22 @@ class SteeringNet:
 
         return deviation_angle
 
-    def predict(self, image_path, current_angle):
-        """ predicts a steering angle based on the current image input and driving behaviour
+    def predict(self, image, current_angle):
+        """ predicts a steering angle based on the current image input and the current steering angle
 
             Args:
-                image_path (str): absolute path to the image
+                image (str or numpy.ndarray): absolute path to the image or array representing the image's pixels
                 current_angle (float): the vehicle's current steering angle
 
             Returns:
                 float: predicted steering angle
         """
 
-        image = imread(image_path)
-        image = image / 255.0
-        image = np.array([image])
+        if isinstance(image, str):
+            image = skimage.io.imread(image)
+        image, current_angle = prepare_data(image, current_angle)
 
+        image = np.array([image])
         current_angle = np.array([current_angle])
 
         inputs = {"image": image, "old_angle": current_angle}
@@ -127,16 +134,14 @@ class SteeringNet:
 
         self.model.save_weights("./models/" + model_name + ".h5", save_format="h5")
 
-    def load(self, model_path, root_directory, csv_file):
+    def load(self, model_path):
         """ loads an existing model from weights after training it on a single sample in order for the model to be built properly
 
             Args:
                 model_path (str): path to a .h5 representation of the model's weights
-                root_directory (str): path to the folder containing the evaluation data
-                csv_file (str): path to the csv file mapping images to steering angles and velocities
         """
 
-        self.train(1, root_directory, csv_file, epochs=1, batch_size=1, lr=0.0, verbose=0)
+        self.predict(np.zeros(INPUT_SHAPE), 0.0)
         self.model.load_weights(model_path)
 
     class Model(tf.keras.Model):
@@ -147,21 +152,19 @@ class SteeringNet:
 
             super().__init__()
 
-            self.conv1 = tf.keras.layers.Conv2D(3, (5, 5))
+            self.conv1 = tf.keras.layers.Conv2D(2, (5, 5))
             self.conv1 = tf.keras.layers.Conv2D(24, (5, 5))
             self.conv2 = tf.keras.layers.Conv2D(36, (5, 5))
             self.conv3 = tf.keras.layers.Conv2D(48, (3, 3))
             self.conv4 = tf.keras.layers.Conv2D(64, (3, 3))
-            self.conv5 = tf.keras.layers.Conv2D(64, (3, 3))
+            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3))
             self.pool1 = tf.keras.layers.MaxPool2D((2, 2))
 
             self.flat1 = tf.keras.layers.Flatten()
             self.flcn1 = tf.keras.layers.Dense(100, activation="elu")
             self.flcn2 = tf.keras.layers.Dense(50, activation="elu")
             self.flcn3 = tf.keras.layers.Dense(10, activation="elu")
-            self.flcn4 = tf.keras.layers.Dense(1, activation="relu")
-
-            self.dense_layers = [self.flcn1, self.flcn2, self.flcn3, self.flcn4]
+            self.flcn4 = tf.keras.layers.Dense(1)
 
         def call(self, inputs):
             """ propagates forward through the neural net
@@ -180,19 +183,34 @@ class SteeringNet:
             x = self.conv3(x)
             x = self.pool1(x)
             x = self.conv4(x)
-            x = self.pool1(x)
-            x = self.conv5(x)
 
             x = self.flat1(x)
             x = tf.concat([x, old_angle], 1)
 
-            for dense in self.dense_layers:
-                x = dense(x)
+            x = self.flcn1(x)
+            x = self.flcn2(x)
+            x = self.flcn3(x)
+            x = self.flcn4(x)
 
             return x
 
 
-def generate_data(root_directory, csv_file, batch_size):
+def prepare_data(image, old_angle, is_training=False):
+    if is_training:
+        # data augmentation: slightly change old angle
+        old_angle *= random.uniform(random.uniform(0.95, 1.0), random.uniform(1.0, 1.05))
+
+        if random.random() > 0.5:
+            # data augmentation: mirror the image
+            image = np.fliplr(image)
+            old_angle *= -1
+
+    image = image / 255.0
+
+    return image, old_angle
+
+
+def generate_data(root_directory, csv_file, batch_size, is_training=False):
     """ yields steering data
 
         Args:
@@ -225,20 +243,22 @@ def generate_data(root_directory, csv_file, batch_size):
                     continue
 
                 image = root_directory + cells[0]
-                image = imread(image)
-                image = image / 255.0
+                image = skimage.io.imread(image)
 
                 try:
                     angle = float(cells[1])
-                    old_angle = angle * random.uniform(0.90, 1.1)
-                    batch_angle.append(angle)
+                    old_angle = angle
+
+                    image, old_angle = prepare_data(image, old_angle, is_training)
 
                     batch_image.append(image)
+                    batch_angle.append(angle)
                     batch_old_angle.append(old_angle)
                 except ValueError as error:
                     continue
 
                 if len(batch_image) == batch_size:
+
                     inputs = {"image": np.array(batch_image), "old_angle": np.array(batch_old_angle)}
                     target = np.array(batch_angle)
 
@@ -247,12 +267,3 @@ def generate_data(root_directory, csv_file, batch_size):
                     batch_image = []
                     batch_angle = []
                     batch_old_angle = []
-
-
-net = SteeringNet()
-net.loss = "mean_absolute_error"
-net.load("./models/model_udacity_1.h5", "./data/udacity/", "./data/udacity/train.csv")
-# net.load("./models/model_nvidia_1.h5", "./data/nvidia-dataset-1/images/", "./data/nvidia-dataset-1/data.csv" )
-# net.train(45406, "./data/nvidia-dataset-1/images/", "./data/nvidia-dataset-1/data.csv", epochs=3)
-net.train(4700, "./data/udacity/", "./data/udacity/train.csv", epochs=3, batch_size=256, lr=0.0005)
-net.save("model_udacity_2")
