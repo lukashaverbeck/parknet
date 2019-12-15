@@ -2,7 +2,8 @@
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
-# TODO implement follow_road()
+# TODO Driver.follow_road() -> embed steering net
+# TODO Driver.follow_road() -> add validation if a predicted angle is reasonable
 # TODO implement DriveThread.velocity_to_pwm()
 # 
 # author: 	@lukashaverbeck
@@ -42,6 +43,7 @@ class Driver:
         self.__angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.__length = length
         self.__width = width
+        self.__mode = const.Mode.DEFAULT
         self.__formation = formation
         self.__recorder = None
 
@@ -57,14 +59,14 @@ class Driver:
         """
 	
         self.set_velocity(const.Driving.STOP_VELOCITY)
-        self.set_steering_angle(0.0)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
 
         if self.__drive_thread is not None:
             self.__drive_thread.stop()
             self.__drive_thread = None
 
         self.set_velocity(0.0)
-        self.set_steering_angle(0.0)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
 
     def accelerate(self, velocity_change):
         """ changes the velocity of the vehicle
@@ -161,11 +163,11 @@ class Driver:
         required_lot_width = self.__width * 1.2
 
         self.set_velocity(velocity)
-        self.set_steering_angle(0.0)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
         self.start_driving()
 
         # evaluate whether there would be enough space in terms of width and length for parallel parking
-        while True:
+        while self.__mode == const.Mode.SEARCH:
             if self.__sensor_manager.get_distance(const.Direction.RIGHT) >= required_lot_width:
                 intervals_with_matching_space += 1
                 length_with_matching_space = intervals_with_matching_space * velocity * check_interval
@@ -182,14 +184,28 @@ class Driver:
         self.set_velocity(const.Driving.STOP_VELOCITY)
         self.stop_driving()
 
-    # TODO
     def follow_road(self):
         """ drives autonomously without explicit instructions
             by feeding the camera input through a convolutional neural network
             that predicts a steering angle and a velocity for the vehicle
+
+            TODO embed steering net
+            TODO add validation if a predicted angle is reasonable
         """
 
-        pass
+        steering_net = None
+        camera = Camera.instance()
+
+        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
+        self.start_driving()
+
+        while self.__mode == const.Mode.AUTONOMOUS:
+            current_image = camera.get_image()
+            current_angle = self.__angle
+            predicted_angle = steering_net.predict(current_image, current_angle)
+
+            self.set_steering_angle(predicted_angle)
 
     def move_up(self):
         """ drives as close to the front vehicle or obstacle as
@@ -197,13 +213,13 @@ class Driver:
         """
 
         self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
-        self.set_steering_angle(0.0)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
 
         gap = self.__formation.calc_gap()
         self.start_driving()
 
         while self.__sensor_manager.get_distance(const.Direction.FRONT) > gap:
-            time.sleep(0.5)
+            continue
 
         self.stop_driving()
 
@@ -214,7 +230,7 @@ class Driver:
 
         # slowly drive backwards
         self.set_velocity(-1 * const.Driving.CAUTIOUS_VELOCITY)
-        self.set_steering_angle(0.0)
+        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
 
         # drive as long there is enough space to the next vehicle or obstacle
         gap = self.__formation.calc_gap()
@@ -291,6 +307,12 @@ class Driver:
             angle = const.Driving.MIN_STEERING_ANGLE
 
         self.__angle = angle
+
+    def set_mode(self, mode):
+        if mode not in const.Modes.ALL:
+            mode = const.Modes.DEFAULT
+
+        self.__mode = mode
 
     # -- inner classes --
 
