@@ -7,6 +7,8 @@ import json
 import socket as socketlib
 import requests
 import threading
+
+from projektkurs.vehicle import AutoConnector
 from .util import Singleton
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from contextlib import closing
@@ -83,6 +85,7 @@ class Communication:
         self.__server = HTTPServer((get_local_ip(), 80), Serv)
         self.__callbacks = []
         self.__agent_id = agent_id
+        AutoConnector.start_Auto_Connector()
 
         # start server in a separate thread
         server_thread = threading.Thread(target=self.__server.serve_forever)
