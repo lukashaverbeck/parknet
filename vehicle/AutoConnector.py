@@ -163,6 +163,5 @@ def start_Auto_Connector():
     stopFlag = Event()
     thread = AutoConnector(stopFlag)
     thread.start()
-    pass
 
 # stopFlag.set() - to stop the timer
