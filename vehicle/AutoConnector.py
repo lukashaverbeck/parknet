@@ -7,7 +7,7 @@ from wireless import Wireless
 import traceback
 
 
-class ssid_block_object():
+class ssidBlockObject():
     def __init__(self, ssid, blocktime):
         self.blocktime = blocktime
         self.ssid = ssid
@@ -150,20 +150,19 @@ class AutoConnector(Thread):
         return False
 
     def add_to_block_list(self, ssid, blocktime):
-        self.block_list.append(ssid_block_object(ssid, blocktime))
+        self.block_list.append(ssidBlockObject(ssid, blocktime))
         print("--------------------Blocking " + ssid + " for " + str(blocktime))
 
     def print_list(self):
-        for block_obj in self.block_list:
-            print(block_obj.get_ssid() + " " + str(block_obj.get_block_time()) + " Blocked: " + str(
-                self.is_blocked(block_obj.get_ssid)))
+        for blockObj in self.block_list:
+            print(blockObj.get_ssid() + " " + str(blockObj.get_block_time()) + " Blocked: " + str(
+                self.is_blocked(blockObj.get_ssid)))
 
 
-def startAutoConnector():
+def start_Auto_Connector():
+    stopFlag = Event()
+    thread = AutoConnector(stopFlag)
+    thread.start()
     pass
-
-stopFlag = Event()
-thread = AutoConnector(stopFlag)
-thread.start()
 
 # stopFlag.set() - to stop the timer
