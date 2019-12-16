@@ -158,10 +158,10 @@ class AutoConnector(Thread):
             print(blockObj.get_ssid() + " " + str(blockObj.get_block_time()) + " Blocked: " + str(
                 self.is_blocked(blockObj.get_ssid)))
 
-
-def start_Auto_Connector():
-    stopFlag = Event()
-    thread = AutoConnector(stopFlag)
-    thread.start()
+    @staticmethod
+    def start_Auto_Connector():
+        stopFlag = Event()
+        thread = AutoConnector(stopFlag)
+        thread.start()
 
 # stopFlag.set() - to stop the timer
