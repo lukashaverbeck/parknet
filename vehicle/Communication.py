@@ -8,8 +8,8 @@ import socket as socketlib
 import requests
 import threading
 
-from projektkurs.vehicle import AutoConnector
-from .util import Singleton
+import AutoConnector
+from util import Singleton
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from contextlib import closing
 
