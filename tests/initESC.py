@@ -15,7 +15,7 @@ print("Please make sure to disconnect your ESC from the battery.")
 input = input("Press Enter to start initialization process: ")
 
 print("\nTreble-Zero pulse is send to ESC-port...", end ="")
-pwm.set_pwm(0, 0, init_pwm)  # sending activation frequency
+pwm.set_pwm(1, 0, init_pwm)  # sending activation frequency
 print("done!")
 print("Now power on your ESC and wait until you hear it beeping.")
 time.sleep(15)  # time to turn on ESC
