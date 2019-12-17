@@ -9,12 +9,10 @@ import math
 import scipy
 import random
 import datetime
-import skimage.io
-import skimage.util
-import skimage.color
-import skimage.feature
 import numpy as np
+import pandas as pd
 import tensorflow as tf
+from PIL import Image
 
 INPUT_SHAPE = (160, 320, 3)
 
@@ -114,7 +112,7 @@ class SteeringNet:
         """
 
         if isinstance(image, str):
-            image = skimage.io.imread(image)
+            image = load_image(image)
         image, current_angle = prepare_data(image, current_angle)
 
         image = np.array([image])
@@ -152,18 +150,20 @@ class SteeringNet:
 
             super().__init__()
 
-            self.conv1 = tf.keras.layers.Conv2D(2, (5, 5))
-            self.conv1 = tf.keras.layers.Conv2D(24, (5, 5))
-            self.conv2 = tf.keras.layers.Conv2D(36, (5, 5))
-            self.conv3 = tf.keras.layers.Conv2D(48, (3, 3))
-            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3))
-            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3))
+            self.conv1 = tf.keras.layers.Conv2D(2, (5, 5), input_shape=INPUT_SHAPE)
+            self.conv1 = tf.keras.layers.Conv2D(24, (5, 5), activation="elu")
+            self.conv2 = tf.keras.layers.Conv2D(36, (5, 5), activation="elu")
+            self.conv3 = tf.keras.layers.Conv2D(48, (3, 3), activation="elu")
+            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3), activation="elu")
+            self.conv4 = tf.keras.layers.Conv2D(64, (3, 3), activation="elu")
             self.pool1 = tf.keras.layers.MaxPool2D((2, 2))
 
             self.flat1 = tf.keras.layers.Flatten()
-            self.flcn1 = tf.keras.layers.Dense(100, activation="elu")
-            self.flcn2 = tf.keras.layers.Dense(50, activation="elu")
-            self.flcn3 = tf.keras.layers.Dense(10, activation="elu")
+            self.drop1 = tf.keras.layers.Dropout(0.2)
+
+            self.flcn1 = tf.keras.layers.Dense(256, activation="elu")
+            self.flcn2 = tf.keras.layers.Dense(128, activation="elu")
+            self.flcn3 = tf.keras.layers.Dense(32, activation="elu")
             self.flcn4 = tf.keras.layers.Dense(1)
 
         def call(self, inputs):
@@ -185,14 +185,23 @@ class SteeringNet:
             x = self.conv4(x)
 
             x = self.flat1(x)
-            x = tf.concat([x, old_angle], 1)
 
             x = self.flcn1(x)
+            x = self.drop1(x)
             x = self.flcn2(x)
+            x = self.drop1(x)
             x = self.flcn3(x)
+            x = self.drop1(x)
             x = self.flcn4(x)
 
             return x
+
+
+def load_image(path):
+    img = Image.open(path)
+    img.load()
+    np_array = np.asarray(img, dtype="int32")
+    return np_array
 
 
 def prepare_data(image, old_angle, is_training=False):
@@ -230,40 +239,28 @@ def generate_data(root_directory, csv_file, batch_size, is_training=False):
     batch_angle = []
     batch_old_angle = []
 
+    data_frame = pd.read_csv(csv_file)
+
     while True:
-        with open(csv_file) as log:
-            line = log.readline()
+        data_frame = data_frame.sample(frac=1).reset_index(drop=True)
+        
+        for image_name, angle in zip(data_frame["center"], data_frame["steering"]):
+            image = root_directory + image_name
+            image = load_image(image)
+            old_angle = angle  # TODO
 
-            while line:
-                line = log.readline()
-                row = line.replace("\n", "")
-                cells = row.split(",")
+            image, old_angle = prepare_data(image, old_angle, is_training)
 
-                if len(row) <= 0:
-                    continue
+            batch_image.append(image)
+            batch_angle.append(angle)
+            batch_old_angle.append(old_angle)
 
-                image = root_directory + cells[0]
-                image = skimage.io.imread(image)
+            if len(batch_image) == batch_size:
+                inputs = {"image": np.array(batch_image), "old_angle": np.array(batch_old_angle)}
+                target = np.array(batch_angle)
 
-                try:
-                    angle = float(cells[1])
-                    old_angle = angle
+                yield (inputs, target)
 
-                    image, old_angle = prepare_data(image, old_angle, is_training)
-
-                    batch_image.append(image)
-                    batch_angle.append(angle)
-                    batch_old_angle.append(old_angle)
-                except ValueError as error:
-                    continue
-
-                if len(batch_image) == batch_size:
-
-                    inputs = {"image": np.array(batch_image), "old_angle": np.array(batch_old_angle)}
-                    target = np.array(batch_angle)
-
-                    yield (inputs, target)
-
-                    batch_image = []
-                    batch_angle = []
-                    batch_old_angle = []
+                batch_image = []
+                batch_angle = []
+                batch_old_angle = []
