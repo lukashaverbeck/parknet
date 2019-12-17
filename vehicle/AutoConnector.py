@@ -7,7 +7,7 @@ from wireless import Wireless
 import traceback
 
 
-class SSIDBlockObject():
+class SSIDBlockObject:
     def __init__(self, ssid, blocktime):
         self.__blocktime = blocktime
         self.__ssid = ssid
@@ -154,7 +154,7 @@ class AutoConnector(Thread):
                 self.is_blocked(blockObj.get_ssid)))
 
     @staticmethod
-    def start():
+    def start_connector():
         stopFlag = Event()
         thread = AutoConnector(stopFlag)
         thread.start()
