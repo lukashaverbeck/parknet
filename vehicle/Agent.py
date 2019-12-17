@@ -19,7 +19,7 @@ class Agent:
             self.__width = attributes["width"]
 
         self.__formation = Formation(self)
-        self.__driver = Driver(self.__length, self.__width, self.__formation)
+        self.__driver = Driver(self, self.__formation)
         self.__interface = WebInterface(self)
 
         self.__interface.start()
@@ -31,6 +31,12 @@ class Agent:
 
     def get_id(self):
         return self.__id
+
+    def get_length(self):
+        return self.__length
+
+    def get_width(self):
+        return self.__width
 
 
 Agent()

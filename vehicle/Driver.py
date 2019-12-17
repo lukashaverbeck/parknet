@@ -27,22 +27,21 @@ from SteeringNet import SteeringNet
 class Driver:
     """ controls the steering of the vehicle """
 
-    def __init__(self, length, width, formation):
+    def __init__(self, agent, formation):
         """ initializes the driver component of an agent
 
             Args:
-                length (float): length of vehicle
-                width (float): width of vehicle
+                agent (Agent): agent controlling the driver
                 formation (Formation): formation of vehicles in parking lot
         """
 
         self.__drive_thread = None
         self.__sensor_manager = SensorManager()
-        self.__action_manager = ActionManager()
+        self.__action_manager = ActionManager(agent)
         self.__velocity = const.Driving.STOP_VELOCITY
         self.__angle = const.Driving.NEUTRAL_STEERING_ANGLE
-        self.__length = length
-        self.__width = width
+        self.__length = agent.get_length()
+        self.__width = agent.get_width()
         self.__mode = const.Mode.DEFAULT
         self.__formation = formation
         self.__recorder = None
