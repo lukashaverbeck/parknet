@@ -68,10 +68,13 @@ while True:	#cycle with sensordetection
  distance_2 = sensordistance(TRIG_2, ECHO_2)	#call sensordetection function for side module
  distance_3 = sensordistance(TRIG_3, ECHO_3)	#call sensordetection function for back module
  
- screen.clear()	#clear screen for next output
- screen.addstr("Distance_front: " + str(distance_1) + "cm               " + "Distance_side: " + str(distance_2) + "cm               " + "Distance_back: " + str(distance_3) + "cm")	#output the results on the console
+ screen.clear()  # clear screen for next output
+ screen.addstr("Distance_front:        " + str(distance_1) + "cm" + '\n')  # output the results on the console
+ screen.addstr("Distance_side:         " + str(distance_2) + "cm" + '\n')
+ screen.addstr("Distance_back:         " + str(distance_3) + "cm" + '\n')
+ screen.addstr("Distance_back(angled): " + str(distance_4) + "cm")
  screen.refresh()
- #print("Distance:",distance,"cm")
+ # print("Distance:",distance,"cm")
  
 #in order not to mess up the console all setting-changes need to be reset to default values 
 GPIO.cleanup()  
