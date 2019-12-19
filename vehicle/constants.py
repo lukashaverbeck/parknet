@@ -1,5 +1,6 @@
 # collection of global constants
-
+# author:   @lukashaverbeck
+# version:  1.0
 
 class Mode:
     ENTER = "parking/enter"
