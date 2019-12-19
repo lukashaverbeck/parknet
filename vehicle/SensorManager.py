@@ -3,7 +3,7 @@
 
 # author:	@lukashaverbeck
 # author:	@LunaNordin
-# version:	1.1
+# version:	1.2
 
 import time
 import threading
