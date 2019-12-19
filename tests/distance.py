@@ -75,7 +75,6 @@ while True:  # cycle with sensordetection
     screen.addstr("Distance_back:         " + str(distance_3) + "cm" + '\n')
     screen.addstr("Distance_back(angled): " + str(distance_4) + "cm")
     screen.refresh()
-    # print("Distance:",distance,"cm")
 
 # in order not to mess up the console all setting-changes need to be reset to default values
 GPIO.cleanup()
