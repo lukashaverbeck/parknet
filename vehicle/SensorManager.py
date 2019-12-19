@@ -3,7 +3,7 @@
 
 # author:	@lukashaverbeck
 # author:	@LunaNordin
-# version:	1.2
+# version:	1.3(19.12.2019)
 
 import time
 import threading
@@ -24,14 +24,19 @@ class SensorManager:
             
         # define all trigger pins as outputs and all echo pins as inputs
         # make shure all pins ar free to use to avaoid data collision
-        GPIO.setup(const.TriggerPin.HC_SR04_FRONT, GPIO.OUT)	
-        GPIO.setup(const.EchoPin.HC_SR04_FRONT, GPIO.IN)	
-        GPIO.setup(const.TriggerPin.HC_SR04_RIGHT, GPIO.OUT)	
+        GPIO.setup(const.TriggerPin.HC_SR04_FRONT, GPIO.OUT)
+        GPIO.setup(const.EchoPin.HC_SR04_FRONT, GPIO.IN)
+        GPIO.setup(const.TriggerPin.HC_SR04_RIGHT, GPIO.OUT)
         GPIO.setup(const.EchoPin.HC_SR04_RIGHT, GPIO.IN)
-        GPIO.setup(const.TriggerPin.HC_SR04_BACK, GPIO.OUT)	
-        GPIO.setup(const.EchoPin.HC_SR04_BACK, GPIO.IN)	
+        GPIO.setup(const.TriggerPin.HC_SR04_BACK, GPIO.OUT)
+        GPIO.setup(const.EchoPin.HC_SR04_BACK, GPIO.IN)
+        GPIO.setup(const.TriggerPin.HC_SR04_BACK_ANGLED, GPIO.OUT)
+        GPIO.setup(const.EchoPin.HC_SR04_BACK_ANGLED, GPIO.IN)
             
-        GPIO.output(const.TriggerPin.HC_SR04_FRONT, False)	 # pull down trigger pin in case the pin is still activated
+        GPIO.output(const.TriggerPin.HC_SR04_FRONT, False)
+        GPIO.output(const.TriggerPin.HC_SR04_RIGHT, False)
+        GPIO.output(const.TriggerPin.HC_SR04_BACK, False)
+        GPIO.output(const.TriggerPin.HC_SR04_BACK_ANGLED, False)
         time.sleep(2)  # wait two seconds to make sure there are no signal fragments which could be detected
     
         # start values for the three distances
