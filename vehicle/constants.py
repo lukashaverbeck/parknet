@@ -1,7 +1,7 @@
 # collection of global constants
 # author:   @lukashaverbeck
 # author:   @LunaNordin
-# version:  1.1
+# version:  1.1(19.12.2019)
 
 
 class Mode:
