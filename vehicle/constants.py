@@ -3,6 +3,7 @@
 # author:   @LunaNordin
 # version:  1.1
 
+
 class Mode:
     ENTER = "parking/enter"
     LEAVE = "parking/leave"
@@ -32,6 +33,7 @@ class Direction:
     FRONT = 0
     RIGHT = 1
     BACK = 2
+    BACK_ANGLED = 3
 
 
 class File:
@@ -42,12 +44,14 @@ class TriggerPin:
     HC_SR04_FRONT = 23
     HC_SR04_RIGHT = 22
     HC_SR04_BACK = 4
+    HC_SR04_BACK_ANGLED = 18
 
 
 class EchoPin:
     HC_SR04_FRONT = 24
     HC_SR04_RIGHT = 27
     HC_SR04_BACK = 17
+    HC_SR04_BACK_ANGLED = 10
 
 
 class Topic:
