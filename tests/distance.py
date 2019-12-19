@@ -15,21 +15,25 @@ screen.keypad(True)  #enable special-keys
 
 GPIO.setmode(GPIO.BCM)	#set GPIO mode
 
-TRIG_1 = 23 #trigger pin of HC-SR04 module(front)
-TRIG_2 = 22 #trigger pin of HC-SR04 module(side)
-TRIG_3 = 4  #trigger pin of HC-SR04 module(back)
-ECHO_1 = 24 #echo pin of HC-SR04 module(front)
-ECHO_2 = 27 #echo pin of HC-SR04 module(side)
-ECHO_3 = 17 #echo pin of HC-SR04 module(back)
+TRIG_1 = 23  # trigger pin of HC-SR04 module(front)
+TRIG_2 = 22  # trigger pin of HC-SR04 module(side)
+TRIG_3 = 4   # trigger pin of HC-SR04 module(back)
+TRIG_4 = 18  # trigger pin of HC-SR04 module(back-angled)
+ECHO_1 = 24  # echo pin of HC-SR04 module(front)
+ECHO_2 = 27  # echo pin of HC-SR04 module(side)
+ECHO_3 = 17  # echo pin of HC-SR04 module(back)
+ECHO_4 = 10  # echo pin of HC-SR04 module(back-angled)
 
 #define all trigger pins as outputs and all echo pins as inputs
 #make shure all pins ar free to use to avaoid data collision
-GPIO.setup(TRIG_1,GPIO.OUT)	
-GPIO.setup(ECHO_1,GPIO.IN)	
-GPIO.setup(TRIG_2,GPIO.OUT)	
-GPIO.setup(ECHO_2,GPIO.IN)
-GPIO.setup(TRIG_3,GPIO.OUT)	
-GPIO.setup(ECHO_3,GPIO.IN)	
+GPIO.setup(TRIG_1, GPIO.OUT)
+GPIO.setup(ECHO_1, GPIO.IN)
+GPIO.setup(TRIG_2, GPIO.OUT)
+GPIO.setup(ECHO_2, GPIO.IN)
+GPIO.setup(TRIG_3, GPIO.OUT)
+GPIO.setup(ECHO_3, GPIO.IN)
+GPIO.setup(TRIG_4, GPIO.OUT)
+GPIO.setup(ECHO_4, GPIO.IN)
 
 
 def sensordistance (trigpin, echopin):	#function gets distance value from the module with the reported pins
