@@ -1,3 +1,7 @@
+# drives a bi-polar stepper motor
+# author:   @LunaNordin
+# version:  1.0(21.12.2019)
+
 from time import sleep
 import RPi.GPIO as GPIO
 
