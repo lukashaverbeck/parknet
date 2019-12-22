@@ -15,7 +15,7 @@ GPIO.setup(21, GPIO.OUT)  # step pin is an output
 def menu():
     '''takes parameters from user and initializes movement'''
 
-    direction = input("Type 'c' for clockwork and 'r' for counterclockwise ('q' to exit): ")
+    direction = input("Type 'c' for clockwise and 'r' for counterclockwise ('q' to exit): ")
     if direction == "c":
         GPIO.output(20, 1)  # direction is set to clockwise
     elif direction == "r":
