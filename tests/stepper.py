@@ -1,6 +1,6 @@
-# drives a bi-polar stepper motor one clockwise round
+# Turns stepper motor according to user input.
 # author:   @LunaNordin
-# version:  1.0(21.12.2019)
+# version:  2.0(22.12.2019)
 
 from time import sleep  # sleep method used for timing of steps
 import RPi.GPIO as GPIO  # RPi.GPIO for GPIO-pin control
