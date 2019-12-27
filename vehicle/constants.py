@@ -1,7 +1,7 @@
 # collection of global constants
 # author:   @lukashaverbeck
 # author:   @LunaNordin
-# version:  1.1(19.12.2019)
+# version:  1.1.1(27.12.2019)
 
 
 class Mode:
@@ -27,6 +27,12 @@ class Driving:
     MIN_STEERING_ANGLE = -35
     MAX_STEERING_ANGLE = 35
     NEUTRAL_STEERING_ANGLE = 0
+
+
+class Stepper:
+    DIRECTION_PIN = 20
+    STEP_PIN = 21
+    SLEEP_PIN = 26
 
 
 class Direction:
