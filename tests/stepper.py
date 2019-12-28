@@ -14,7 +14,8 @@ GPIO.setup(26, GPIO.OUT)  # sleep pin is an output
 
 
 def menu():
-    mode = ""
+    '''main menu used to choose mode and set shared parameters'''
+
     mode = input("Enter 'c' for calibration mode and 's' for single movement ('q' to exit): ")
     if mode == "q":
         sys.exit()  # end script
@@ -29,11 +30,11 @@ def menu():
     delay = (1 / (200 * float(rps))) / 2  # delay based on rounds per second
 
     if mode == "s":
-        parameters(delay)
+        parameters(delay)  # driving based on user parameters
     elif mode == "c":
-        count_steps(delay)
+        count_steps(delay)  # determine step length
 
-    menu()
+    menu()  # if input is invalid start over main menu
 
 
 def parameters(delay):
@@ -41,11 +42,10 @@ def parameters(delay):
 
     rotations = input("Type in your number of rotations ('m' for menu): ")
     if rotations == "m":
-        menu()
+        menu()  # return to main menu
 
     steps = int(rotations)*200  # steps calculated from rotation number
-    move(steps, delay)
-
+    move(steps, delay)  # move stepper
 
 def move(steps, delay):
     '''moves stepper with provided parameters'''
