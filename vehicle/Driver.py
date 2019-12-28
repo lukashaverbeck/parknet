@@ -405,10 +405,12 @@ class Driver:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
 
-                # ensures that there is enough space in front of the vehicle by skipping the current
+                # ensures that there is enough space in front of or behind the vehicle by skipping the current
                 # driving loop if the minimal front distance is assumed to be exceeded
                 front_distance = self.__sensor_manager.get_distance(const.Direction.FRONT)
-                predicted_distance = front_distance - velocity * self.DRIVING_INTERVAL
+                rear_distance = self.__sensor_manager.get_distance(const.Direction.BACK)
+                distance = front_distance if velocity > 0 else rear_distance
+                predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
                 if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
                 time.sleep(self.DRIVING_INTERVAL)
