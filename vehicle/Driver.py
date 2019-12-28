@@ -2,7 +2,7 @@
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
-# TODO Driver.follow_road() -> add validation if a predicted angle is reasonable
+# TODO switch to stepper motor
 # TODO implement DriveThread.velocity_to_pwm()
 # 
 # author: 	@lukashaverbeck
@@ -11,6 +11,7 @@
 
 import os
 import csv
+import logging
 import time
 import math
 import curses
@@ -384,29 +385,39 @@ class Driver:
 
             super().__init__()
             self.__driver = driver
+            self.__sensor_manager = self.__driver.get_sensor_manager()
             self.__drive = True
-			
+            
             self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
             self.__pulse_freq = 50
             self.__pwm.set_pwm_freq(self.__pulse_freq)
 
+        # TODO
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
                 the vehicle's hardware
-            """
-			
 
+                TODO switch to stepper motor
+            """
+            
             while self.__drive:
                 angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
+
+                # ensures that there is enough space in front of the vehicle by skipping the current
+                # driving loop if the minimal front distance is assumed to be exceeded
+                front_distance = self.__sensor_manager.get_distance(const.Direction.FRONT)
+                predicted_distance = front_distance - velocity * self.DRIVING_INTERVAL
+                if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
+
                 time.sleep(self.DRIVING_INTERVAL)
-				
+                
             steering_pwm_calc = self.angle_to_pmw(angle)
             
             self.__pwm.set_pwm(1, 0, velocity)
             self.__pwm.set_pwm(0, 0, steering_pwm_calc)
-				
+                
         def angle_to_pmw(self, angle):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the 
                 hardware
@@ -442,8 +453,12 @@ class Driver:
             self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
             time.sleep(0.1)
 
+        # TODO
         def stop(self):
-            """ stops the movement of the vehicle """
+            """ stops the movement of the vehicle
+                
+                TODO switch to stepper motor
+            """
 
             self.__drive = False
             self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
