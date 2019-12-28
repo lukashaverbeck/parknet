@@ -19,14 +19,16 @@ class Mode:
 
 
 class Driving:
-    CAUTIOUS_VELOCITY = 308  # pwm
-    STOP_VELOCITY = 340  # pwm
-    MAX_VELOCITY = 360  # pwm
-    MIN_VELOCITY = 320  # pwm
+    CAUTIOUS_VELOCITY = 308     # pwm
+    STOP_VELOCITY = 340         # pwm
+    MAX_VELOCITY = 360          # pwm
+    MIN_VELOCITY = 320          # pwm
 
-    MIN_STEERING_ANGLE = -35
-    MAX_STEERING_ANGLE = 35
-    NEUTRAL_STEERING_ANGLE = 0
+    MIN_STEERING_ANGLE = -35    # °
+    MAX_STEERING_ANGLE = 35     # °
+    NEUTRAL_STEERING_ANGLE = 0  # °
+
+    SAFETY_DISTANCE = 3         # cm
 
 
 class Stepper:
