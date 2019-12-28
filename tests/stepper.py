@@ -1,4 +1,5 @@
 # Turns stepper motor according to user input.
+# Determines length corresponding with one step.
 # author:   @LunaNordin
 # version:  2.3(28.12.2019)
 
