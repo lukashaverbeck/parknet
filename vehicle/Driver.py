@@ -243,7 +243,6 @@ class Driver:
         """ starts the driving thread and relies on user intefaces to change the steering data """
 
         self.start_driving()
-                
 
     def start_recording(self):
         """ saves a continuos stream image of the current camera input and logs the corresponding
@@ -391,7 +390,6 @@ class Driver:
             self.__pulse_freq = 50
             self.__pwm.set_pwm_freq(self.__pulse_freq)
 
-        # TODO
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
@@ -407,9 +405,8 @@ class Driver:
             steering_pwm_calc = self.angle_to_pmw(angle)
             
             self.__pwm.set_pwm(1, 0, velocity)
-            self.__pwm.set_pwm(0, 0, int(steering_pwm_calc))
+            self.__pwm.set_pwm(0, 0, steering_pwm_calc)
 				
-        # TODO
         def angle_to_pmw(self, angle):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the 
                 hardware
@@ -418,11 +415,11 @@ class Driver:
                     angle (int): angle in degrees to be converted to pwm
 
                 Returns:
-                    float: pwm value for the steering angle
+                    int: pwm value for the steering angle
             """
 
-            val = 0.000002*(math.pow(angle,4))+0.000002*(math.pow(angle,3))+0.005766*(math.pow(angle,2))-(1.81281*angle)+324.149
-            return val
+            val = 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + 0.005766 * angle ** 2 - 1.81281 * angle + 324.149
+            return int(round(val, 0))
 
         # TODO
         def velocity_to_pmw(self):
@@ -450,4 +447,4 @@ class Driver:
 
             self.__drive = False
             self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
-            self.__pwm.set_pwm(0, 0, int(self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE)))
+            self.__pwm.set_pwm(0, 0, self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE))
