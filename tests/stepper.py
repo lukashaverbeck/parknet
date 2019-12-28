@@ -47,17 +47,18 @@ def parameters(delay):
     steps = int(rotations)*200  # steps calculated from rotation number
     move(steps, delay)  # move stepper
 
+
 def move(steps, delay):
     '''moves stepper with provided parameters'''
 
     stepper_sleep("active")  # activate stepper
     for i in range(steps):  # loop turns stepper one round in two seconds
-        GPIO.output(21, GPIO.HIGH)  # make on step
-        sleep(delay)
+        GPIO.output(21, GPIO.HIGH)  # make one step
+        sleep(delay)  # wait to keep rps
         GPIO.output(21, GPIO.LOW)  # turn step pin low to prepare next step
-        sleep(delay)
+        sleep(delay)  # wait to keep rps
     stepper_sleep("sleep")  # put stepper to sleep
-    parameters(delay)
+    parameters(delay)  # get new parameters from user
 
 
 def stepper_sleep(status):
@@ -70,19 +71,21 @@ def stepper_sleep(status):
 
 
 def count_steps(delay):
+    '''runs motor until user stops it and counts steps to determine length of one step'''
+
     print("Enter 'e' to stop vehicle: ")
     print(delay)
-    rotations = 0
-    stop = False
+    rotations = 0  # start value of rotation number
+    stop = False  # parameter to end the loop
     stepper_sleep("active")  # activate stepper
-    while not stop:
-        GPIO.output(21, GPIO.HIGH)  # make on step
-        sleep(delay)
+    while not stop:  # until user stops car
+        GPIO.output(21, GPIO.HIGH)  # make one step
+        sleep(delay)  # wait to keep rps
         GPIO.output(21, GPIO.LOW)  # turn step pin low to prepare next step
-        sleep(delay)
-        rotations += 1
+        sleep(delay)  # wait to keep rps
+        rotations += 1  # increase step counter
     stepper_sleep("sleep")  # put stepper to sleep
-    menu()
+    menu()  # return to main menu
 
 
-menu()
+menu()  # start script with main menu
