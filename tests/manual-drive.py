@@ -7,8 +7,7 @@ import curses  # import for keyboard input
 import math  # math for calculating functions
 import Adafruit_PCA9685  # import of library for PCA9685-module
 from time import sleep
-import threading
-import ctypes
+import threading  # used for stepper control
 import RPi.GPIO as GPIO  # RPi.GPIO for GPIO-pin control
 
 screen = curses.initscr()  # create new screen
@@ -29,12 +28,13 @@ pulse_freq = 50  # I2C communication frequency
 pwm.set_pwm_freq(pulse_freq)  # set frequency
 
 # make sure the car does not run away on start
-current_rps = 0
+current_rps = 0  # start without stepper movement
 current_steering = steering_neutral
 
 
 def calc_angle(x):
     '''gets angle and calculates coresponding pwm value'''
+
     val = 0.000002 * (math.pow(x, 4)) + 0.000002 * (math.pow(x, 3)) + 0.005766 * (math.pow(x, 2)) - (
                 1.81281 * x) + 324.149
     return val
@@ -93,12 +93,12 @@ try:
             pwm_calc = calc_angle(current_steering)  # calculate steering pwm value from angle
             pwm.set_pwm(0, 0, int(pwm_calc))  # set pwm value for steering motor
 
-            if current_rps > 0:
+            if current_rps > 0:  # only calculate if possible
                 delay = (1 / (200 * float(current_rps))) / 2  # delay based on rounds per second
-            elif current_rps == 0:
+            elif current_rps == 0:  # unable to devide by zero
                 delay = 0
 
-            t.join()
+            t.join()  # updates parameters of thread?????
 
             screen.clear()
             screen.addstr("Velocity: " + str(current_rps) + "[rps]" + "         Steering angle: " + str(current_steering) + "[degree]")
