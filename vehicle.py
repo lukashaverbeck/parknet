@@ -375,8 +375,7 @@ if __name__ == "__main__":
     driver = Driver.instance()
     sensor_manager = SensorManager.instance()
     action_manager = interaction.ActionManager.instance()
-
+    
+    AutoConnector.start_connector()
     interface = WebInterface(agent, driver, sensor_manager, action_manager)
     interface.start()
-
-    AutoConnector.start_connector()
