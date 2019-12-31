@@ -1,7 +1,34 @@
-# collection of global constants
+# This module is a collection of global constants divided into multiple classes
+# that represent a separate concern.
+#
 # author:   @lukashaverbeck
 # author:   @LunaNordin
-# version:  1.1.1(27.12.2019)
+# version:  2.0 (28.12.2019)
+
+
+class Connection:
+    WLAN_PASSWORD = "42Rkc#oR"
+
+
+class Driving:
+    CAUTIOUS_VELOCITY = 5       # cm/s
+    STOP_VELOCITY = 0           # cm/s
+    MAX_VELOCITY = 5            # cm/s
+    MIN_VELOCITY = -5           # cm/s
+
+    MIN_STEERING_ANGLE = -35    # °
+    MAX_STEERING_ANGLE = 35     # °
+    NEUTRAL_STEERING_ANGLE = 0  # °
+
+    SAFETY_DISTANCE = 3         # cm
+    LEAVE_PARKING_LOT_PROPORTION = 0.4
+
+
+class EchoPin:
+    FRONT = 24
+    RIGHT = 27
+    BACK = 17
+    BACK_ANGLED = 10
 
 
 class Mode:
@@ -18,48 +45,16 @@ class Mode:
     DEFAULT = MANUAL
 
 
-class Driving:
-    CAUTIOUS_VELOCITY = 308     # pwm
-    STOP_VELOCITY = 340         # pwm
-    MAX_VELOCITY = 360          # pwm
-    MIN_VELOCITY = 320          # pwm
-
-    MIN_STEERING_ANGLE = -35    # °
-    MAX_STEERING_ANGLE = 35     # °
-    NEUTRAL_STEERING_ANGLE = 0  # °
-
-    SAFETY_DISTANCE = 3         # cm
-
-
 class Stepper:
     DIRECTION_PIN = 20
     STEP_PIN = 21
     SLEEP_PIN = 26
 
 
-class Direction:
-    FRONT = 0
-    RIGHT = 1
-    BACK = 2
-    BACK_ANGLED = 3
-
-
-class File:
+class Storage:
     ATTRIBUTES = "./attributes.json"
-
-
-class TriggerPin:
-    HC_SR04_FRONT = 23
-    HC_SR04_RIGHT = 22
-    HC_SR04_BACK = 4
-    HC_SR04_BACK_ANGLED = 18
-
-
-class EchoPin:
-    HC_SR04_FRONT = 24
-    HC_SR04_RIGHT = 27
-    HC_SR04_BACK = 17
-    HC_SR04_BACK_ANGLED = 10
+    DATA = "./data/"
+    CHECKPOINTS = "./checkpoints/"
 
 
 class Topic:
@@ -68,3 +63,10 @@ class Topic:
     FORMATION_CONFIRMATION = "formation/confirm-backward-pass"
     FORMATION_FORWARD_PASS = "formation/forward-pass"
     FORMATION_BACKWARD_PASS = "formation/backward-pass"
+
+
+class TriggerPin:
+    FRONT = 23
+    RIGHT = 22
+    BACK = 4
+    BACK_ANGLED = 18
