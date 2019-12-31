@@ -26,6 +26,7 @@ import constants as const
 from util import Singleton
 from threading import Thread
 from datetime import datetime
+from connection import AutoConnector
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
 
@@ -377,3 +378,5 @@ if __name__ == "__main__":
 
     interface = WebInterface(agent, driver, sensor_manager, action_manager)
     interface.start()
+
+    AutoConnector.start_connector()
