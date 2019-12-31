@@ -26,6 +26,7 @@ import constants as const
 from util import Singleton
 from threading import Thread
 from datetime import datetime
+from ui.interface import WebInterface
 from vision import Camera, SensorManager
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
@@ -251,9 +252,8 @@ class Driver:
     def stop_recording(self):
         """ stops the thread that captures the data """
 
-        try:
+        if self.recorder_thread is not None:
             self.recorder_thread.stop()
-        finally:
             self.recorder_thread = None
 
 
@@ -367,3 +367,13 @@ class DriveThread(Thread):
         """
         
         self.active = False
+
+
+if __name__ == "__main__":
+    agent = Agent.instance()
+    driver = Driver.instance()
+    sensor_manager = SensorManager.instance()
+    action_manager = interaction.ActionManager.instance()
+
+    interface = WebInterface(agent, driver, sensor_manager, action_manager)
+    interface.start()
