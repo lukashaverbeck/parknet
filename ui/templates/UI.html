@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>parknet - Websteuerung</title>
+        <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}"></script>
+    </head>
+
+    <body>
+        <section id="container-mode">
+            <div id="container-controll">
+                <div id="container-progress">
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                    <div class="line"></div>
+                    <div class="circle"></div>
+                </div>
+    
+                <div id="container-cards">
+                    <div class="card">
+                        <button data-mode="drive/manual">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+            
+                        <h1>Manuell fahren</h1>
+                    </div>
+
+                    <div class="card">
+                        <button data-mode="parking/search">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+    
+                        <h1>Parkplatz suchen</h1>
+                    </div>
+    
+                    <div class="card">
+                        <button data-mode="parking/enter">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+        
+                        <h1>Einparken</h1>
+                    </div>
+    
+                    <div class="card">
+                        <button data-mode="parking/leave">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+        
+                        <h1>Ausparken</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div id="container-options">
+                <button id="btn-video">
+                    <i class="material-icons">videocam</i>
+                </button>
+
+                <button id="btn-emergency-stop">
+                    <i class="material-icons">power_settings_new</i>
+                </button>
+
+                <button id="btn-fullscreen">
+                    <i class="material-icons">fullscreen</i>
+                </button>
+            </div>
+        </section>
+
+        <section id="container-vehicle">
+            <div id="velocity">
+                <span>3,45 m/s</span>
+            </div>
+            <div id="steering-angle">
+                <span>0 °</span>
+            </div>
+
+            <div id="container-car">
+                <div id="distance-top">
+                    <span>3,46 m</span>
+                </div>
+                <div id="distance-right">
+                    <span>0,34 m</span>
+                </div>
+                <div id="distance-bottom">
+                    <span>2,00 m</span>
+                </div>
+
+                <div id="car"></div>
+            </div>
+        </section>
+    </body>
+
+    <script src="{{url_for('static', filename='main.js')}}"></script>
+</html>
