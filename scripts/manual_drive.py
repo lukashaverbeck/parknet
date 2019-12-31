@@ -1,14 +1,13 @@
-# This script controls a picar with keyboard input via ssh-console.
+# This script controls a picar with keyboard input via ssh console.
 #
 # author: @LunaNordin
-# version: 4.0(29.12.2019)
+# version: 2.0 (31.12.2019)
 
-import curses  # import for keyboard input
-import math  # math for calculating functions
-import Adafruit_PCA9685  # import of library for PCA9685-module
+import curses  # keyboard input
+import Adafruit_PCA9685  # PCA9685-module
 from time import sleep
-import threading  # used for stepper control
-import RPi.GPIO as GPIO  # RPi.GPIO for GPIO-pin control
+import threading
+import RPi.GPIO as GPIO  # GPIO-pin control
 
 screen = curses.initscr()  # create new screen
 curses.noecho()  # do not echo keyboard input
@@ -32,12 +31,17 @@ current_rps = 0  # start without stepper movement
 current_steering = steering_neutral
 
 
-def calc_angle(x):
-    '''gets angle and calculates coresponding pwm value'''
+def calc_angle(angle):
+    """ calculates a pwm value for a given angle
 
-    val = 0.000002 * (math.pow(x, 4)) + 0.000002 * (math.pow(x, 3)) + 0.005766 * (math.pow(x, 2)) - (
-                1.81281 * x) + 324.149
-    return val
+        Args:
+            angle (float): angle to be converted to a pwm value
+
+        Returns:
+            float: corresponding pwm value    
+    """
+
+    return 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + .005766 * angle ** 2 - 1.81281 * angle + 324.149
 
 
 def move_stepper(delay):
@@ -45,7 +49,7 @@ def move_stepper(delay):
         try:
             while True:
                 sleep(1)  # wait to keep rps
-                print(test)
+                print("test")
         finally:
             pass
 
@@ -98,10 +102,10 @@ try:
             elif current_rps == 0:  # unable to devide by zero
                 delay = 0
 
-            t.join()  # updates parameters of thread?????
+            t.join()  # updates parameters of thread ?????
 
             screen.clear()
-            screen.addstr("Velocity: " + str(current_rps) + "[rps]" + "         Steering angle: " + str(current_steering) + "[degree]")
+            screen.addstr(f"Velocity: {current_rps}[rps]" + "         Steering angle: {current_steering}[degree]")
             screen.refresh()
 
 # leave cleanly to prevent a messed up console
