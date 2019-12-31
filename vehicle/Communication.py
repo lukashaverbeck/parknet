@@ -117,6 +117,15 @@ class Communication:
 
         self.__callbacks.append({"function": callback, "topic": topic})
 
+
+    def get_agent_id(self):
+        """ returns the agent id
+        This method is used by the webserver to display the agent id to the app user
+
+        :return: agent id
+        """
+        return self.__agent_id
+
     def send(self, topic, content, receiver=None):
         """ sends a message with a topic to all agents in the network
 
@@ -214,7 +223,7 @@ class Serv(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
         else:
-            file_to_open = "<h1>GET</h1>"
+            file_to_open = "<h1>Agent</h1> <p>ID: "+ self.communication.get_agent_id() + "</p>"
             self.send_response(200)
             self.end_headers()
             self.wfile.write(bytes(file_to_open, "utf-8"))
@@ -229,7 +238,7 @@ class Serv(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<h1>POST</h1>", "utf-8"))
         
         response = bytes(body).decode("utf-8")
-        response_data = response.split("=" , 1)
+        response_data = response.split("=", 1)
 
         if self.communication:
             for data in response_data:
