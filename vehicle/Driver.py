@@ -2,10 +2,11 @@
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
+# TODO test driving methods
 #
 # author: 	@lukashaverbeck
 # author:	@LunaNordin
-# version: 	2.1.1(10.12.2019)
+# version: 	3.0(1.1.2020)
 
 import os
 import csv
@@ -21,7 +22,7 @@ from datetime import datetime
 from SensorManager import SensorManager
 from ActionManager import ActionManager
 from Camera import Camera, save_img_array
-# from SteeringNet import SteeringNet
+from SteeringNet import SteeringNet
 
 
 class Driver:
@@ -232,12 +233,12 @@ class Driver:
         self.stop_driving()
 
     def manual_driving(self):
-        """ starts the driving thread and relies on user intefaces to change the steering data """
+        """ starts the driving thread and relies on user interfaces to change the steering data """
 
         self.start_driving()
 
     def start_recording(self):
-        """ saves a continuos stream image of the current camera input and logs the corresponding
+        """ saves a continuous stream image of the current camera input and logs the corresponding
             steering angle and velocity
         """
 
@@ -383,13 +384,11 @@ class Driver:
             self.__pulse_freq = 50
             self.__pwm.set_pwm_freq(self.__pulse_freq)
 
-        # TODO
+
         def run(self):
             """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves
                 the vehicle according to the driver's steering angle and velocity by addressing
                 the vehicle's hardware
-
-                TODO switch to stepper motor
             """
 
             drive_thread = threading.Thread(target=self.drive)
@@ -399,21 +398,23 @@ class Driver:
             steer_thread.start()
 
         def drive(self):
-            GPIO.setwarnings(False)  # disable GPIO warnings for console convenience
-            GPIO.setmode(GPIO.BCM)  # GPIO instance works in broadcom-memory mode
-            GPIO.setup(20, GPIO.OUT)  # direction pin is an output
-            GPIO.setup(21, GPIO.OUT)  # step pin is an output
-            GPIO.setup(26, GPIO.OUT)  # sleep pin is an output
-            self.change_stepper_status(True)  # activate stepper
+            """controlles stepper movement"""
+
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(20, GPIO.OUT)
+            GPIO.setup(21, GPIO.OUT)
+            GPIO.setup(26, GPIO.OUT)
+            self.change_stepper_status(True)
 
             while self.__drive:
                 velocity = self.__driver.get_velocity()
                 delay = self.calculate_delay(velocity)
 
                 if velocity > 0:
-                    GPIO.output(20, 0)  # direction is set to clockwise
+                    GPIO.output(20, 0)
                 else:
-                    GPIO.output(20, 1)  # direction is set to counterclockwise
+                    GPIO.output(20, 1)
 
                 # ensures that there is enough space in front of or behind the vehicle by skipping the current
                 # driving loop if the minimal front distance is assumed to be exceeded
@@ -423,12 +424,15 @@ class Driver:
                 predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
                 if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
-                GPIO.output(21, GPIO.HIGH)  # make one step
+                GPIO.output(21, GPIO.HIGH)
                 time.sleep(delay)
-                GPIO.output(21, GPIO.LOW)  # turn step pin low to prepare next step
+                GPIO.output(21, GPIO.LOW)
                 time.sleep(delay)
 
+
         def steer(self):
+            """calculates and sets steering angle"""
+
             while self.__drive:
                 angle = self.__driver.get_angle()
                 steering_pwm_calc = self.angle_to_pmw(angle)
@@ -437,22 +441,24 @@ class Driver:
                 self.__pwm.set_pwm(0, 0, steering_pwm_calc)
                 print(time.time() - start_time)
 
+
         def change_stepper_status(self, status):
-            '''activates and deactivates controller in order to save energy'''
+            """activates and deactivates controller in order to save energy"""
 
             if status:
-                GPIO.output(26, GPIO.HIGH)  # activate controller
+                GPIO.output(26, GPIO.HIGH)
             else:
-                GPIO.output(26, GPIO.LOW)  # put controller to sleep mode
+                GPIO.output(26, GPIO.LOW)
 
 
 
         def calculate_delay(self, velocity):
-            '''calculates delay time used between steps according to velocity'''
+            """calculates delay time used between steps according to velocity"""
 
             rps = velocity / 1.729
-            delay = (1 / (200 * float(rps))) / 2  # delay based on rounds per second
+            delay = (1 / (200 * float(rps))) / 2
             return delay
+
 
         def angle_to_pmw(self, angle):
             """ converts the current steering angle to a pulse width modulation value that can be processed by the
@@ -468,13 +474,10 @@ class Driver:
             val = 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + 0.005766 * angle ** 2 - 1.81281 * angle + 324.149
             return int(round(val, 0))
 
-        # TODO
-        def stop(self):
-            """ stops the movement of the vehicle
 
-                TODO switch to stepper motor
-            """
+        def stop(self):
+            """ stops the movement of the vehicle"""
 
             self.__drive = False
-            self.change_stepper_status(False)  # put stepper to sleep
+            self.change_stepper_status(False)
             self.__pwm.set_pwm(0, 0, self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE))
