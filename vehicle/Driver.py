@@ -2,9 +2,7 @@
 #
 # TODO implement enter_parking_lot()
 # TODO implement leave_parking_lot()
-# TODO switch to stepper motor
-# TODO implement DriveThread.velocity_to_pwm()
-# 
+#
 # author: 	@lukashaverbeck
 # author:	@LunaNordin
 # version: 	2.1.1(10.12.2019)
@@ -17,12 +15,13 @@ import math
 import curses
 import threading
 import Adafruit_PCA9685
+import RPi.GPIO as GPIO
 import constants as const
 from datetime import datetime
 from SensorManager import SensorManager
 from ActionManager import ActionManager
 from Camera import Camera, save_img_array
-from SteeringNet import SteeringNet
+# from SteeringNet import SteeringNet
 
 
 class Driver:
@@ -44,6 +43,7 @@ class Driver:
         self.__length = agent.get_length()
         self.__width = agent.get_width()
         self.__mode = const.Mode.DEFAULT
+        self.__mode = const.Mode.ENTER
         self.__formation = formation
         self.__recorder = None
 
@@ -57,7 +57,7 @@ class Driver:
         """ stops and deletes the thread that moves the vehicle
             it also sets the velocity and steering angle to 0
         """
-	
+
         self.set_velocity(const.Driving.STOP_VELOCITY)
         self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
 
@@ -73,7 +73,7 @@ class Driver:
             this method does not move the vehicle but instead changes the velocity relatively
 
             Args:
-                velocity (float): desired velocity change
+                velocity_change (float): desired velocity change
         """
 
         velocity = self.__velocity + velocity_change
@@ -91,7 +91,7 @@ class Driver:
             angle relatively
 
             Args:
-                angle (float): desired angle change
+                angle_change (float): desired angle change
         """
 
         angle = self.__angle + angle_change
@@ -115,7 +115,7 @@ class Driver:
             Args:
                 mode (str): desired mode
         """
-        
+
         if mode not in const.Mode.ALL:
             mode = const.Mode.DEFAULT
 
@@ -128,21 +128,12 @@ class Driver:
             for the algorithm to work the method assumes that the vehicle is parallel
             to the front vehicle or obstacle with their back fronts at the same height
         """
-	
+
         self.start_driving()
-        self.set_velocity(const.Driving.STOP_VELOCITY)
-        time.sleep(1)
-        self.set_steering_angle(-35)
-        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
-        time.sleep(2)
-        self.set_velocity(const.Driving.STOP_VELOCITY)
-        self.set_steering_angle(const.Driving.NEUTRAL_STEERING_ANGLE)
-        time.sleep(1)
-        self.set_velocity(const.Driving.CAUTIOUS_VELOCITY)
-        while self.__sensor_manager.get_distance(const.Direction.BACK) >= 35:
-            continue
-        self.set_velocity(const.Driving.STOP_VELOCITY)
+        self.__velocity = 7
+        time.sleep(5)
         self.stop_driving()
+
 
     # TODO
     def leave_parking_lot(self):
@@ -258,10 +249,10 @@ class Driver:
         img_directory = log_directory + "img/"
         log_path = log_directory + "log.csv"
 
-        # create the needed directories 
+        # create the needed directories
         if not os.path.isdir(data_directory):
             os.mkdir(data_directory)
-        
+
         os.mkdir(log_directory)
         os.mkdir(img_directory)
 
@@ -285,7 +276,7 @@ class Driver:
     def get_velocity(self):
         return self.__velocity
 
-    def get_sensor_manager(self) :
+    def get_sensor_manager(self):
         return self.__sensor_manager
 
     # -- setters --
@@ -349,7 +340,7 @@ class Driver:
             with open(self.__log_path, "a", newline="") as log:
                 writer = csv.writer(log)
                 writer.writerow(["image", "old_angle", "angle", "old_velocity", "velocity"])
-                
+
                 while self.__run:
                     img = self.__camera.get_image()
                     angle = self.__driver.get_angle()
@@ -387,7 +378,7 @@ class Driver:
             self.__driver = driver
             self.__sensor_manager = self.__driver.get_sensor_manager()
             self.__drive = True
-            
+
             self.__pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
             self.__pulse_freq = 50
             self.__pwm.set_pwm_freq(self.__pulse_freq)
@@ -400,10 +391,29 @@ class Driver:
 
                 TODO switch to stepper motor
             """
-            
+
+            drive_thread = threading.Thread(target=self.drive)
+            steer_thread = threading.Thread(target=self.steer)
+
+            drive_thread.start()
+            steer_thread.start()
+
+        def drive(self):
+            GPIO.setwarnings(False)  # disable GPIO warnings for console convenience
+            GPIO.setmode(GPIO.BCM)  # GPIO instance works in broadcom-memory mode
+            GPIO.setup(20, GPIO.OUT)  # direction pin is an output
+            GPIO.setup(21, GPIO.OUT)  # step pin is an output
+            GPIO.setup(26, GPIO.OUT)  # sleep pin is an output
+            self.change_stepper_status(True)  # activate stepper
+
             while self.__drive:
-                angle = self.__driver.get_angle()
                 velocity = self.__driver.get_velocity()
+                delay = self.calculate_delay(velocity)
+
+                if velocity > 0:
+                    GPIO.output(20, 0)  # direction is set to clockwise
+                else:
+                    GPIO.output(20, 1)  # direction is set to counterclockwise
 
                 # ensures that there is enough space in front of or behind the vehicle by skipping the current
                 # driving loop if the minimal front distance is assumed to be exceeded
@@ -413,15 +423,39 @@ class Driver:
                 predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
                 if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
-                time.sleep(self.DRIVING_INTERVAL)
-                
-            steering_pwm_calc = self.angle_to_pmw(angle)
-            
-            self.__pwm.set_pwm(1, 0, velocity)
-            self.__pwm.set_pwm(0, 0, steering_pwm_calc)
-                
+                GPIO.output(21, GPIO.HIGH)  # make one step
+                time.sleep(delay)
+                GPIO.output(21, GPIO.LOW)  # turn step pin low to prepare next step
+                time.sleep(delay)
+
+        def steer(self):
+            while self.__drive:
+                angle = self.__driver.get_angle()
+                steering_pwm_calc = self.angle_to_pmw(angle)
+
+                start_time = time.time()
+                self.__pwm.set_pwm(0, 0, steering_pwm_calc)
+                print(time.time() - start_time)
+
+        def change_stepper_status(self, status):
+            '''activates and deactivates controller in order to save energy'''
+
+            if status:
+                GPIO.output(26, GPIO.HIGH)  # activate controller
+            else:
+                GPIO.output(26, GPIO.LOW)  # put controller to sleep mode
+
+
+
+        def calculate_delay(self, velocity):
+            '''calculates delay time used between steps according to velocity'''
+
+            rps = velocity / 1.729
+            delay = (1 / (200 * float(rps))) / 2  # delay based on rounds per second
+            return delay
+
         def angle_to_pmw(self, angle):
-            """ converts the current steering angle to a pulse width modulation value that can be processed by the 
+            """ converts the current steering angle to a pulse width modulation value that can be processed by the
                 hardware
 
                 Args:
@@ -435,33 +469,12 @@ class Driver:
             return int(round(val, 0))
 
         # TODO
-        def velocity_to_pmw(self):
-            """ converts the current velocity to a pulse with modulation value that can be processed by that 
-                hardware
-
-                Returns:
-                    float: pwm value for the velocity
-            """
-
-            pass
-
-        def reverse_esc(self):
-            """ reverses direction of esc to make driving backwards possible """
-
-            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
-            time.sleep(0.1)
-            self.__pwm.set_pwm(1, 0, 310)
-            time.sleep(0.1)
-            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
-            time.sleep(0.1)
-
-        # TODO
         def stop(self):
             """ stops the movement of the vehicle
-                
+
                 TODO switch to stepper motor
             """
 
             self.__drive = False
-            self.__pwm.set_pwm(1, 0, const.Driving.STOP_VELOCITY)
+            self.change_stepper_status(False)  # put stepper to sleep
             self.__pwm.set_pwm(0, 0, self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE))
