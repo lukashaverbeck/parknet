@@ -480,5 +480,5 @@ def start_interface():
 
 
 if __name__ == "__main__":
-    #AutoConnector.start_connector()
+    AutoConnector.start_connector()
     start_interface()
