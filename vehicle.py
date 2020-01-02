@@ -340,6 +340,7 @@ class DriveThread(Thread):
 
             TODO implement hardware control
         """
+
         drive_thread = Thread(target=self.drive)
         steer_thread = Thread(target=self.steer)
 
@@ -347,7 +348,7 @@ class DriveThread(Thread):
         steer_thread.start()
 
     def drive(self):
-        """controlls stepper movement"""
+        """ controlls stepper movement """
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
@@ -360,6 +361,7 @@ class DriveThread(Thread):
             velocity = self.driver.velocity
             delay = self.calculate_delay(velocity)
 
+            # apply driving direction
             if velocity > 0:
                 GPIO.output(20, 0)
             else:
@@ -373,36 +375,45 @@ class DriveThread(Thread):
             predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
             if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
+            # address motor
             GPIO.output(21, GPIO.HIGH)
             time.sleep(delay)
             GPIO.output(21, GPIO.LOW)
             time.sleep(delay)
 
     def steer(self):
-        """calculates and sets steering angle"""
+        """ applies the desired steering angle to the hardware """
 
         while self.active:
             angle = self.driver.angle
             steering_pwm_calc = self.angle_to_pmw(angle)
             self.pwm.set_pwm(0, 0, steering_pwm_calc)
 
-
     def change_stepper_status(self, status):
-        """activates and deactivates controller in order to save energy"""
+        """ activates and deactivates controller in order to save energy
+
+            Args:
+                status (bool): energy status (True -> high , False -> low)
+        """
 
         if status:
             GPIO.output(26, GPIO.HIGH)
         else:
             GPIO.output(26, GPIO.LOW)
 
-
     def calculate_delay(self, velocity):
-        """calculates delay time used between steps according to velocity"""
+        """ calculates delay time used between steps according to velocity
+
+            Args:
+                velocity (float): velocity in cm/s to be converted to a delay time
+
+            Returns:
+                float: delay time
+        """
 
         rps = velocity / 1.729
         delay = (1 / (200 * float(rps))) / 2
         return delay
-
 
     def angle_to_pmw(self, angle):
         """ converts the current steering angle to a pulse width modulation value that can be processed by the
@@ -419,21 +430,23 @@ class DriveThread(Thread):
         return int(round(val, 0))
 
     def stop(self):
-        """ stops the movement of the vehicle
-
-            TODO implement method
-        """
+        """ stops the movement of the vehicle """
 
         self.active = False
 
 
 def start_interface():
-    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
+    """ constantly checks for new IP addresses of picar and restarts
+        webservers every time a new IP address was detected
+    """
 
     last_ip = None
+
     while True:
         time.sleep(5)
         current_ips = get_local_ip().split()
+
+        # check if a network address was found
         if len(current_ips) == 0:
             continue
         elif len(current_ips) == 1:
@@ -447,6 +460,7 @@ def start_interface():
             else:
                 current_ip = current_ips[1]
 
+        # restar webservers if the IP is new
         if not current_ip == last_ip:
             last_ip = current_ip
             print(f"Found new ip: {current_ip}")
