@@ -371,12 +371,15 @@ class DriveThread(Thread):
 
 
 def start_interface():
-    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
+    """ checks for new ip addresses of picar and starts interface-webserver on new ip """
 
     last_ip = None
+
     while True:
         time.sleep(5)
         current_ips = get_local_ip().split()
+
+        # filter network address
         if len(current_ips) == 0:
             continue
         elif len(current_ips) == 1:
@@ -390,6 +393,7 @@ def start_interface():
             else:
                 current_ip = current_ips[1]
 
+        # restart webserver everytime a new network address is detected
         if not current_ip == last_ip:
             last_ip = current_ip
             print(f"Found new ip: {current_ip}")
