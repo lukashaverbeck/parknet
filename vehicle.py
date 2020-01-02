@@ -437,6 +437,7 @@ class DriveThread(Thread):
         self.active = False
 
 
+@threaded
 def start_interface():
     """ constantly checks for new IP addresses of picar and restarts
         webservers every time a new IP address was detected
@@ -478,5 +479,4 @@ def start_interface():
 
 if __name__ == "__main__":
     AutoConnector.start_connector()
-    interface_thread = Thread(target = start_interface)
-    interface_thread.start()
+    start_interface()
