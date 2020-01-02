@@ -43,9 +43,14 @@ class Communication:
     def set_local_ip(self , ip_address):
         self.local_ip = ip_address
         print(f"Restarting Webserver on {self.local_ip}")
-        self.server = HTTPServer((ip_address, 80), Server)
-        server_thread = Thread(target=self.server.serve_forever)
-        server_thread.start()
+
+        try:
+
+            self.server = HTTPServer((ip_address, 80), Server)
+            server_thread = Thread(target=self.server.serve_forever)
+            server_thread.start()
+        except OSError:
+            print("Already connected to this address or address blocked")
 
     def scan_ips_from_network(self):
         """ determines the used ip addresses in the network
@@ -63,7 +68,7 @@ class Communication:
         except IndexError:
             raise IndexError("The method `self.local_ip` provided an invalid IP address.")
         else:
-            for i in range(1, 158):
+            for i in range(2, 158):
                 ip = ip_network + str(i)
                 result = check_if_up(ip)
                 if result: ips.append(ip)
