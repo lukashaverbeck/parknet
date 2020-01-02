@@ -469,13 +469,14 @@ def start_interface():
             print(f"Found new ip: {current_ip}")
 
             agent = Agent.instance()
-            interaction.Communication.instance()
-            #driver = Driver.instance()
-            #sensor_manager = SensorManager.instance()
-            #action_manager = interaction.ActionManager.instance()
+            communication = interaction.Communication.instance()
+            communication.set_local_ip(current_ip)
+            driver = Driver.instance()
+            sensor_manager = SensorManager.instance()
+            action_manager = interaction.ActionManager.instance()
 
-            #interface = WebInterface(agent, driver, sensor_manager, action_manager)
-            #interface.start(current_ip)
+            interface = WebInterface(agent, driver, sensor_manager, action_manager)
+            interface.start(current_ip)
 
 
 if __name__ == "__main__":
