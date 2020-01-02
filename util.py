@@ -2,7 +2,9 @@
 # throughout the whole project and cannot be assigned to single modules.
 #
 # author: @lukashaverbeck
-# version: 2.0 (29.12.2019)
+# version: 2.1 (02.01.2019)
+
+from threading import Thread
 
 
 class Singleton:
@@ -35,3 +37,21 @@ class Singleton:
 
     def __instancecheck__(self, instance):
         return isinstance(instance, self.decorated)
+
+
+def threaded(func):
+    """ allows to call a function in its own thread by decorating that function with @threaded
+        NOTE this function does not start the thread directly but at the time the decorated function is called
+
+        Args:
+            func (function): function to be executed in its own thread
+
+        Returns:
+            function: decorated function
+    """
+
+    def start_threaded_function(*args, **kwargs):
+        thread = Thread(target=lambda: func(*args, **kwargs))
+        thread.start()
+
+    return start_threaded_function

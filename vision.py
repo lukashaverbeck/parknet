@@ -15,8 +15,8 @@ import picamera.array
 import RPi.GPIO as GPIO
 import constants as const
 import pyzbar.pyzbar as pyzbar
-from util import Singleton
 from threading import Thread
+from util import Singleton, threaded
 
 
 @Singleton
@@ -55,9 +55,9 @@ class SensorManager:
         time.sleep(2)  # wait two seconds to make sure there are no signal fragments which could be detected
 
         # start updating the distances in a separate thread
-        refresh_thread = Thread(target=self.update)
-        refresh_thread.start()
+        self.update()
 
+    @threaded
     def update(self):
         """ constantly updates the measured distances """
 
@@ -117,10 +117,7 @@ class Camera:
         # check if the camera was not used before
         if self.uses <= 0:
             self.uses = 1
-
-            # start capturing images
-            recorder_thread = Thread(target=self.record)
-            recorder_thread.start()
+            self.record()
         else:
             self.uses += 1
 
@@ -131,6 +128,7 @@ class Camera:
 
         self.uses -= 1
 
+    @threaded
     def record(self):
         """ constanly takes images as long as there is at least one instance accessing the camera """
 
@@ -162,10 +160,7 @@ class FrontAgentScanner:
         # check if the scanner was not used before
         if self.uses <= 0:
             self.uses = 1
-
-            # start analyzing the camera input
-            recorder_thread = Thread(target=self.update)
-            recorder_thread.start()
+            self.update()
         else:
             self.uses += 1
 
@@ -176,6 +171,7 @@ class FrontAgentScanner:
 
         self.uses -= 1
 
+    @threaded
     def update(self):
         """ constanly updates the front agent ID based on the current video input
             as long as there is at least one instance accessing the camera

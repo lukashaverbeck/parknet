@@ -17,10 +17,9 @@ import requests
 import constants as const
 from threading import Thread
 from http.server import HTTPServer
-from util import Singleton
+from util import Singleton, threaded
 from vision import FrontAgentScanner
 from connection import get_local_ip, check_if_up, scan_ips_from_network, Server
-
 
 @Singleton
 class Communication:
@@ -190,12 +189,10 @@ class ActionManager:
         for mode, action in self.PROACTIVAE_ACTIONS.items():
             assert callable(action), f"driver cannot execute action {action} for {mode}"
 
-        # start threads executing continuous tasks
-        update_thread = Thread(target=self.update)
-        check_thread = Thread(target=self.check_global_permission)
-        act_thread = Thread(target=self.act)
-        for thread in [update_thread, check_thread, act_thread]:
-            thread.start()
+        # start executing continuous tasks
+        self.update()
+        self.check_global_permission()
+        self.act()
 
         # subscribe to completion and global action messages
         self.communication.subscribe(const.Topic.GLOBAL_ACTION_COMPLETED, self.receive_completion)
@@ -204,6 +201,7 @@ class ActionManager:
     def __iter__(self):
         yield from self.local_actions
 
+    @threaded
     def update(self):
         """ continuously checks if the agent is currently taking an
             action and in this case sends it to every agent in the network
@@ -217,6 +215,7 @@ class ActionManager:
 
             time.sleep(self.WAIT_SEND_GLOBAL)
 
+    @threaded
     def check_global_permission(self):
         """ continuously checks if the agent is allowed to make its local 
             agent it intents to take global and in this case executes this action
@@ -243,6 +242,7 @@ class ActionManager:
                 self.global_verification = True
                 self.local_actions.pop(0)
 
+    @threaded
     def act(self):
         """ continuously determines which actions to execute and executes them by addressing the driver """
 
@@ -459,9 +459,7 @@ class Formation:
         self.backpass_confirmed = False
         self.latest_update = 0.0
 
-        # start updating the formation in a separate thread
-        update_thread = Thread(target=self.update)
-        update_thread.start()
+        self.update()
 
     def __len__(self):
         return len(self.agents)
@@ -489,6 +487,7 @@ class Formation:
         except ZeroDivisionError:
             return 0
 
+    @threaded
     def update(self):
         """ constantly updates the current formation by exchanging data with other agents within a network """
 

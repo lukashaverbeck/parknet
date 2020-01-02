@@ -25,12 +25,12 @@ import interaction
 import RPi.GPIO as GPIO
 import Adafruit_PCA9685
 import constants as const
-from util import Singleton
 from threading import Thread
 from datetime import datetime
-from connection import AutoConnector, get_local_ip
+from util import Singleton, threaded
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
+from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -347,6 +347,7 @@ class DriveThread(Thread):
         drive_thread.start()
         steer_thread.start()
 
+    @threaded
     def drive(self):
         """ controlls stepper movement """
 
@@ -381,6 +382,7 @@ class DriveThread(Thread):
             GPIO.output(21, GPIO.LOW)
             time.sleep(delay)
 
+    @threaded
     def steer(self):
         """ applies the desired steering angle to the hardware """
 
