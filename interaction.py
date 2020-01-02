@@ -19,7 +19,7 @@ from threading import Thread
 from http.server import HTTPServer
 from util import Singleton, threaded
 from vision import FrontAgentScanner
-from connection import get_local_ip, check_if_up, scan_ips_from_network, Server
+from connection import get_local_ip, check_if_up,  Server
 
 @Singleton
 class Communication:
@@ -31,12 +31,47 @@ class Communication:
         # TODO: change to dynamic ip
         # intitialize and start web server
         Server.communication = self
+        self.local_ip = "127.0.0.1"
         self.server = HTTPServer(("127.0.0.1", 80), Server)
+        print(f"Starting Webserver on {self.local_ip}")
         server_thread = Thread(target=self.server.serve_forever)
         server_thread.start()
 
         self.subscriptions = []
         self.agent = vehicle.Agent.instance()
+
+    def set_local_ip(self , ip_address):
+        self.local_ip = ip_address
+        print(f"Restarting Webserver on {self.local_ip}")
+        self.server = HTTPServer((ip_address, 80), Server)
+        server_thread = Thread(target=self.server.serve_forever)
+        server_thread.start()
+
+    def scan_ips_from_network(self):
+        """ determines the used ip addresses in the network
+
+            Returns:
+                list: list of used ips in the network
+        """
+
+        ips = []
+        local_ip = self.local_ip
+        ip_parts = local_ip.split(".")
+
+        try:
+            ip_network = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + "."
+        except IndexError:
+            raise IndexError("The method `self.local_ip` provided an invalid IP address.")
+        else:
+            for i in range(1, 158):
+                ip = ip_network + str(i)
+                result = check_if_up(ip)
+                if result: ips.append(ip)
+
+            if local_ip in ips:
+                ips.remove(local_ip)
+
+            return ips
 
     def subscribe(self, topic, callback):
         """ subscribes to a topic by defining a callback function that is triggered when the event occours
@@ -65,9 +100,11 @@ class Communication:
 
         # TODO: change to dynamic ip
         # send message to every agent in the network
-        #for ip in scan_ips_from_network():
-        #    requests.post("http://" + ip, data=json_message)
-        #requests.post("http://" + "127.0.0.1", data=json_message)
+        for ip in self.scan_ips_from_network():
+            requests.post("http://" + ip, data=json_message)
+        requests.post("http://" + self.local_ip, data=json_message)
+
+
 
     def trigger(self, message):
         """ triggers every callback with the topic transmitted by the message
