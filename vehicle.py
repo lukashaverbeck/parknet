@@ -7,7 +7,7 @@
 # author: @LukasGra
 # author: @LunaNordin
 # author: @lukashaverbeck
-# version: 2.0 (29.12.2019)
+# version: 2.1 (1.1.2020)
 #
 # TODO implement Driver.enter_parking_lot
 # TODO implement Driver.leave_parking_lot
@@ -26,7 +26,7 @@ import constants as const
 from util import Singleton
 from threading import Thread
 from datetime import datetime
-from connection import AutoConnector
+from connection import AutoConnector, get_local_ip
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
 
@@ -83,7 +83,7 @@ class Driver:
 
     def stop_driving(self):
         """ stops and deletes the thread that moves the vehicle it also sets the velocity and steering angle to 0 """
-	
+
         self.velocity = const.Driving.STOP_VELOCITY
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
 
@@ -92,7 +92,7 @@ class Driver:
             self.drive_thread = None
 
     def accelerate(self, velocity_diff):
-        """ changes the velocity of the vehicle 
+        """ changes the velocity of the vehicle
             NOTE this method does not move the vehicle but instead changes the internal velocity variable
 
             Args:
@@ -101,7 +101,7 @@ class Driver:
 
         try:
             velocity = self.velocity + velocity_diff
-            
+
             # ensure that the velocity stays within the limits
             if velocity > const.Driving.MAX_VELOCITY:
                 velocity = const.Driving.MAX_VELOCITY
@@ -114,7 +114,7 @@ class Driver:
 
     def steer(self, angle_diff):
         """ changes the steering angle of the vehicle
-            NOTE this method does not move the vehicle's steering axle 
+            NOTE this method does not move the vehicle's steering axle
             but instead changes the steering internal angle variable
 
             Args:
@@ -137,15 +137,15 @@ class Driver:
     def enter_parking_lot(self):
         """ parallel parking from a provided starting position
 
-            NOTE the method assumes that the vehicle stands parallel to the 
+            NOTE the method assumes that the vehicle stands parallel to the
             front vehicle or obstacle with their back fronts at the same height
 
             TODO test and implement function -> does not work yet
         """
-	
+
         self.start_driving()
         time.sleep(1)
-        
+
         self.angle = -35
         self.velocity = const.Driving.CAUTIOUS_VELOCITY
         time.sleep(2)
@@ -161,7 +161,7 @@ class Driver:
 
     def leave_parking_lot(self):
         """ steers the vehicle out of the parking lot
-            
+
             TODO implement method
         """
 
@@ -169,7 +169,7 @@ class Driver:
         time.sleep(5)
 
     def search_parking_lot(self):
-        """ drives forward while identifying possible parking lots and evaluating whether 
+        """ drives forward while identifying possible parking lots and evaluating whether
             such a parking lot would fit the vehicle's dimensions for parallel parking
             NOTE after identifying a parking lot, the vehicle drives further until it reaches the start of the parking lot
         """
@@ -198,7 +198,7 @@ class Driver:
         self.stop_driving()
 
     def follow_road(self):
-        """ drives autonomously without explicit instructions by propagating the camera 
+        """ drives autonomously without explicit instructions by propagating the camera
             input through a convolutional neural network that predicts a steering angle
 
             TODO implement method
@@ -235,8 +235,8 @@ class Driver:
         self.stop_driving()
 
     def manual_driving(self):
-        """ allows the user to steer manually and therefore solely 
-            starts driving without specifing the concrete movement 
+        """ allows the user to steer manually and therefore solely
+            starts driving without specifing the concrete movement
         """
 
         self.start_driving()
@@ -304,7 +304,7 @@ class RecorderThread(Thread):
                 if camera.image is None: continue  # skip loop if no image provided
 
                 # save image
-                img_filename =  datetime.today().strftime("%H-%M-%S-%f") + "." + self.img_extension
+                img_filename = datetime.today().strftime("%H-%M-%S-%f") + "." + self.img_extension
                 np.save(self.img_dir + img_filename, camera.image)
 
                 try:
@@ -322,7 +322,7 @@ class RecorderThread(Thread):
 
     def stop(self):
         """ stops capturing the data """
-        
+
         self.active = False
 
 
@@ -341,7 +341,7 @@ class DriveThread(Thread):
         self.sensor_manager = SensorManager.instance()
 
     def run(self):
-        """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle 
+        """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle
             according to the driver's steering angle and velocity by addressing the vehicle's hardware
 
             TODO implement hardware control
@@ -351,13 +351,13 @@ class DriveThread(Thread):
             angle = self.driver.angle
             velocity = self.driver.velocity
 
-            # ensures that there is enough space in front of or behind the vehicle by skipping 
+            # ensures that there is enough space in front of or behind the vehicle by skipping
             # the current driving loop if the minimal front distance is assumed to be exceeded
             distance = self.sensor_manager.front if velocity > 0 else self.sensor_manager.rear
             predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
             if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
-            print("drive with {angle}cm/s and {angle}°")
+            print(f"drive with {angle}cm/s and {angle}°")
 
             time.sleep(self.DRIVING_INTERVAL)
 
@@ -366,16 +366,44 @@ class DriveThread(Thread):
 
             TODO implement method
         """
-        
+
         self.active = False
 
 
+def start_interface():
+    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
+
+    last_ip = None
+    while True:
+        time.sleep(5)
+        current_ips = get_local_ip().split()
+        if len(current_ips) == 0:
+            continue
+        elif len(current_ips) == 1:
+            if not current_ips[0][:3] == "192":
+                continue
+            else:
+                current_ip = current_ips[0]
+        else:
+            if current_ips[0][:3] == "192":
+                current_ip = current_ips[0]
+            else:
+                current_ip = current_ips[1]
+
+        if not current_ip == last_ip:
+            last_ip = current_ip
+            print(f"Found new ip: {current_ip}")
+
+            agent = Agent.instance()
+            driver = Driver.instance()
+            sensor_manager = SensorManager.instance()
+            action_manager = interaction.ActionManager.instance()
+
+            interface = WebInterface(agent, driver, sensor_manager, action_manager)
+            interface.start(current_ip)
+
+
 if __name__ == "__main__":
-    agent = Agent.instance()
-    driver = Driver.instance()
-    sensor_manager = SensorManager.instance()
-    action_manager = interaction.ActionManager.instance()
-    
     AutoConnector.start_connector()
-    interface = WebInterface(agent, driver, sensor_manager, action_manager)
-    interface.start()
+    interface_thread = Thread(target = start_interface)
+    interface_thread.start()

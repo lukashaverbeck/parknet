@@ -5,14 +5,17 @@
 # it also implements utility funcions that provide information about the network.
 #
 # author: @LukasGra
-# version: 2.0 (31.12.2019)
+# version: 2.1 (1.1.2020)
 #
 # TODO simplify code in `AutoConnector`
 
+import os
 import time
 import logging
+import vehicle
 import requests
 import traceback
+import netifaces as ni
 import socket as socketlib
 import constants as const
 from wifi import Cell
@@ -32,7 +35,8 @@ def get_local_ip():
             str: local IP of the current device
     """
 
-    ip = socketlib.gethostbyname(socketlib.gethostname())
+    f = os.popen('hostname -I')
+    ip = f.read()
     return ip
 
 
@@ -219,6 +223,7 @@ class AutoConnector(Thread):
 
             self.access_point.start()
             self.hotspot_status = True
+            vehicle.start_interface()
 
     def stop_hotspot(self):
         if self.hotspot_status:
@@ -241,6 +246,7 @@ class AutoConnector(Thread):
                 print(f"Status: {self.wireless_module.connect(self.wlan_name_found_to_connect, const.Connection.WLAN_PASSWORD)}")
                 time.sleep(2)
                 print(f"Wlan network: {self.wireless_module.current()}")
+                vehicle.start_interface()
                         
                 if self.wireless_module.current() is not None:
                     self.last_wlan_connected = self.wireless_module.current()
