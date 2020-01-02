@@ -23,6 +23,7 @@ import time
 import numpy as np
 import interaction
 import RPi.GPIO as GPIO
+import Adafruit_PCA9685
 import constants as const
 from util import Singleton
 from threading import Thread
@@ -145,7 +146,8 @@ class Driver:
         """
 
         self.start_driving()
-        time.sleep(1)
+        self.velocity = 7
+        time.sleep(5)
         self.stop_driving()
 
 
@@ -330,7 +332,7 @@ class DriveThread(Thread):
 
         self.pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
         self.pulse_freq = 50
-        self.pwm.set_pwm_freq(self.__pulse_freq)
+        self.pwm.set_pwm_freq(self.pulse_freq)
 
     def run(self):
         """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle
@@ -338,8 +340,8 @@ class DriveThread(Thread):
 
             TODO implement hardware control
         """
-        drive_thread = threading.Thread(target=self.drive)
-        steer_thread = threading.Thread(target=self.steer)
+        drive_thread = Thread(target=self.drive)
+        steer_thread = Thread(target=self.steer)
 
         drive_thread.start()
         steer_thread.start()
@@ -355,7 +357,7 @@ class DriveThread(Thread):
         self.change_stepper_status(True)
 
         while self.active:
-            velocity = self.velocity
+            velocity = self.driver.velocity
             delay = self.calculate_delay(velocity)
 
             if velocity > 0:
@@ -380,7 +382,7 @@ class DriveThread(Thread):
         """calculates and sets steering angle"""
 
         while self.active:
-            angle = self.angle
+            angle = self.driver.angle
             steering_pwm_calc = self.angle_to_pmw(angle)
             self.pwm.set_pwm(0, 0, steering_pwm_calc)
 
@@ -426,15 +428,12 @@ class DriveThread(Thread):
 
 
 def start_interface():
-    """ checks for new ip addresses of picar and starts interface-webserver on new ip """
+    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
 
     last_ip = None
-
     while True:
         time.sleep(5)
         current_ips = get_local_ip().split()
-
-        # filter network address
         if len(current_ips) == 0:
             continue
         elif len(current_ips) == 1:
@@ -448,7 +447,6 @@ def start_interface():
             else:
                 current_ip = current_ips[1]
 
-        # restart webserver everytime a new network address is detected
         if not current_ip == last_ip:
             last_ip = current_ip
             print(f"Found new ip: {current_ip}")
