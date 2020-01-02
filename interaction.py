@@ -29,9 +29,10 @@ class Communication:
     def __init__(self):
         """ initializes a communication object and starts a local HTTP Server """
 
+        # TODO: change to dynamic ip
         # intitialize and start web server
         Server.communication = self
-        self.server = HTTPServer((get_local_ip(), 80), Server)
+        self.server = HTTPServer(("127.0.0.1", 80), Server)
         server_thread = Thread(target=self.server.serve_forever)
         server_thread.start()
 
@@ -63,10 +64,11 @@ class Communication:
         message = Message(self.agent, topic, content)
         json_message = message.dumps()
 
+        # TODO: change to dynamic ip
         # send message to every agent in the network
-        for ip in scan_ips_from_network():
-            requests.post("http://" + ip, data=json_message)
-        requests.post("http://" + get_local_ip(), data=json_message)
+        #for ip in scan_ips_from_network():
+        #    requests.post("http://" + ip, data=json_message)
+        #requests.post("http://" + "127.0.0.1", data=json_message)
 
     def trigger(self, message):
         """ triggers every callback with the topic transmitted by the message
