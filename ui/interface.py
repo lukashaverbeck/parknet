@@ -1,6 +1,3 @@
-import sys
-sys.path.append(sys.path[0][:-3])
-
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
