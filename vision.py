@@ -65,8 +65,8 @@ class SensorManager:
             # calculate and save distances
             self.front = self.calc_distance(const.TriggerPin.FRONT, const.EchoPin.FRONT)
             self.right = self.calc_distance(const.TriggerPin.RIGHT, const.EchoPin.RIGHT)
-            self.back = self.calc_distance(const.TriggerPin.BACK, const.EchoPin.BACK)
-            self.back_angled = self.calc_distance(const.TriggerPin.BACK_ANGLED, const.EchoPin.BACK_ANGLED)
+            self.rear = self.calc_distance(const.TriggerPin.BACK, const.EchoPin.BACK)
+            #self.rear_angled = self.calc_distance(const.TriggerPin.BACK_ANGLED, const.EchoPin.BACK_ANGLED)
             
             time.sleep(self.REFRESH_INTERVAL)
 
