@@ -38,7 +38,7 @@ def data():
         {
             "id": "velocity",
             "value": driver.velocity,
-            "unit": "PWM"
+            "unit": "cm/s"
         },
         {
             "id": "steering-angle",
@@ -48,17 +48,17 @@ def data():
         {
             "id": "distance-front",
             "value": sensor_manager.front,
-            "unit": "m"
+            "unit": "cm"
         },
         {
             "id": "distance-right",
             "value": sensor_manager.right,
-            "unit": "m"
+            "unit": "cm"
         },
         {
             "id": "distance-back",
             "value": sensor_manager.rear,
-            "unit": "m"
+            "unit": "cm"
         },
     ]
 
