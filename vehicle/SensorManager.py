@@ -14,7 +14,7 @@ import constants as const
 class SensorManager:
     """ controls the measured distances to the vehicle's front, right and back """
 
-    REFRESH_INTERVAL = 0.1  # interval in which new values are calculated
+    REFRESH_INTERVAL = 1  # interval in which new values are calculated
 
     def __init__(self):
         """ initializes the sensor manager and starts the thread that refreshes the sensor data """
@@ -77,7 +77,7 @@ class SensorManager:
             self.__distance_front = self.sensor_distance(const.TriggerPin.HC_SR04_FRONT, const.EchoPin.HC_SR04_FRONT)
             self.__distance_right = self.sensor_distance(const.TriggerPin.HC_SR04_RIGHT, const.EchoPin.HC_SR04_RIGHT)
             self.__distance_back = self.sensor_distance(const.TriggerPin.HC_SR04_BACK, const.EchoPin.HC_SR04_BACK)
-            self.__distance_back_angled = self.sensor_distance(const.TriggerPin.HC_SR04_BACK_ANGLED, const.EchoPin.HC_SR04_BACK_ANGLED)
+            # self.__distance_back_angled = self.sensor_distance(const.TriggerPin.HC_SR04_BACK_ANGLED, const.EchoPin.HC_SR04_BACK_ANGLED)
             time.sleep(self.REFRESH_INTERVAL)  # pause to keep timing in interval
 
     def get_distance(self, direction):
