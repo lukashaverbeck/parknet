@@ -7,14 +7,14 @@
 
 
 class Connection:
-    WLAN_PASSWORD = "42Rkc#oR"
+    WLAN_PASSWORD = "Hallo1234"
 
 
 class Driving:
-    CAUTIOUS_VELOCITY = 5       # cm/s
+    CAUTIOUS_VELOCITY = 7       # cm/s
     STOP_VELOCITY = 0           # cm/s
-    MAX_VELOCITY = 5            # cm/s
-    MIN_VELOCITY = -5           # cm/s
+    MAX_VELOCITY = 7            # cm/s
+    MIN_VELOCITY = -7           # cm/s
 
     MIN_STEERING_ANGLE = -35    # °
     MAX_STEERING_ANGLE = 35     # °
