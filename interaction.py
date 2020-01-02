@@ -28,11 +28,10 @@ class Communication:
     def __init__(self):
         """ initializes a communication object and starts a local HTTP Server """
 
-        # TODO: change to dynamic ip
         # intitialize and start web server
         Server.communication = self
         self.local_ip = "127.0.0.1"
-        self.server = HTTPServer(("127.0.0.1", 80), Server)
+        self.server = HTTPServer((self.local_ip, 80), Server)
         print(f"Starting Webserver on {self.local_ip}")
         server_thread = Thread(target=self.server.serve_forever)
         server_thread.start()
@@ -45,7 +44,6 @@ class Communication:
         print(f"Restarting Webserver on {self.local_ip}")
 
         try:
-
             self.server = HTTPServer((ip_address, 80), Server)
             server_thread = Thread(target=self.server.serve_forever)
             server_thread.start()
@@ -66,7 +64,7 @@ class Communication:
         try:
             ip_network = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + "."
         except IndexError:
-            raise IndexError("The method `self.local_ip` provided an invalid IP address.")
+            raise IndexError("local IP address is invalid")
         else:
             for i in range(2, 158):
                 ip = ip_network + str(i)
@@ -103,7 +101,6 @@ class Communication:
         message = Message(self.agent, topic, content)
         json_message = message.dumps()
 
-        # TODO: change to dynamic ip
         # send message to every agent in the network
         for ip in self.scan_ips_from_network():
             requests.post("http://" + ip, data=json_message)
