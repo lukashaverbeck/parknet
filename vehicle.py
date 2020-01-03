@@ -451,9 +451,13 @@ def start_interface():
 
         # check if a network address was found
         if len(current_ips) == 0:
+            communication = interaction.Communication.instance()
+            communication.lost_connection()
             continue
         elif len(current_ips) == 1:
             if not current_ips[0][:3] == "192":
+                communication = interaction.Communication.instance()
+                communication.lost_connection()
                 continue
             else:
                 current_ip = current_ips[0]
