@@ -31,6 +31,7 @@ class Communication:
         # intitialize and start web server
         Server.communication = self
         self.local_ip = "127.0.0.1"
+        self.connection_status = True
         self.server = HTTPServer((self.local_ip, 80), Server)
         print(f"Starting Webserver on {self.local_ip}")
         server_thread = Thread(target=self.server.serve_forever)
@@ -41,6 +42,7 @@ class Communication:
 
     def set_local_ip(self , ip_address):
         self.local_ip = ip_address
+        self.connection_status = True
         print(f"Restarting Webserver on {self.local_ip}")
 
         try:
@@ -49,6 +51,9 @@ class Communication:
             server_thread.start()
         except OSError:
             print("Already connected to this address or address blocked")
+
+    def lost_connection(self):
+        self.connection_status = False
 
     def scan_ips_from_network(self):
         """ determines the used ip addresses in the network
@@ -102,9 +107,10 @@ class Communication:
         json_message = message.dumps()
 
         # send message to every agent in the network
-        for ip in self.scan_ips_from_network():
-            requests.post("http://" + ip, data=json_message)
-        requests.post("http://" + self.local_ip, data=json_message)
+        if self.connection_status:
+            for ip in self.scan_ips_from_network():
+                requests.post("http://" + ip, data=json_message)
+            requests.post("http://" + self.local_ip, data=json_message)
 
 
 
