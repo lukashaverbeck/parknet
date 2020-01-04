@@ -354,7 +354,7 @@ class RecorderThread(Thread):
 class DriveThread(Thread):
     """ thread that moves the vehicle """
     
-    DRIVING_INTERVAL = 0.1
+    DISTANCE_PER_STEP = 0.00865
 
     def __init__(self):
         """ initializes the thread without starting to move the vehicle """
@@ -389,20 +389,28 @@ class DriveThread(Thread):
         self.change_stepper_status(True)
 
         while self.active:
-                velocity = self.driver.velocity
-                if velocity < 0:
-                    GPIO.output(20, 1)
-                elif velocity > 0:
-                    GPIO.output(20, 0)
-                delay = self.calculate_delay(abs(velocity))
+            velocity = self.driver.velocity          
+            if velocity < 0:
+                GPIO.output(20, 1)
+            elif velocity > 0:
+                GPIO.output(20, 0)
+            delay = self.calculate_delay(abs(velocity))
 
-                if delay > 0:
-                    GPIO.output(21, GPIO.HIGH)
-                    time.sleep(delay)
-                    GPIO.output(21, GPIO.LOW)
-                    time.sleep(delay)
+            # ensures that there is enough space in front of or behind the vehicle by skipping the current
+            # driving loop if the minimal front distance is assumed to be exceeded
+            front_distance = self.sensor_manager.front
+            rear_distance = self.sensor_manager.rear
+            distance = front_distance if velocity > 0 else rear_distance
+            predicted_distance = distance - self.DISTANCE_PER_STEP
+            if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
 
-                self.driven_distance += 0.00865
+            if delay > 0:
+                GPIO.output(21, GPIO.HIGH)
+                time.sleep(delay)
+                GPIO.output(21, GPIO.LOW)
+                time.sleep(delay)
+
+            self.driven_distance += self.DISTANCE_PER_STEP
 
         self.change_stepper_status(False)
 
