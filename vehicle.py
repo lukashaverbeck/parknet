@@ -9,11 +9,8 @@
 # author: @lukashaverbeck
 # version: 2.2 (1.1.2020)
 #
-# TODO implement Driver.enter_parking_lot
 # TODO implement Driver.leave_parking_lot
 # TODO implement Driver.follow_road
-# TODO finish implementation for DriveThread.run
-# TODO implement DriveThread.stop
 # TODO test everything
 
 import os
@@ -25,12 +22,12 @@ import interaction
 import RPi.GPIO as GPIO
 import Adafruit_PCA9685
 import constants as const
+from util import Singleton
 from threading import Thread
 from datetime import datetime
-from util import Singleton, threaded
+from connection import AutoConnector, get_local_ip
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
-from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -73,10 +70,10 @@ class Driver:
         self.velocity = const.Driving.STOP_VELOCITY
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.distance = 0
-        self.driving = False
-        self.agent = Agent.instance()
-        self.formation = interaction.Formation.instance()
+        # self.agent = Agent.instance()
+        # self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
+
 
     def start_driving(self):
         """ starts the thread that moves the vehicle """
@@ -94,6 +91,7 @@ class Driver:
         if self.drive_thread is not None:
             self.drive_thread.stop()
             self.drive_thread = None
+
 
     def accelerate(self, velocity_diff):
         """ changes the velocity of the vehicle
@@ -148,14 +146,43 @@ class Driver:
         """
 
         self.start_driving()
-        self.velocity = 7
-        self.distance = 10
-        while self.driving:
-            continue
-        print("part two")
         time.sleep(2)
-        self.velocity = 7
+
+        # drive back into gap with strong angle
+        self.angle = -35
+        self.velocity = -7
         self.drive_thread.driven_distance = 0
+        self.distance = 50
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(1)
+
+        # drive back until close to wall
+        self.angle = 8
+        self.velocity = -6
+        self.distance = 150
+        self.drive_thread.driven_distance = 0
+        while self.sensor_manager.rear > 30:
+            time.sleep(1)
+
+        # get into straight position
+        self.angle = 35
+        self.velocity = -7
+        self.distance = 45
+        self.drive_thread.driven_distance = 0
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(1)
+
+        # drive forward up to end of gap
+        self.angle = -8
+        self.velocity = 6
+        self.drive_thread.driven_distance = 0
+        while self.sensor_manager.front >= 10:
+            print(self.sensor_manager.front)
+            time.sleep(1)
+
+        self.stop_driving()
+
+
 
 
     def leave_parking_lot(self):
@@ -209,13 +236,13 @@ class Driver:
         """ drives as close to the front vehicle or obstacle as possible for the current vehicle formation """
 
         # slowly drive backwards
-        self.velocity = const.Driving.CAUTIOUS_VELOCITY
+        self.velocity = const.Driving.MAX_VELOCITY
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
 
         # drive as long there is enough space to the next vehicle or obstacle
         gap = self.formation.calc_gap()
         self.start_driving()
-        while self.sensor_manager.rear > gap: continue
+        while self.sensor_manager.front > gap: continue
 
         self.stop_driving()
 
@@ -341,14 +368,13 @@ class DriveThread(Thread):
         self.pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
         self.pulse_freq = 50
         self.pwm.set_pwm_freq(self.pulse_freq)
-        
+
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(20, GPIO.OUT)
         GPIO.setup(21, GPIO.OUT)
         GPIO.setup(26, GPIO.OUT)
         self.driven_distance = 0
-        self.driver.driving = True
 
     def run(self):
         """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle
@@ -357,71 +383,59 @@ class DriveThread(Thread):
             TODO implement hardware control
         """
 
-        drive_thread = Thread(target=self.drive)
         steer_thread = Thread(target=self.steer)
+        driving_thread = Thread(target=self.drive)
 
-        drive_thread.start()
         steer_thread.start()
+        driving_thread.start()
 
-    @threaded
+
     def drive(self):
-        """ controlls stepper movement """
         self.change_stepper_status(True)
 
         while self.active:
-            if self.driven_distance <= self.driver.distance:
                 velocity = self.driver.velocity
                 if velocity < 0:
                     GPIO.output(20, 1)
                 elif velocity > 0:
                     GPIO.output(20, 0)
-                delay = self.calculate_delay(velocity)
+                delay = self.calculate_delay(abs(velocity))
 
-                GPIO.output(21, GPIO.HIGH)
-                time.sleep(delay)
-                GPIO.output(21, GPIO.LOW)
-                time.sleep(delay)
+                if delay > 0:
+                    GPIO.output(21, GPIO.HIGH)
+                    time.sleep(delay)
+                    GPIO.output(21, GPIO.LOW)
+                    time.sleep(delay)
 
                 self.driven_distance += 0.00865
-            else:
-                self.driver.driving = False
+
         self.change_stepper_status(False)
-        print("stopped thread")
 
-    @threaded
-    def steer(self):
-        """ applies the desired steering angle to the hardware """
 
-        while self.active:
-            angle = self.driver.angle
-            steering_pwm_calc = self.angle_to_pmw(angle)
-            self.pwm.set_pwm(0, 0, steering_pwm_calc)
+    def calculate_delay(self, velocity):
+        """calculates delay time used between steps according to velocity"""
+        if velocity > 0:
+            rps = velocity / 1.729
+            delay = (1 / (200 * float(rps))) / 2
+            return delay
+        else:
+            return 0
 
     def change_stepper_status(self, status):
-        """ activates and deactivates controller in order to save energy
-
-            Args:
-                status (bool): energy status (True -> high , False -> low)
-        """
+        """activates and deactivates controller in order to save energy"""
 
         if status:
             GPIO.output(26, GPIO.HIGH)
         else:
             GPIO.output(26, GPIO.LOW)
 
-    def calculate_delay(self, velocity):
-        """ calculates delay time used between steps according to velocity
+    def steer(self):
+        """calculates and sets steering angle"""
 
-            Args:
-                velocity (float): velocity in cm/s to be converted to a delay time
-
-            Returns:
-                float: delay time
-        """
-
-        rps = velocity / 1.729
-        delay = (1 / (200 * float(rps))) / 2
-        return delay
+        while self.active:
+            angle = self.driver.angle
+            steering_pwm_calc = self.angle_to_pmw(angle)
+            self.pwm.set_pwm(0, 0, steering_pwm_calc)
 
     def angle_to_pmw(self, angle):
         """ converts the current steering angle to a pulse width modulation value that can be processed by the
@@ -438,16 +452,16 @@ class DriveThread(Thread):
         return int(round(val, 0))
 
     def stop(self):
-        """ stops the movement of the vehicle """
+        """ stops the movement of the vehicle
+
+            TODO implement method
+        """
 
         self.active = False
 
 
-@threaded
 def start_interface():
-    """ constantly checks for new IP addresses of picar and restarts
-        webservers every time a new IP address was detected
-    """
+    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
 
     last_ip = None
 
@@ -490,5 +504,8 @@ def start_interface():
 
 
 if __name__ == "__main__":
-    AutoConnector.start_connector()
-    start_interface()
+    #AutoConnector.start_connector()
+    #interface_thread = Thread(target = start_interface)
+    #interface_thread.start()
+    d = Driver.instance()
+    d.enter_parking_lot()
