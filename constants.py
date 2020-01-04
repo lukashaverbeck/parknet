@@ -4,6 +4,8 @@
 # author:   @lukashaverbeck
 # author:   @LunaNordin
 # version:  2.0 (28.12.2019)
+#
+# TODO define default steering mode file
 
 
 class Connection:
@@ -55,6 +57,7 @@ class Storage:
     ATTRIBUTES = "./attributes.json"
     DATA = "./data/"
     CHECKPOINTS = "./checkpoints/"
+    DEFAULT_STEERING_MODEL = None  # TODO
 
 
 class Topic:

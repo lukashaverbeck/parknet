@@ -10,7 +10,6 @@
 # version: 2.3 (4.1.2020)
 #
 # TODO implement Driver.leave_parking_lot
-# TODO implement Driver.follow_road
 # TODO test everything
 
 import os
@@ -25,6 +24,7 @@ import constants as const
 from util import Singleton, threaded
 from threading import Thread
 from datetime import datetime
+from ai import SteeringNet
 from connection import AutoConnector, get_local_ip
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
@@ -90,7 +90,6 @@ class Driver:
         if self.drive_thread is not None:
             self.drive_thread.stop()
             self.drive_thread = None
-
 
     def accelerate(self, velocity_diff):
         """ changes the velocity of the vehicle
@@ -181,9 +180,6 @@ class Driver:
 
         self.stop_driving()
 
-
-
-
     def leave_parking_lot(self):
         """ steers the vehicle out of the parking lot
 
@@ -225,11 +221,24 @@ class Driver:
     def follow_road(self):
         """ drives autonomously without explicit instructions by propagating the camera
             input through a convolutional neural network that predicts a steering angle
-
-            TODO implement method
+            NOTE this mode has no particular destination and therfore does not terminate
+            unless the driver is stopped explicitly
         """
 
-        pass
+        steering_net = SteeringNet()
+        steering_net.load(const.Storage.DEFAULT_STEERING_MODEL)
+
+        self.start_driving()
+
+        with Camera.instance() as camera:
+            while self.recorder_thread is not None:
+                image = camera.image
+                predicted_angle = steering_net.predict(image, self.angle)
+                self.angle = predicted_angle
+
+                time.sleep(0.25)
+
+        self.stop_driving()
 
     def move_up(self):
         """ drives as close to the front vehicle or obstacle as possible for the current vehicle formation """
