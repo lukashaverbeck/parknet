@@ -72,6 +72,8 @@ class Driver:
         self.recorder_thread = None
         self.velocity = const.Driving.STOP_VELOCITY
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
+        self.distance = 0
+        self.driving = False
         self.agent = Agent.instance()
         self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
@@ -147,8 +149,13 @@ class Driver:
 
         self.start_driving()
         self.velocity = 7
-        time.sleep(5)
-        self.stop_driving()
+        self.distance = 10
+        while self.driving:
+            continue
+        print("part two")
+        time.sleep(2)
+        self.velocity = 7
+        self.drive_thread.driven_distance = 0
 
 
     def leave_parking_lot(self):
@@ -320,6 +327,7 @@ class RecorderThread(Thread):
 
 class DriveThread(Thread):
     """ thread that moves the vehicle """
+    DRIVING_INTERVAL = 0.1
 
     def __init__(self):
         """ initializes the thread without starting to move the vehicle """
@@ -333,6 +341,14 @@ class DriveThread(Thread):
         self.pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
         self.pulse_freq = 50
         self.pwm.set_pwm_freq(self.pulse_freq)
+        
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(20, GPIO.OUT)
+        GPIO.setup(21, GPIO.OUT)
+        GPIO.setup(26, GPIO.OUT)
+        self.driven_distance = 0
+        self.driver.driving = True
 
     def run(self):
         """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle
@@ -350,37 +366,27 @@ class DriveThread(Thread):
     @threaded
     def drive(self):
         """ controlls stepper movement """
-
-        GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(20, GPIO.OUT)
-        GPIO.setup(21, GPIO.OUT)
-        GPIO.setup(26, GPIO.OUT)
         self.change_stepper_status(True)
 
         while self.active:
-            velocity = self.driver.velocity
-            delay = self.calculate_delay(velocity)
+            if self.driven_distance <= self.driver.distance:
+                velocity = self.driver.velocity
+                if velocity < 0:
+                    GPIO.output(20, 1)
+                elif velocity > 0:
+                    GPIO.output(20, 0)
+                delay = self.calculate_delay(velocity)
 
-            # apply driving direction
-            if velocity > 0:
-                GPIO.output(20, 0)
+                GPIO.output(21, GPIO.HIGH)
+                time.sleep(delay)
+                GPIO.output(21, GPIO.LOW)
+                time.sleep(delay)
+
+                self.driven_distance += 0.00865
             else:
-                GPIO.output(20, 1)
-
-            # ensures that there is enough space in front of or behind the vehicle by skipping the current
-            # driving loop if the minimal front distance is assumed to be exceeded
-            front_distance = self.distance.front
-            rear_distance = self.distance.rear
-            distance = front_distance if velocity > 0 else rear_distance
-            predicted_distance = distance - abs(velocity) * self.DRIVING_INTERVAL
-            if predicted_distance < const.Driving.SAFETY_DISTANCE: continue
-
-            # address motor
-            GPIO.output(21, GPIO.HIGH)
-            time.sleep(delay)
-            GPIO.output(21, GPIO.LOW)
-            time.sleep(delay)
+                self.driver.driving = False
+        self.change_stepper_status(False)
+        print("stopped thread")
 
     @threaded
     def steer(self):
