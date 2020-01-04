@@ -70,8 +70,8 @@ class Driver:
         self.velocity = const.Driving.STOP_VELOCITY
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.distance = 0
-        # self.agent = Agent.instance()
-        # self.formation = interaction.Formation.instance()
+        self.agent = Agent.instance()
+        self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
 
 
