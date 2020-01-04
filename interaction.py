@@ -21,6 +21,7 @@ from util import Singleton, threaded
 from vision import FrontAgentScanner
 from connection import get_local_ip, check_if_up,  Server
 
+
 @Singleton
 class Communication:
     """ handles the communication between multiple agents by assigning callback functions to certain events  """
