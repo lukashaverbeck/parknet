@@ -7,7 +7,7 @@
 # author: @LukasGra
 # author: @LunaNordin
 # author: @lukashaverbeck
-# version: 2.2 (1.1.2020)
+# version: 2.3 (4.1.2020)
 #
 # TODO implement Driver.leave_parking_lot
 # TODO implement Driver.follow_road
@@ -22,7 +22,7 @@ import interaction
 import RPi.GPIO as GPIO
 import Adafruit_PCA9685
 import constants as const
-from util import Singleton
+from util import Singleton, threaded
 from threading import Thread
 from datetime import datetime
 from connection import AutoConnector, get_local_ip
@@ -73,7 +73,6 @@ class Driver:
         self.agent = Agent.instance()
         self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
-
 
     def start_driving(self):
         """ starts the thread that moves the vehicle """
@@ -354,6 +353,7 @@ class RecorderThread(Thread):
 
 class DriveThread(Thread):
     """ thread that moves the vehicle """
+    
     DRIVING_INTERVAL = 0.1
 
     def __init__(self):
@@ -377,19 +377,14 @@ class DriveThread(Thread):
         self.driven_distance = 0
 
     def run(self):
-        """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle
-            according to the driver's steering angle and velocity by addressing the vehicle's hardware
-
-            TODO implement hardware control
+        """ other than Driver.accelerate() or Driver.steer(), this method indeedly moves the vehicle according to the
+            driver's steering angle and velocity by starting the threads that address the vehicle's hardware
         """
 
-        steer_thread = Thread(target=self.steer)
-        driving_thread = Thread(target=self.drive)
+        self.steer()
+        self.drive()
 
-        steer_thread.start()
-        driving_thread.start()
-
-
+    @threaded
     def drive(self):
         self.change_stepper_status(True)
 
@@ -411,7 +406,6 @@ class DriveThread(Thread):
 
         self.change_stepper_status(False)
 
-
     def calculate_delay(self, velocity):
         """calculates delay time used between steps according to velocity"""
         if velocity > 0:
@@ -429,6 +423,7 @@ class DriveThread(Thread):
         else:
             GPIO.output(26, GPIO.LOW)
 
+    @threaded
     def steer(self):
         """calculates and sets steering angle"""
 
