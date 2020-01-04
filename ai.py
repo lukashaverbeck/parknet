@@ -125,7 +125,7 @@ def add_noise_to_image(image):
     """
 
     # determine additional pixel values and apply them to the image 
-    noise = np.random.randint(6, size=image.shape) - np.random.randint(6, size=image.shape)
+    noise = np.random.randint(3, size=image.shape) - np.random.randint(3, size=image.shape)
     image = image + noise
 
     return image
@@ -240,7 +240,6 @@ class SteeringData:
         """
 
         image = center_crop_image(image, SteeringData.INPUT_SHAPE)  # extract center
-        image = image / 127.5 - 1  # normalize pixel values
 
         if is_training:  # augment data i training mode
             image = add_noise_to_image(image)
@@ -248,9 +247,11 @@ class SteeringData:
             image = shift_image(image, 10, 5)
             previous_angle = SteeringData.alter_previous_angle(previous_angle)
 
-        # round angle values
-        previous_angle = round(previous_angle, 2)
-        if angle is not None: angle = round(angle, 2)
+        # normalize and round angle values
+        previous_angle = round(previous_angle, 5)
+        if angle is not None: angle = round(angle, 5)
+
+        image = image / 255.0  # normalize pixel values
 
         return image, previous_angle, angle
 
@@ -266,22 +267,22 @@ class SteeringModel(keras.Model):
         """ initializes the model by defining its layers """
 
         super().__init__()
+        
+        regulizer = keras.regularizers.l1_l2(l1=0.02, l2=0.02)
 
         # convolution layers and pooling layer
-        self.conv1 = layers.Conv2D(filters=24, kernel_size=(5, 5), activation="elu")
-        self.conv2 = layers.Conv2D(filters=36, kernel_size=(5, 5), activation="elu")
-        self.conv3 = layers.Conv2D(filters=48, kernel_size=(5, 5), activation="elu")
-        self.conv4 = layers.Conv2D(filters=64, kernel_size=(3, 3), activation="elu")
-        self.conv5 = layers.Conv2D(filters=64, kernel_size=(3, 3), activation="elu")
-        self.pool1 = layers.MaxPool2D(pool_size=(2, 2))
+        self.conv1 = layers.Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), kernel_regularizer=regulizer, activation="elu")
+        self.conv2 = layers.Conv2D(filters=36, kernel_size=(5, 5), strides=(2, 2), kernel_regularizer=regulizer, activation="elu")
+        self.conv3 = layers.Conv2D(filters=48, kernel_size=(5, 5), strides=(2, 2), kernel_regularizer=regulizer, activation="elu")
+        self.conv4 = layers.Conv2D(filters=64, kernel_size=(3, 3), kernel_regularizer=regulizer, activation="elu")
+        self.conv5 = layers.Conv2D(filters=64, kernel_size=(3, 3), kernel_regularizer=regulizer, activation="elu")
 
         self.flat1 = layers.Flatten()
-        self.drop1 = tf.keras.layers.Dropout(0.2)
 
         # fully connected layers
-        self.flcn1 = layers.Dense(units=100, activation="elu")
-        self.flcn2 = layers.Dense(units=50, activation="elu")
-        self.flcn3 = layers.Dense(units=10, activation="elu")
+        self.flcn1 = layers.Dense(units=100, kernel_regularizer=regulizer, activation="elu")
+        self.flcn2 = layers.Dense(units=50, kernel_regularizer=regulizer, activation="elu")
+        self.flcn3 = layers.Dense(units=10, activation="linear")
         self.flcn4 = layers.Dense(units=1, activation="linear")
 
     def __repr__(self):
@@ -310,26 +311,20 @@ class SteeringModel(keras.Model):
         images = inputs[KEY_IMG]
         angles = inputs[KEY_PREVIOUS]
 
-        # convolution and pooling
+        # convolutions
         x = self.conv1(images)
-        x = self.pool1(x)
         x = self.conv2(x)
-        x = self.pool1(x)
         x = self.conv3(x)
-        x = self.pool1(x)
         x = self.conv4(x)
-        x = self.pool1(x)
         x = self.conv5(x)
 
         # flatten and add current steering angle
         x = self.flat1(x)
-        x = self.drop1(x)
         x = tf.concat([x, angles], 1)
 
         # fully connected
         x = self.flcn1(x)
         x = self.flcn2(x)
-        x = self.drop1(x)
         x = self.flcn3(x)
         x = self.flcn4(x)
 
@@ -340,9 +335,9 @@ class SteeringNet:
     """ wrapper class simlifying accessing the `SteeringModel` """    
     
     INPUT_SHAPE = (100, 200, 3)
-    BATCH_SIZE = 128
+    BATCH_SIZE = 256
     LOSS_FUNCTION = "mean_absolute_error"
-    LEARNING_RATE = 0.001
+    LEARNING_RATE = 0.0002
     OPTIMIZER = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
     def __init__(self):
@@ -412,7 +407,7 @@ class SteeringNet:
         validation_steps = samples_val // self.BATCH_SIZE
 
         # define callbacks
-        checkpoint = ModelCheckpoint(const.Storage.CHECKPOINTS + "/" + train_id + "-{epoch:03d}.h5", verbose=1)
+        checkpoint = ModelCheckpoint(const.Storage.CHECKPOINTS + "/" + train_id + "-{epoch:03d}.h5", verbose=0)
 
         # compile and train the model
         self.model.compile(loss=self.LOSS_FUNCTION, optimizer=self.OPTIMIZER, batch_size=self.BATCH_SIZE)
@@ -428,7 +423,7 @@ class SteeringNet:
 
         return history
 
-    def evaluate(self, img_directory, samples, csv):
+    def evaluate(self, image_directory, samples, csv):
         """ measures the inaccuracy of the model
 
             Args:
@@ -441,7 +436,7 @@ class SteeringNet:
                 float: proportion between the mean absolute deviation and the average target angle
         """
 
-        data = SteeringData(img_directory, csv, 1, False)  # get evaluation data
+        data = SteeringData(image_directory, csv, 1, False)  # get evaluation data
 
         average_target = 0.0
         absolute_deviation = 0.0
@@ -454,11 +449,12 @@ class SteeringNet:
             previous_angle = inputs[KEY_PREVIOUS][0]
             target = target[0]
             
-            # get prediction and calculate the deviation
             prediction = self.predict(image, previous_angle)
             average_target += abs(target)
             absolute_deviation += abs(prediction - target)
             absolute_steps += 1
+
+            print(round(prediction, 2), round(target, 2), round(target - prediction, 2))
 
             if absolute_steps >= samples: break
 
@@ -485,5 +481,5 @@ if __name__ == "__main__":
         csv_train = "./data/nvidia-dataset-1/train.csv",
         samples_val = 3406,
         csv_val = "./data/nvidia-dataset-1/test.csv",
-        epochs = 5
+        epochs = 50
     )
