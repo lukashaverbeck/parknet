@@ -240,6 +240,52 @@ class Driver:
 
         self.stop_driving()
 
+    def create_space(self, agent_id):
+        """ creates space for an agent leaving the parking lot by moving up in the according direction
+            until the agent has left the formation
+
+            Args:
+                agent_id (str): ID of the agent leaving the formation
+
+            TODO ensure that an agent leaves a gap immediately after he left a parking lot
+        """
+
+        if agent_id not in self.formation: return
+
+        # determine direction to drive in
+        direction = -1 if self.formation.comes_before(self.agent, agent_id) else 1
+        self.velocity = direction * const.Driving.CAUTIOUS_VELOCITY
+        
+        # the distance between the vehicles corrsponds to the 
+        # seconds to wait after the vehicle left the parking lot
+        wait_time = self.formation.distance(self.agent, agent_id)
+
+        self.distance = 0
+        self.start_driving()
+        update_interval = 0.5
+
+        # move up / back to create space until the vehicle left the parking lot
+        while agent_id in self.formation:  # TODO add working condition 
+            self.distance += abs(self.velocity * update_interval)
+            time.sleep(update_interval)
+        self.distance = 0
+
+        # wait for vehicles that were located nearer to the leaving agent to move
+        # and then close the gap
+        gap = self.formation.calc_gap()
+        time.sleep(wait_time)
+
+        if direction == 1:
+            self.velocity = -1 * const.Driving.CAUTIOUS_VELOCITY
+        else:
+            self.velocity = const.Driving.CAUTIOUS_VELOCITY
+
+        while self.sensor_manager.front < gap:
+            self.distance += abs(self.velocity * update_interval)
+            time.sleep(update_interval)
+
+        self.stop_driving()
+
     def move_up(self):
         """ drives as close to the front vehicle or obstacle as possible for the current vehicle formation """
 
