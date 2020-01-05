@@ -323,10 +323,7 @@ class ActionManager:
                 # determine which reaction corresponds to the current global action
                 # most global actions require other agents not to act at all
                 if self.global_action.mode == const.Mode.LEAVE:  # create space
-                    if self.formation.comes_before(self.agent, self.global_action.agent):
-                        self.driver.move_up()
-                    else:
-                        self.driver.move_back()
+                    self.driver.create_space(self.global_action.agent)
                 else:  # do not act
                     time.sleep(self.WAIT_ACT)
                     continue
@@ -519,6 +516,7 @@ class Formation:
 
     def calc_gap(self):
         """ calculates the minimal gap between two agents so that the longest vehicle can still leave the parking lot
+            NOTE the calculated gap already includes the safety distance that must be kept in any case
 
             Returns:
                 float: length of minimal gap
@@ -529,7 +527,7 @@ class Formation:
         needed_space += number_of_agents * const.Driving.SAFETY_DISTANCE
 
         try:
-            return needed_space / number_of_agents
+            return needed_space / number_of_agents + const.Driving.SAFETY_DISTANCE
         except ZeroDivisionError:
             return 0
 
@@ -685,3 +683,23 @@ class Formation:
             if agent in [a, b]: return agent == a
 
         return False
+
+    def distance(self, a, b):
+        """ determines the distance distance between two agents in a formation
+            in terms of how many vehicles stand between them
+
+            Args:
+                a (Agent or str): agent or agent ID to determine the distance to b
+                b (Agent or str): agent or agent ID to determine the distance to a
+
+            Returns:
+                int: number of vehicles between a and b
+
+            Raises:
+                ValueError: if at least one of the given agents is not part of the formation
+        """
+
+        if type(a).__name__ == "Agent": a = a.id
+        if type(b).__name__ == "Agent": b = b.id
+
+        return abs(self.agents.index(a) - self.agents.index(b) - 1)
