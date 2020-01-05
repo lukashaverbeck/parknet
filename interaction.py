@@ -602,11 +602,16 @@ class Formation:
                 message (Message): message containing the formation's agent list
         """
 
+        agents = message.content["agents"]
+        max_length = message.content["longest"]
+
+        # ensure that the formation contains the agent and that it is up to date
+        if self.agent.id not in message.content["agents"]: return
         if message.timestamp <= self.latest_update: return
 
         self.latest_update = message.timestamp
-        self.tmp_agents = message.content["agents"]
-        self.tmp_max_length = message.content["longest"]
+        self.tmp_agents = agents
+        self.tmp_max_length = max_length
         self.accept_tmp()
 
     def send_confirmation(self, receiver_id):
@@ -633,7 +638,8 @@ class Formation:
         """ appends the agent to the temporary formation """
 
         self.tmp_agents.append(self.agent.id)
-        if self.tmp_max_length < self.agent.length: self.tmp_max_length = self.agent.length
+        if self.tmp_max_length < self.agent.length:
+            self.tmp_max_length = self.agent.length
 
     def accept_tmp(self):
         """ makes the temporary formation the current 'official' formation and resets the temporary """
