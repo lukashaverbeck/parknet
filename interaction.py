@@ -702,4 +702,4 @@ class Formation:
         if type(a).__name__ == "Agent": a = a.id
         if type(b).__name__ == "Agent": b = b.id
 
-        return abs(self.agents.index(a) - self.agents.index(b) - 1)
+        return abs(self.agents.index(a) - self.agents.index(b)) - 1
