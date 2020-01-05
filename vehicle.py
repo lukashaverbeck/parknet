@@ -246,8 +246,6 @@ class Driver:
 
             Args:
                 agent_id (str): ID of the agent leaving the formation
-
-            TODO ensure that an agent leaves a gap immediately after he left a parking lot
         """
 
         if agent_id not in self.formation: return
