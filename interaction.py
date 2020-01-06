@@ -378,6 +378,9 @@ class ActionManager:
                 message (Message): message wrapping the information
         """
 
+        if self.global_action is None: return
+        if not self.global_action.is_owner(message.sender): return
+
         self.global_action = None
 
 
