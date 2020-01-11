@@ -139,8 +139,6 @@ class Driver:
 
             NOTE the method assumes that the vehicle stands parallel to the
             front vehicle or obstacle with their back fronts at the same height
-
-            TODO test and implement function -> does not work yet
         """
 
         self.start_driving()
