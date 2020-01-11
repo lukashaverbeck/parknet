@@ -125,7 +125,7 @@ def add_noise_to_image(image):
     """
 
     # determine additional pixel values and apply them to the image 
-    noise = np.random.randint(3, size=image.shape) - np.random.randint(3, size=image.shape)
+    noise = np.random.randint(2, size=image.shape) - np.random.randint(2, size=image.shape)
     image = image + noise
 
     return image
@@ -226,7 +226,7 @@ class SteeringData:
                 float: adjusted angle
         """
         
-        return np.random.uniform(0.75, 1.25) * previous_angle
+        return np.random.uniform(0.85, 1.15) * previous_angle
 
     @staticmethod
     def prepare_data(image, previous_angle, angle=None, is_training=False):
@@ -244,14 +244,14 @@ class SteeringData:
         if is_training:  # augment data i training mode
             image = add_noise_to_image(image)
             image, previous_angle, angle = SteeringData.random_mirror_image(image, previous_angle, angle)
-            image = shift_image(image, 10, 5)
+            image = shift_image(image, 6, 2)
             previous_angle = SteeringData.alter_previous_angle(previous_angle)
 
         # normalize and round angle values
         previous_angle = round(previous_angle, 5)
         if angle is not None: angle = round(angle, 5)
 
-        image = image / 255.0  # normalize pixel values
+        image = image / 127.5 - 1  # normalize pixel values
 
         return image, previous_angle, angle
 
@@ -268,7 +268,7 @@ class SteeringModel(keras.Model):
 
         super().__init__()
         
-        regulizer = keras.regularizers.l1_l2(l1=0.02, l2=0.02)
+        regulizer = keras.regularizers.l2(0.001)
 
         # convolution layers and pooling layer
         self.conv1 = layers.Conv2D(filters=24, kernel_size=(5, 5), strides=(2, 2), kernel_regularizer=regulizer, activation="elu")
@@ -337,7 +337,7 @@ class SteeringNet:
     INPUT_SHAPE = (100, 200, 3)
     BATCH_SIZE = 256
     LOSS_FUNCTION = "mean_absolute_error"
-    LEARNING_RATE = 0.0002
+    LEARNING_RATE = 0.001
     OPTIMIZER = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
     def __init__(self):
@@ -440,46 +440,47 @@ class SteeringNet:
 
         average_target = 0.0
         absolute_deviation = 0.0
-        absolute_steps = 0
+        marginal_deviation = 0
+        steps = 0
 
         # iterate over evaluation dataa
         for inputs, target in data:
-            # get input and target values
+            # get input and target values 
             image = inputs[KEY_IMG][0]
             previous_angle = inputs[KEY_PREVIOUS][0]
             target = target[0]
-            
+
             prediction = self.predict(image, previous_angle)
+            deviation = abs(prediction - target)
             average_target += abs(target)
-            absolute_deviation += abs(prediction - target)
-            absolute_steps += 1
+            absolute_deviation += deviation
+            steps += 1
 
-            print(round(prediction, 2), round(target, 2), round(target - prediction, 2))
+            if deviation < 1:
+                marginal_deviation += 1
 
-            if absolute_steps >= samples: break
+            print(f"{round(prediction, 2)} \t\t {round(target, 2)} \t\t {round(target - prediction, 2)}")
+
+            if steps >= samples: break
 
         # calculate average
-        average_target /= absolute_steps
-        absolute_deviation /= absolute_steps
+        average_target /= steps
+        absolute_deviation /= steps
 
-        relative_deviation = absolute_deviation / average_target  # calculate proportion
+        # calculate proportion
+        relative_deviation = absolute_deviation / average_target
+        marginal_deviation /= steps
         
         # print evaluation results
         print(f"absolute deviation of {round(absolute_deviation, 2)}°")
         print(f"relative deviation of {100 * round(relative_deviation, 4)}%")
+        print(f"{100 * round(marginal_deviation, 4)}% of the predictions deviated minimally")
 
-        return absolute_deviation, relative_deviation
+        return absolute_deviation, relative_deviation, marginal_deviation
 
 
 assert SteeringData.INPUT_SHAPE == SteeringNet.INPUT_SHAPE == SteeringModel.INPUT_SHAPE, "steering input shape must be consistent"
 
 if __name__ == "__main__":
     net = SteeringNet()
-    net.train(
-        image_directory = "./data/nvidia-dataset-1/images/",
-        samples_train = 42000, 
-        csv_train = "./data/nvidia-dataset-1/train.csv",
-        samples_val = 3406,
-        csv_val = "./data/nvidia-dataset-1/test.csv",
-        epochs = 50
-    )
+    print(net)
