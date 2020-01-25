@@ -1,8 +1,7 @@
 # This module contains utility classes and functions that may be used
 # throughout the whole project and cannot be assigned to single modules.
 #
-# author: @lukashaverbeck
-# version: 2.1 (02.01.2019)
+# version: 1.0 (02.01.2019)
 
 from threading import Thread
 
