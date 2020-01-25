@@ -1,7 +1,6 @@
 # This script opens up a standalone wifi network with user determined network information.
 #
-# author: @LukasGra
-# version: 2.0 (31.12.2019)
+# version: 1.0 (31.12.2019)
 
 import time
 import threading
