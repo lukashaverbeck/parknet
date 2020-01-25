@@ -4,10 +4,7 @@
 # behaviour to the hardware and a RecorderThread handling the collecting of driving data
 # is defined.
 #
-# author: @LukasGra
-# author: @LunaNordin
-# author: @lukashaverbeck
-# version: 2.3 (4.1.2020)
+# version: 1.0 (4.1.2020)
 #
 # TODO implement Driver.leave_parking_lot
 # TODO test everything
