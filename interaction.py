@@ -6,9 +6,7 @@
 # a parking lot as well as their intention to take certain actions in order to ensure permission
 # to take an action without one central decision maker.
 #
-# author: @LukasGra
-# author: @lukashaverbeck
-# version: 2.0 (29.12.2019)
+# version: 1.0 (29.12.2019)
 
 import json
 import time
