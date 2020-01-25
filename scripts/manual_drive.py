@@ -1,7 +1,6 @@
 # This script controls a picar with keyboard input via ssh console.
 #
-# author: @LunaNordin
-# version: 2.0 (31.12.2019)
+# version: 1.0 (31.12.2019)
 
 import curses  # keyboard input
 import Adafruit_PCA9685  # PCA9685-module
