@@ -1,7 +1,6 @@
 # This script rotates the stepper motor accordingly to user input.
 #
-# author: @LunaNordin
-# version: 2.0 (31.12.2019)
+# version: 1.0 (31.12.2019)
 
 import sys
 from time import sleep
