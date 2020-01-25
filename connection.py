@@ -4,8 +4,7 @@
 # and a connector that ensures that a connection between the vehicles is created.
 # it also implements utility funcions that provide information about the network.
 #
-# author: @LukasGra
-# version: 2.1 (1.1.2020)
+# version: 1.0 (1.1.2020)
 #
 # TODO simplify code in `AutoConnector`
 
