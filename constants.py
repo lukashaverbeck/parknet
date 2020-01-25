@@ -1,9 +1,7 @@
 # This module is a collection of global constants divided into multiple classes
 # that represent a separate concern.
 #
-# author:   @lukashaverbeck
-# author:   @LunaNordin
-# version:  2.0 (28.12.2019)
+# version:  1.0 (28.12.2019)
 #
 # TODO define default steering mode file
 
