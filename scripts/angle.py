@@ -1,8 +1,7 @@
 # Script gets user input from commandline and sets this as pwm value.
 # Calculates the pwm value from an angle with a mathematical function.
 #
-# author:  @Lunanordin
-# version:  2.0 (30.12.2019)
+# version:  1.0 (30.12.2019)
 
 
 from __future__ import division

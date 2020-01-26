@@ -5,8 +5,7 @@
 # It also implements necessary utility functions (e.g. data preparation, augmentation, training,
 # testing etc.)
 #
-# author: @lukashaverbeck
-# version: 2.0 (31.12.2019)
+# version: 1.0 (31.12.2019)
 # 
 # TODO midterm motion planning
 # TODO image segmentation for identifying pedestrians, traffic signs, traffic lights etc.

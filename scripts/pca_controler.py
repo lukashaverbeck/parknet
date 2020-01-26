@@ -2,8 +2,7 @@
 # It allows to send a specific pwm signal to the seperate channels of the
 # PCA9685 module as well as to one of several modules by specifying a I2C-address.
 #
-# author:   @LunaNordin
-# version:  2.0 (30.12.2019)
+# version:  1.0 (30.12.2019)
 
 import sys
 import time

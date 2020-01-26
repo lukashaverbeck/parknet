@@ -3,9 +3,7 @@
 # and visual camera data. It also uses the camera input to provide information about other agents
 # in the agent's field of view.
 #
-# author: @LunaNordin
-# author: @lukashaverbeck
-# version: 2.0 (29.12.2019)
+# version: 1.0 (29.12.2019)
 #
 # TODO improve QR code analysis
 

@@ -3,8 +3,7 @@
 # 
 # NOTE This script is based on angle.py version: 2.0 (30.12.2019)
 # 
-# author:   @LunaNordin
-# version:  2.0 (13.12.2019)
+# version:  1.0 (13.12.2019)
 
 import sys
 import time

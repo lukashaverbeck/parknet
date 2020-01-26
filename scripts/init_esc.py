@@ -1,8 +1,7 @@
 # This script initializes the ESC built into a picar with an activation pulse.
 # Run this script before using any other PWM related ESC controls.
 # 
-# author: @LunaNordin
-# version: 2.0 (30.12.2019)
+# version: 1.0 (30.12.2019)
 
 import time
 import Adafruit_PCA9685
