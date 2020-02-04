@@ -3,7 +3,7 @@
 #
 # version: 1.0 (30.12.2019)
 
-import RPi.GPIO as GPIO  # GPIO control
+import RPi.GPIO as GPIO
 import time
 import curses  # keyboard input and interface
 

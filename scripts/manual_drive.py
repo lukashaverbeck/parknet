@@ -112,8 +112,4 @@ finally:
     curses.nocbreak()
     screen.keypad(0)
     curses.echo()
-<<<<<<< HEAD
     curses.endwin()
-=======
-    curses.endwin()
->>>>>>> 426a55d676d6cf2f7203b0a7c7806afd75a2a70b

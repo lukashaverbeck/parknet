@@ -32,6 +32,12 @@ class Singleton:
         return self.object
 
     def __call__(self):
+        """ ensures a singleton class not initialized directly
+
+            Raises:
+                TypeError: when trying to directly initialize a singleton class
+        """
+
         raise TypeError("Singletons must be accessed through `instance()`")
 
     def __instancecheck__(self, instance):

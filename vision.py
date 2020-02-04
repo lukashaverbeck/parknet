@@ -8,12 +8,12 @@
 # TODO improve QR code analysis
 
 import time
+from threading import Thread
 import picamera
 import picamera.array
 import RPi.GPIO as GPIO
-import constants as const
 import pyzbar.pyzbar as pyzbar
-from threading import Thread
+import constants as const
 from util import Singleton, threaded
 
 

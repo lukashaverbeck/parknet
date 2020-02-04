@@ -7,8 +7,7 @@
 
 import sys
 import time
-import math  # math is used for calculating with functions
-import Adafruit_PCA9685  # import of library for PCA9685-module
+import Adafruit_PCA9685
 
 
 mode = ""  # global value for mode chosen by user
@@ -18,7 +17,7 @@ pwm.set_pwm_freq(50)  # set frequency
 
 
 def setup():
-    """ can be seen as 'home menu'"""
+    """ can be seen as 'home menu' """
 
     global mode
 

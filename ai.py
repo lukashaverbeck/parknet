@@ -12,14 +12,14 @@
 
 import os
 import random
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
-import constants as const
-from datetime import datetime
 from tensorflow.keras.callbacks import ModelCheckpoint
+import constants as const
 
 assert os.path.isdir(const.Storage.CHECKPOINTS), "required checkpoint directory missing"
 
@@ -50,6 +50,9 @@ def load_image(image_path):
 
         Returns:
             numpy.ndarray: numpy representation of the image
+
+        Raises:
+            TypeError: when trying to load an image that is not a JPEG or NPY file
     """
 
     extension = image_path.split(".")[-1]

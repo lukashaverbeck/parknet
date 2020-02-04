@@ -7,7 +7,7 @@
 import sys
 import time
 import curses  # keyboard input and UI
-import Adafruit_PCA9685  # PCA9685-module
+import Adafruit_PCA9685
 
 screen = curses.initscr()  # create new screen
 curses.echo()  # do echo keyboard input
@@ -61,8 +61,8 @@ class Controller:
         screen.addstr("Please enter the PCA9685 channel you want to send a signal to: ")
         screen.refresh()
 
-        val1 = screen.getkey()	# first character of portnumber
-        val2 = screen.getkey()	# second character of portnumber
+        val1 = screen.getkey()  # first character of portnumber
+        val2 = screen.getkey()  # second character of portnumber
         val0 = val1 + val2
 
         try:
@@ -74,36 +74,36 @@ class Controller:
                 time.sleep(2)
                 self.end()
             self.chnl = chnl
-        except:	 # if there are any non-int characters in the string
+        except:  # if there are any non-int characters in the string
             screen.clear()
-            screen.addstr("Not a valid channel. Ending program.")	#blame the user
+            screen.addstr("Not a valid channel. Ending program.")  #blame the user
             screen.refresh()
             time.sleep(2)
             self.end()
  
     def sendSignal(self):
-        """takes a pwm value from the user and pushes it to the given channel"""
-	
+        """ takes a pwm value from the user and pushes it to the given channel """
+
         screen.clear()
         screen.addstr("Please enter your pwm value: ")
         screen.refresh()
         while True:
-            val1 = screen.getkey()	# first character of pwm value
-            if val1 == "q":	 # stop script when the q key is pressed
+            val1 = screen.getkey()  # first character of pwm value
+            if val1 == "q":  # stop script when the q key is pressed
                 self.end()
                 break
 
-            val2 = screen.getkey()	#second character of pwm value
-            val3 = screen.getkey()	#third character of pwm value
-            val0 = val1 + val2 + val3	#create three digit string
+            val2 = screen.getkey()  # second character of pwm value
+            val3 = screen.getkey()  # third character of pwm value
+            val0 = val1 + val2 + val3  # create three digit string
             
             try:
                 val = int(val0)
-                self.pwm.set_pwm(self.chnl, 0, val)	 # push signal to channel
+                self.pwm.set_pwm(self.chnl, 0, val)  # push signal to channel
                 screen.clear()
-                screen.addstr(f"Curent value is {val}. Please enter your new pwm value: ")	# ask user for new value
+                screen.addstr(f"Curent value is {val}. Please enter your new pwm value: ")  # ask user for new value
                 screen.refresh()
-            except:	 # if there are any non-int characters in the string
+            except:  # if there are any non-int characters in the string
                 screen.clear()
                 screen.addstr("Input is not a valid pwm value! Please enter a valid pwm value: ")
                 screen.refresh()

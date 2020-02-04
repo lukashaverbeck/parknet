@@ -13,18 +13,18 @@ import os
 import csv
 import json
 import time
-import numpy as np
-import interaction
-import RPi.GPIO as GPIO
-import Adafruit_PCA9685
-import constants as const
-from util import Singleton, threaded
 from threading import Thread
 from datetime import datetime
+import numpy as np
+import RPi.GPIO as GPIO
+import Adafruit_PCA9685
+import interaction
+import constants as const
 from ai import SteeringNet
-from connection import AutoConnector, get_local_ip
+from util import Singleton, threaded
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
+from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -35,7 +35,11 @@ class Agent:
     """ general representation of an acting protagonist """
 
     def __init__(self):
-        """ initializes an agent by reading its attributes from the according file """
+        """ initializes an agent by reading its attributes from the according file
+
+            Raises:
+                AssertionError: in case the attributes file is missing
+        """
 
         try:
             # read attributes from attributes file
@@ -94,6 +98,9 @@ class Driver:
 
             Args:
                 velocity_diff (float): desired velocity change
+
+            Raises:
+                TypeError: when trying to change the velocity by a non-numerical value 
         """
 
         try:
@@ -116,6 +123,9 @@ class Driver:
 
             Args:
                 angle_diff (float): desired angle change
+
+            Raises:
+                TypeError: when trying to change the steering angle by a non-numerical value
         """
 
         try:
@@ -361,7 +371,12 @@ class RecorderThread(Thread):
         assert os.path.isdir(self.img_dir), "image directory could not be created"
 
     def run(self):
-        """ starts capturing the data (image, angle, previous angle) """
+        """ starts capturing the data (image, angle, previous angle)
+
+            Raises:
+                OSError: in case the log file cannot be created
+                OSError: in case the log file cannot be opened after being created
+        """
 
         with Camera.instance() as camera:
             try:
@@ -370,7 +385,7 @@ class RecorderThread(Thread):
                     writer = csv.writer(log)
                     writer.writerow(["image", "angle", "previous_angle"])
             except OSError:
-                raise OSError("The attributes file could not be opened.")
+                raise OSError("The log file could not be created.")
 
             previous_angle = 0.0
             while self.active:
@@ -388,7 +403,7 @@ class RecorderThread(Thread):
                         previous_angle = str(previous_angle)
                         writer.writerow([img_filename, angle, previous_angle])
                 except OSError:
-                    raise OSError("The attributes file could not be opened.")
+                    raise OSError("The log file could not be opened.")
 
                 previous_angle = angle  # update previous angle for next loop
                 time.sleep(self.CAPTURE_INTERVAL)

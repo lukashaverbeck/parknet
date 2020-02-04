@@ -10,14 +10,14 @@
 
 import json
 import time
-import vehicle
 import requests
-import constants as const
 from threading import Thread
 from http.server import HTTPServer
+import vehicle
+import constants as const
 from util import Singleton, threaded
 from vision import FrontAgentScanner
-from connection import get_local_ip, check_if_up,  Server
+from connection import get_local_ip, check_if_up, Server
 
 
 @Singleton
@@ -59,6 +59,10 @@ class Communication:
 
             Returns:
                 list: list of used ips in the network
+            
+            Raises:
+                IndexError: in case an ip address could not be interpreted
+
         """
 
         ips = []
@@ -119,6 +123,9 @@ class Communication:
 
             Args:
                 message (str): JSON encoded message that triggered an event
+
+            Raises:
+                TypeError: when trying to call a non-callable callback
         """
 
         message = Message.loads(message)
@@ -181,6 +188,10 @@ class Message:
 
             Returns:
                 Message: Message object correpsonding to the JSON string
+
+            Raises:
+                TypeError: in case the content is not JSON serializable
+                KeyError: in case the JSON message is missing a required attribute
         """
 
         try:
@@ -288,7 +299,11 @@ class ActionManager:
 
     @threaded
     def act(self):
-        """ continuously determines which actions to execute and executes them by addressing the driver """
+        """ continuously determines which actions to execute and executes them by addressing the driver
+
+            Raises:
+                KeyError: when trying to execute a non-proactive action in a proactive context
+        """
 
         # continuously determine and take allowed actions
         while True:
@@ -470,6 +485,9 @@ class Action:
                         with alphabetically lower agent ID is returned
 
                 NOTE if one of the actions is None, the other action is returned in every case
+
+            Raises:
+                AttributeError: in case one of the object is missing a required attribute
         """
 
         if a is None: return b

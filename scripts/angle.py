@@ -6,7 +6,7 @@
 
 from __future__ import division
 import time
-import Adafruit_PCA9685  # library for PCA9685-module
+import Adafruit_PCA9685
 
 pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685 object at I2C-port
 pwm.set_pwm_freq(50)
@@ -29,7 +29,7 @@ while True:
     
     if pwm_val == "q": break  # stop script when the q key is pressed
     
-    pwm_calc = calc_angle(int(pwm_val))	 # get pwm value for user input
+    pwm_calc = calc_angle(int(pwm_val))  # get pwm value for user input
     pwm.set_pwm(0, 0, int(pwm_calc))  # cast pwm value to integer and set it on pwm object
     print(f"pwm value is: {pwm_calc}")  # echo user input
  

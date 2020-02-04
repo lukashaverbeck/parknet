@@ -66,7 +66,11 @@ class Server(BaseHTTPRequestHandler):
     communication = None
 
     def do_GET(self):
-        """ handles GET request """
+        """ handles GET request
+        
+            Raises:
+                AttributeError: in case of the communication instance has not been set
+        """
 
         if self.path == "/favicon.ico":
             self.send_response(404)
