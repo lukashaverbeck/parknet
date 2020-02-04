@@ -113,3 +113,4 @@ finally:
     screen.keypad(0)
     curses.echo()
     curses.endwin()
+    curses.endwin()

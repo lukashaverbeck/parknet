@@ -4,25 +4,24 @@
 # and a connector that ensures that a connection between the vehicles is created.
 # it also implements utility funcions that provide information about the network.
 #
-# version: 1.0 (1.1.2020)
+# version: 1.0 (4.2.2020)
 #
 # TODO simplify code in `AutoConnector`
+# TODO Remove unused method in SSIDBlock
 
 import os
 import time
 import logging
-import vehicle
-import requests
 import traceback
-import netifaces as ni
-import socket as socketlib
-import constants as const
+from threading import Thread, Event
 from wifi import Cell
+import socket as socketlib
 from wireless import Wireless
 from contextlib import closing
-from threading import Thread, Event
 from PyAccessPoint import pyaccesspoint
 from http.server import BaseHTTPRequestHandler
+import vehicle
+import constants as const
 
 logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s", level=logging.DEBUG)
 
@@ -40,7 +39,7 @@ def get_local_ip():
 
 
 def check_if_up(ip_address):
-    """ determines if there is a webserver is running on a given ip adress
+    """ determines if there is a webserver running on a given ip adress
 
         Args:
             ip_address (str): ip4 adress from the local network
@@ -77,7 +76,7 @@ class Server(BaseHTTPRequestHandler):
             self.end_headers()
         else:
             try:
-                file_to_open = "<h1>Agent</h1> <p>ID: "+ self.communication.agent.id + "</p>"
+                file_to_open = "<h1>Agent</h1> <p>ID: " + self.communication.agent.id + "</p>"
             except AttributeError:
                 raise AttributeError(
                     "The class `Server` was not provided with a communication instance before a POST request was sent.")
@@ -87,7 +86,11 @@ class Server(BaseHTTPRequestHandler):
             self.wfile.write(bytes(file_to_open, "utf-8"))
 
     def do_POST(self):
-        """ handles POST requests by triggering a communication event """
+        """ handles POST requests by triggering a communication event
+
+            Raises:
+                AttributeError: When there is no valid communication object
+        """
 
         content_length = int(self.headers["Content-Length"])
         body = self.rfile.read(content_length)
@@ -108,15 +111,20 @@ class Server(BaseHTTPRequestHandler):
 
 
 class SSIDBlock:
+    """ object to block a ssid for a given time    """
+
     def __init__(self, ssid, blocktime):
         self.blocktime = blocktime
         self.ssid = ssid
 
+    # TODO Unused?
     def __repr__(self):
         return f"SSIDBlock [#{self.ssid} {self.blocktime}]"
 
 
 class AutoConnector(Thread):
+    """ thread that connects to a wlan, if available, or creates a hotspot for other devices """
+
     def __init__(self, event):
         super().__init__()
 
@@ -128,6 +136,8 @@ class AutoConnector(Thread):
         self.wlan_name_found_to_connect = ""
         self.wlan_name_found_to_connect_time = 999999999999
 
+        # defines a hotspot object with the ssid "Test Wlan" and the password from the constants,
+        # ssid will be changed later. Because of a known bug, the hotspot is stopped once before the start.
         self.access_point = pyaccesspoint.AccessPoint(ssid="Test Wlan", password=const.Connection.WLAN_PASSWORD)
         self.access_point.stop()
 
@@ -139,6 +149,7 @@ class AutoConnector(Thread):
         self.block_list = []
 
     def run(self):
+        """ starts scanning for wlan and connects to a wlan or starts a hotspot, if necessary """
         while not self.stopped.wait(5):
             self.wlan_count_found = 0
             self.count += 1
@@ -157,6 +168,7 @@ class AutoConnector(Thread):
             self.connect_to_network_or_create_hotspot()
 
     def wlan_scan(self):
+        """ scans for wlan networks and selects the network that is called "parknet" and has existed the longest """
         self.wlan_name_found_to_connect = ""
         self.wlan_name_found_to_connect_time = 999999999999
 
@@ -194,6 +206,7 @@ class AutoConnector(Thread):
             print(f"Error while scanning for wifi {traceback.format_exc()}")
 
     def start_hotspot(self):
+        """ starts a hotspot with the name "parkent" and the current time"""
         if not self.hotspot_status:
             print("Starting hotspot")
 
@@ -206,6 +219,7 @@ class AutoConnector(Thread):
             vehicle.start_interface()
 
     def stop_hotspot(self):
+        """ stops the hotspot """
         if self.hotspot_status:
             print("Disabling hotspot")
 
@@ -214,6 +228,7 @@ class AutoConnector(Thread):
             self.own_wlan_time_from_hotspot = 9999999999999
 
     def connect_to_network_or_create_hotspot(self):
+        """ starts a hotspot if no suitable wlan network was found or connects to a wlan"""
         if self.wlan_count_found <= 0:
             print("Hotspot mode")
             self.start_hotspot()
@@ -233,6 +248,14 @@ class AutoConnector(Thread):
                     self.last_wlan_connected = self.wireless_module.current()
 
     def is_blocked(self, ssid):
+        """ checks whether an SSID is currently blocked
+
+            Args:
+                ssid(str): The name of the wlan that should be checked for a block
+
+            Returns:
+                bool: Whether the given ssid is blocked (True) or not (False)
+        """
         for block in self.block_list:
             if block.ssid == ssid and block.blocktime > int(time.time()):
                 return True
@@ -242,15 +265,23 @@ class AutoConnector(Thread):
         return False
 
     def add_to_block_list(self, ssid, blocktime):
+        """ blocks a ssid for a given time
+
+            Args:
+                ssid(str): The name of the wlan that should be blocked
+                blocktime(int): Time how long the wlan name should be blocked
+        """
         self.block_list.append(SSIDBlock(ssid, blocktime))
         print(f"Blocking {ssid} for {blocktime}")
 
     def print_list(self):
+        """ prints a list of WLAN networks that were blocked at some point and whether they are currently blocked"""
         for block in self.block_list:
             print(f"{block} Blocked: {self.is_blocked(block.ssid)}")
 
     @staticmethod
     def start_connector():
+        """ starts the thread for the AutoConnector"""
         stopFlag = Event()
         thread = AutoConnector(stopFlag)
         thread.start()
