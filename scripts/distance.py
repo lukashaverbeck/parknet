@@ -84,10 +84,10 @@ while True:
     screen.clear()  # clear screen for next output
 
     # sho results in the console
-    screen.addstr("Distance_front:        {distance_1} cm\n")
-    screen.addstr("Distance_side:         {distance_2} cm\n")
-    screen.addstr("Distance_back:         {distance_3} cm\n")
-    screen.addstr("Distance_back(angled): {distance_4} cm")
+    screen.addstr("Distance_front:        " + str(distance_1) + "cm\n")
+    screen.addstr("Distance_side:         " + str(distance_2) + "cm\n")
+    screen.addstr("Distance_back:         " + str(distance_3) + "cm\n")
+    screen.addstr("Distance_back(angled): " + str(distance_4) + "cm")
     screen.refresh()
 
 # in order to not mess up the console all setting need to be reset to default values
