@@ -25,10 +25,10 @@ class Driving:
 
 
 class EchoPin:
-    FRONT = 24
-    RIGHT = 27
-    BACK = 17
-    BACK_ANGLED = 10
+    FRONT = 4
+    RIGHT = 17
+    BACK = 22
+    BACK_ANGLED = 27
 
 
 class Mode:
@@ -67,7 +67,7 @@ class Topic:
 
 
 class TriggerPin:
-    FRONT = 23
-    RIGHT = 22
-    BACK = 4
-    BACK_ANGLED = 18
+    FRONT = 18
+    RIGHT = 23
+    BACK = 25
+    BACK_ANGLED = 24
