@@ -15,14 +15,14 @@ screen.keypad(True)  # enable special-keys
 
 GPIO.setmode(GPIO.BCM)  # set GPIO mode
 
-TRIG_1 = 23  # trigger pin of HC-SR04 module(front)
-TRIG_2 = 22  # trigger pin of HC-SR04 module(side)
-TRIG_3 = 4   # trigger pin of HC-SR04 module(back)
-TRIG_4 = 18  # trigger pin of HC-SR04 module(back-angled)
-ECHO_1 = 24  # echo pin of HC-SR04 module(front)
-ECHO_2 = 27  # echo pin of HC-SR04 module(side)
-ECHO_3 = 17  # echo pin of HC-SR04 module(back)
-ECHO_4 = 10  # echo pin of HC-SR04 module(back-angled)
+TRIG_1 = 18  # trigger pin of HC-SR04 module(front)
+TRIG_2 = 23  # trigger pin of HC-SR04 module(side)
+TRIG_3 = 25   # trigger pin of HC-SR04 module(back)
+TRIG_4 = 24  # trigger pin of HC-SR04 module(back-angled)
+ECHO_1 = 4  # echo pin of HC-SR04 module(front)
+ECHO_2 = 17  # echo pin of HC-SR04 module(side)
+ECHO_3 = 22  # echo pin of HC-SR04 module(back)
+ECHO_4 = 27  # echo pin of HC-SR04 module(back-angled)
 
 # define all trigger pins as outputs and all echo pins as inputs
 # make sure all pins ar free to use to avoid data collision
