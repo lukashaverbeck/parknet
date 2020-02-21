@@ -15,16 +15,16 @@ import json
 import time
 from threading import Thread
 from datetime import datetime
-import numpy as np
+#import numpy as np
 import RPi.GPIO as GPIO
 import Adafruit_PCA9685
-import interaction
+#import interaction
 import constants as const
-from ai import SteeringNet
+#from ai import SteeringNet
 from util import Singleton, threaded
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
-from connection import AutoConnector, get_local_ip
+#from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -72,7 +72,7 @@ class Driver:
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.distance = 0
         self.agent = Agent.instance()
-        self.formation = interaction.Formation.instance()
+        #self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
 
     def start_driving(self):
@@ -152,36 +152,40 @@ class Driver:
         time.sleep(2)
 
         # drive back into gap with strong angle
-        self.angle = -35
-        self.velocity = -7
+        self.angle = 25
+        self.velocity = -8
         self.drive_thread.driven_distance = 0
-        self.distance = 50
+        self.distance = 35
         while self.drive_thread.driven_distance < self.distance:
             time.sleep(1)
+        print("rückwärts rein")
 
         # drive back until close to wall
-        self.angle = 8
-        self.velocity = -6
+        self.angle = 0
+        self.velocity = -8
         self.distance = 150
         self.drive_thread.driven_distance = 0
-        while self.sensor_manager.rear > 30:
-            time.sleep(1)
+        while self.sensor_manager.rear > 60:
+            time.sleep(0.2)
+        print("bis zur Wand")
 
         # get into straight position
-        self.angle = 35
-        self.velocity = -7
-        self.distance = 45
+        self.angle = -25
+        self.velocity = -8
+        self.distance = 40
         self.drive_thread.driven_distance = 0
         while self.drive_thread.driven_distance < self.distance:
             time.sleep(1)
+        print("grade stellen")
 
-        # drive forward up to end of gap
-        self.angle = -8
-        self.velocity = 6
+        # drive backwards up to end of gap
+        self.angle = 0
+        self.velocity = -8
         self.drive_thread.driven_distance = 0
-        while self.sensor_manager.front >= 10:
-            print(self.sensor_manager.front)
-            time.sleep(1)
+        while self.sensor_manager.rear >= 10:
+            print(self.sensor_manager.rear)
+            time.sleep(0.5)
+        print("nach hinten bis Anfang")
 
         self.stop_driving()
 
@@ -200,28 +204,77 @@ class Driver:
             NOTE after identifying a parking lot, the vehicle drives further until it reaches the start of the parking lot
         """
 
-        check_interval = 1
-        intervals_with_matching_space = 0
-        required_lot_length = self.agent.length * 1.4
-        required_lot_width = self.agent.width * 1.2
-
-        self.velocity = const.Driving.CAUTIOUS_VELOCITY
-        self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.start_driving()
+        self.velocity = 8
+        self.distance = 250
+        self.angle = 1.5
+        self.drive_thread.reset()
 
-        # evaluate whether there would be enough space in terms of width and length for parallel parking
-        while True:
-            if self.sensor_manager.right >= required_lot_width:
-                intervals_with_matching_space += 1
-                length_with_matching_space = intervals_with_matching_space * velocity * check_interval
+        vacant_distance = 0
 
-                if length_with_matching_space >= required_lot_length: break
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(0.1)
 
-            time.sleep(check_interval)
+            if self.sensor_manager.right > 25:
+                vacant_distance += 1
+            else:
+                vacant_distance = 0
 
-        # drive further until the vehicle reaches the start of the parking lot
-        while self.sensor_manager.right >= required_lot_width: continue
+            print(vacant_distance)
+            print(self.sensor_manager.right)
+
+            if vacant_distance >= 35:
+                while self.sensor_manager.right > 25:
+                    time.sleep(0.1)
+
+                distance_right = self.sensor_manager.right
+                print(distance_right)
+
+                if 14 <= distance_right <= 18:
+                    self.angle = 0
+                    self.distance = 35
+                    self.drive_thread.reset()
+
+                    while self.drive_thread.driven_distance < self.distance:
+                        time.sleep(0.1)
+                elif distance_right > 18:
+                    self.adjust_starting_position("left")
+                elif distance_right < 14:
+                    self.adjust_starting_position("right")
+                break
+
         self.stop_driving()
+
+    def adjust_starting_position(self, direction):
+        """ ensures that the vehicle enters a parking lot from a reasonable starting position by adjusting the space on
+            the right side of the vehicle
+
+            Args:
+                direction (string or int): direction in which to adjust the space (either "left" / 1 or "right" / 0)
+        """
+
+        direction = 1 if direction in ["left", 1]  else -1
+
+        self.angle = direction * 25
+        self.distance = 12
+        self.drive_thread.reset()
+
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(0.1)
+
+        self.angle = 0
+        self.distance = 12
+        self.drive_thread.reset()
+
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(0.1)
+
+        self.angle = direction * -25
+        self.distance = 12
+        self.drive_thread.reset()
+
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(0.1)
 
     def follow_road(self):
         """ drives autonomously without explicit instructions by propagating the camera
@@ -417,7 +470,7 @@ class RecorderThread(Thread):
 class DriveThread(Thread):
     """ thread that moves the vehicle """
     
-    DISTANCE_PER_STEP = 0.00865
+    DISTANCE_PER_STEP = 0.0072
 
     def __init__(self):
         """ initializes the thread without starting to move the vehicle """
@@ -454,9 +507,9 @@ class DriveThread(Thread):
         while self.active:
             velocity = self.driver.velocity          
             if velocity < 0:
-                GPIO.output(20, 1)
-            elif velocity > 0:
                 GPIO.output(20, 0)
+            elif velocity > 0:
+                GPIO.output(20, 1)
             delay = self.calculate_delay(abs(velocity))
 
             # ensures that there is enough space in front of or behind the vehicle by skipping the current
@@ -480,7 +533,7 @@ class DriveThread(Thread):
     def calculate_delay(self, velocity):
         """calculates delay time used between steps according to velocity"""
         if velocity > 0:
-            rps = velocity / 1.729
+            rps = velocity / 1.444
             delay = (1 / (200 * float(rps))) / 2
             return delay
         else:
@@ -493,6 +546,9 @@ class DriveThread(Thread):
             GPIO.output(26, GPIO.HIGH)
         else:
             GPIO.output(26, GPIO.LOW)
+
+    def reset(self):
+        self.driven_distance = 0
 
     @threaded
     def steer(self):
@@ -514,7 +570,8 @@ class DriveThread(Thread):
                 int: pwm value for the steering angle
         """
 
-        val = 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + 0.005766 * angle ** 2 - 1.81281 * angle + 324.149
+        #val = 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + 0.005766 * angle ** 2 - 1.81281 * angle + 324.149
+        val = -2.82492*angle+406
         return int(round(val, 0))
 
     def stop(self):
@@ -524,6 +581,8 @@ class DriveThread(Thread):
         """
 
         self.active = False
+        angle_pwm = self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE)
+        self.pwm.set_pwm(0, 0, angle_pwm)
 
 
 def start_interface():
@@ -574,4 +633,5 @@ if __name__ == "__main__":
     #interface_thread = Thread(target = start_interface)
     #interface_thread.start()
     d = Driver.instance()
+    d.search_parking_lot()
     d.enter_parking_lot()
