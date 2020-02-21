@@ -11,13 +11,13 @@ class Connection:
 
 
 class Driving:
-    CAUTIOUS_VELOCITY = 7       # cm/s
+    CAUTIOUS_VELOCITY = 8       # cm/s
     STOP_VELOCITY = 0           # cm/s
-    MAX_VELOCITY = 7            # cm/s
-    MIN_VELOCITY = -7           # cm/s
+    MAX_VELOCITY = 9            # cm/s
+    MIN_VELOCITY = -9           # cm/s
 
-    MIN_STEERING_ANGLE = -35    # °
-    MAX_STEERING_ANGLE = 35     # °
+    MIN_STEERING_ANGLE = -25    # °
+    MAX_STEERING_ANGLE = 25     # °
     NEUTRAL_STEERING_ANGLE = 0  # °
 
     SAFETY_DISTANCE = 3         # cm
