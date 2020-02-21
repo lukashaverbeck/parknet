@@ -15,16 +15,16 @@ import json
 import time
 from threading import Thread
 from datetime import datetime
-#import numpy as np
+import numpy as np
 import RPi.GPIO as GPIO
 import Adafruit_PCA9685
-#import interaction
+import interaction
 import constants as const
-#from ai import SteeringNet
+from ai import SteeringNet
 from util import Singleton, threaded
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
-#from connection import AutoConnector, get_local_ip
+from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -158,7 +158,6 @@ class Driver:
         self.distance = 35
         while self.drive_thread.driven_distance < self.distance:
             time.sleep(1)
-        print("rückwärts rein")
 
         # drive back until close to wall
         self.angle = 0
@@ -167,8 +166,7 @@ class Driver:
         self.drive_thread.driven_distance = 0
         while self.sensor_manager.rear > 60:
             time.sleep(0.2)
-        print("bis zur Wand")
-
+       
         # get into straight position
         self.angle = -25
         self.velocity = -8
@@ -176,8 +174,7 @@ class Driver:
         self.drive_thread.driven_distance = 0
         while self.drive_thread.driven_distance < self.distance:
             time.sleep(1)
-        print("grade stellen")
-
+        
         # drive backwards up to end of gap
         self.angle = 0
         self.velocity = -8
@@ -185,8 +182,7 @@ class Driver:
         while self.sensor_manager.rear >= 10:
             print(self.sensor_manager.rear)
             time.sleep(0.5)
-        print("nach hinten bis Anfang")
-
+        
         self.stop_driving()
 
     def leave_parking_lot(self):
@@ -626,12 +622,3 @@ def start_interface():
 
             interface = WebInterface(agent, driver, sensor_manager, action_manager)
             interface.start(current_ip)
-
-
-if __name__ == "__main__":
-    #AutoConnector.start_connector()
-    #interface_thread = Thread(target = start_interface)
-    #interface_thread.start()
-    d = Driver.instance()
-    d.search_parking_lot()
-    d.enter_parking_lot()
