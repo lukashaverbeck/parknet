@@ -477,8 +477,7 @@ class DriveThread(Thread):
         self.sensor_manager = SensorManager.instance()
 
         self.pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
-        self.pulse_freq = 50
-        self.pwm.set_pwm_freq(self.pulse_freq)
+        self.pwm.set_pwm_freq(50)
 
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)

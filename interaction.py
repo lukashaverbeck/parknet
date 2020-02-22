@@ -32,12 +32,12 @@ class Communication:
         self.local_ip = "127.0.0.1"
         self.connection_status = True
         self.server = HTTPServer((self.local_ip, 80), Server)
-        print(f"Starting Webserver on {self.local_ip}")
-        server_thread = Thread(target=self.server.serve_forever)
-        server_thread.start()
 
         self.subscriptions = []
         self.agent = vehicle.Agent.instance()
+
+        server_thread = Thread(target=self.server.serve_forever)
+        server_thread.start()
 
     def set_local_ip(self , ip_address):
         self.local_ip = ip_address
@@ -114,8 +114,6 @@ class Communication:
             for ip in self.scan_ips_from_network():
                 requests.post("http://" + ip, data=json_message)
             requests.post("http://" + self.local_ip, data=json_message)
-
-
 
     def trigger(self, message):
         """ triggers every callback with the topic transmitted by the message
@@ -231,7 +229,7 @@ class ActionManager:
         self.formation = Formation.instance()
         self.driver = vehicle.Driver.instance()
 
-        # map modes to the driver methods that are proactive and
+        # maps modes to the driver methods that are proactive and
         # require coordniation to execute the corresponding actions
         self.PROACTIVAE_ACTIONS = {
             const.Mode.AUTONOMOUS: self.driver.follow_road,
