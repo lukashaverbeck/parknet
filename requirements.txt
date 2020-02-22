@@ -10,3 +10,4 @@ PyAccessPoint
 netifaces
 psutil
 netifaces
+gpiozero
