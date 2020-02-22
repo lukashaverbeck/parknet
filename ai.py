@@ -11,6 +11,8 @@
 # TODO image segmentation for identifying pedestrians, traffic signs, traffic lights etc.
 
 import os
+import json
+import math
 import random
 from datetime import datetime
 import numpy as np
@@ -21,11 +23,46 @@ import tensorflow.keras.layers as layers
 from tensorflow.keras.callbacks import ModelCheckpoint
 import constants as const
 
-assert os.path.isdir(const.Storage.CHECKPOINTS), "required checkpoint directory missing"
 
 KEY_IMG = "image"
 KEY_ANGLE = "angle"
 KEY_PREVIOUS = "previous_angle"
+INPUT_SHAPE = (100, 200, 3)
+
+
+def calc_steps(data_path, batch_size):
+    """ calculates the number of steps per epoch
+    
+        Args:
+            data_path (str): path to the file storing the data
+            batch_size (int): number of samples being considered per iteration
+
+        Returns:
+            int: number of steps
+    """
+
+    with open(data_path, "r") as data_file:
+        lines = data_file.readlines()
+        num_lines = len([l for l in lines if l.strip(" \n") != ""])
+
+    return math.ceil(num_lines / batch_size)
+
+
+def save_history(history, version):
+    """ saves the training progress to disk by storing it in a JSON file
+
+        Args:
+            history (keras.callbacks.History): training history providing information about the training progress
+            version (int or float or string): name of the training
+    """
+
+    with open(f"./v{version}_mae.json", mode="w+") as log:
+        data = [float(x) for x in history.history["mae"]]
+        json.dump(data, log, ensure_ascii=True, indent=4)
+
+    with open(f"./{version}_val_mae.json", mode="w+") as log:
+        data = [float(x) for x in history.history["val_mae"]]
+        json.dump(data, log, ensure_ascii=True, indent=4)
 
 
 def disply_image(image):
@@ -136,8 +173,6 @@ def add_noise_to_image(image):
 class SteeringData:
     """ wrapper class for data used for trainign the `SteeringModel` """
 
-    INPUT_SHAPE = (100, 200, 3)
-
     def __init__(self, image_directory, csv_path, batch_size, is_training):
         """ initializes the `SteeringData`
         
@@ -155,7 +190,7 @@ class SteeringData:
 
         if self.image_directory[-1] != "/": self.image_directory += "/"
 
-    def __iter__(self):
+    def generate(self):
         """ continously iterates over the data points
         
             Yields:
@@ -241,7 +276,7 @@ class SteeringData:
                 is_training (bool): boolean whether data is used for training (augment data in this case)
         """
 
-        image = center_crop_image(image, SteeringData.INPUT_SHAPE)  # extract center
+        image = center_crop_image(image, INPUT_SHAPE)  # extract center
 
         if is_training:  # augment data i training mode
             image = add_noise_to_image(image)
@@ -262,8 +297,6 @@ class SteeringModel(keras.Model):
     """ deep learning model predicting steering angles based on an image input and the current steering angle
         NOTE this model is based on the architecture proposed by NVIDIA researchers for autnonomous driving
     """
-
-    INPUT_SHAPE = (100, 200, 3)
 
     def __init__(self):
         """ initializes the model by defining its layers """
@@ -292,7 +325,7 @@ class SteeringModel(keras.Model):
             print(self.summary())
         except ValueError:
             self.predict({
-                KEY_IMG: np.array([np.zeros(self.INPUT_SHAPE)]),
+                KEY_IMG: np.array([np.zeros(INPUT_SHAPE)]),
                 KEY_PREVIOUS: np.array([0.0])
             })
 
@@ -336,11 +369,9 @@ class SteeringModel(keras.Model):
 class SteeringNet:
     """ wrapper class simlifying accessing the `SteeringModel` """    
     
-    INPUT_SHAPE = (100, 200, 3)
-    BATCH_SIZE = 256
-    LOSS_FUNCTION = "mean_absolute_error"
-    LEARNING_RATE = 0.001
-    OPTIMIZER = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    IMG_DIRECTORY = "./data/steering/images/"
+    CSV_TRAIN = "./data/steering/train.csv"
+    CSV_VALIDATION = "./data/steering/validation.csv"
 
     def __init__(self):
         """ initializes the model """
@@ -380,39 +411,33 @@ class SteeringNet:
                 model_path (str): path to a representation of the model's weights
         """
 
-        self.predict(np.zeros(self.INPUT_SHAPE), 0.0)
+        self.predict(np.zeros(INPUT_SHAPE), 0.0)
         self.model.load_weights(model_path)
 
-    def train(self, image_directory, samples_train, csv_train, samples_val, csv_val, epochs):
+    def train(self, version, epochs=50, batch_size=256, loss="mae", lr=0.001, optimizer="adam"):
         """ trains the deep learning model
 
             Args:
-                image_directory (str): path to the directory containing the images
-                samples_train (int): number of samples used for training
-                csv_train (str): path to the csv file mapping training images to steering angles and velocities
-                samples_val (int): number of samples used for validation
-                csv_val (str): path to the csv file mapping validation images to steering angles and velocities
+                version (int or float or string): name of the training
                 epochs (int): number of training iterations over the whole data set
-
-            Returns:
-                keras.callbacks.History: training history providing information about the training progress
         """
 
-        train_id = datetime.now().strftime("%d-%m-%y-%M-%S")
+        if not os.path.isdir(const.Storage.CHECKPOINTS):
+            os.mkdir(const.Storage.CHECKPOINTS)
+        if not os.path.isdir(f"{const.Storage.CHECKPOINTS}/v{version}"):
+            os.mkdir(f"{const.Storage.CHECKPOINTS}/v{version}")        
 
-        # get training data
-        train_data = SteeringData(image_directory, csv_train, self.BATCH_SIZE, True).__iter__()
-        train_steps = samples_train // self.BATCH_SIZE
-
-        # get validation data if
-        validation_data = SteeringData(image_directory, csv_val, self.BATCH_SIZE, False).__iter__()
-        validation_steps = samples_val // self.BATCH_SIZE
+        # get training and validation data
+        train_data = SteeringData(self.IMG_DIRECTORY, self.CSV_TRAIN, batch_size, True).generate()
+        validation_data = SteeringData(self.IMG_DIRECTORY, self.CSV_VALIDATION, batch_size, False).generate()
+        train_steps = calc_steps(self.CSV_TRAIN, batch_size)
+        validation_steps = calc_steps(self.CSV_VALIDATION, batch_size)
 
         # define callbacks
-        checkpoint = ModelCheckpoint(const.Storage.CHECKPOINTS + "/" + train_id + "-{epoch:03d}.h5", verbose=0)
+        checkpoint = ModelCheckpoint(const.Storage.CHECKPOINTS + "/v" + str(version) + "/{epoch:03d}.h5", verbose=0)
 
         # compile and train the model
-        self.model.compile(loss=self.LOSS_FUNCTION, optimizer=self.OPTIMIZER, batch_size=self.BATCH_SIZE)
+        self.model.compile(loss=loss, optimizer=optimizer)
         history = self.model.fit_generator(
             generator=train_data,
             steps_per_epoch=train_steps,
@@ -423,7 +448,7 @@ class SteeringNet:
             verbose=1
         )
 
-        return history
+        save_history(history, version)  # save training process to disk
 
     def evaluate(self, image_directory, samples, csv):
         """ measures the inaccuracy of the model
@@ -481,8 +506,13 @@ class SteeringNet:
         return absolute_deviation, relative_deviation, marginal_deviation
 
 
-assert SteeringData.INPUT_SHAPE == SteeringNet.INPUT_SHAPE == SteeringModel.INPUT_SHAPE, "steering input shape must be consistent"
-
 if __name__ == "__main__":
     net = SteeringNet()
-    print(net)
+    net.train(
+        version=1,
+        epochs=100,
+        batch_size=256,
+        loss="mae",
+        lr=0.0005,
+        optimizer="adam"
+    )
