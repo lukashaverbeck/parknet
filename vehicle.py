@@ -8,6 +8,7 @@
 #
 # TODO implement Driver.leave_parking_lot
 # TODO test everything
+# TODO compensate for lopsided driving with a general approach
 
 import os
 import csv
@@ -72,7 +73,7 @@ class Driver:
         self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
         self.distance = 0
         self.agent = Agent.instance()
-        #self.formation = interaction.Formation.instance()
+        self.formation = interaction.Formation.instance()
         self.sensor_manager = SensorManager.instance()
 
     def start_driving(self):
@@ -143,9 +144,8 @@ class Driver:
 
     def enter_parking_lot(self):
         """ parallel parking from a provided starting position
-
             NOTE the method assumes that the vehicle stands parallel to the
-            front vehicle or obstacle with their back fronts at the same height
+            front vehicle or obstacle in the correct starting position
         """
 
         self.start_driving()
@@ -198,12 +198,14 @@ class Driver:
         """ drives forward while identifying possible parking lots and evaluating whether
             such a parking lot would fit the vehicle's dimensions for parallel parking
             NOTE after identifying a parking lot, the vehicle drives further until it reaches the start of the parking lot
+
+            TODO compensate for lopsided driving with a more general approach
         """
 
         self.start_driving()
         self.velocity = 8
-        self.distance = 250
-        self.angle = 1.5
+        self.distance = 250  # maximum searching distance
+        self.angle = 1.5  # TODO
         self.drive_thread.reset()
 
         vacant_distance = 0
@@ -216,15 +218,11 @@ class Driver:
             else:
                 vacant_distance = 0
 
-            print(vacant_distance)
-            print(self.sensor_manager.right)
-
             if vacant_distance >= 35:
                 while self.sensor_manager.right > 25:
                     time.sleep(0.1)
 
                 distance_right = self.sensor_manager.right
-                print(distance_right)
 
                 if 14 <= distance_right <= 18:
                     self.angle = 0
@@ -237,6 +235,7 @@ class Driver:
                     self.adjust_starting_position("left")
                 elif distance_right < 14:
                     self.adjust_starting_position("right")
+                
                 break
 
         self.stop_driving()
