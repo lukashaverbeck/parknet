@@ -374,9 +374,10 @@ class SteeringNet:
     CSV_VALIDATION = "./data/steering/validation.csv"
 
     def __init__(self):
-        """ initializes the model """
+        """ initializes the model by loading the default weights """
 
         self.model = SteeringModel()
+        self.load(const.Storage.DEFAULT_STEERING_MODEL)
 
     def __repr__(self):
         return self.model.__repr__()
@@ -437,7 +438,7 @@ class SteeringNet:
         checkpoint = ModelCheckpoint(const.Storage.CHECKPOINTS + "/v" + str(version) + "/{epoch:03d}.h5", verbose=0)
 
         # compile and train the model
-        self.model.compile(loss=loss, optimizer=optimizer)
+        self.model.compile(loss=loss, optimizer=optimizer, metrics = ["mae"])
         history = self.model.fit_generator(
             generator=train_data,
             steps_per_epoch=train_steps,
@@ -511,8 +512,8 @@ if __name__ == "__main__":
     net.train(
         version=1,
         epochs=100,
-        batch_size=256,
+        batch_size=64,
         loss="mae",
-        lr=0.0005,
+        lr=0.00075,
         optimizer="adam"
     )

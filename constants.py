@@ -2,8 +2,6 @@
 # that represent a separate concern.
 #
 # version:  1.0 (28.12.2019)
-#
-# TODO define default steering mode file
 
 
 class Connection:
@@ -55,7 +53,7 @@ class Storage:
     ATTRIBUTES = "./attributes.json"
     DATA = "./data/"
     CHECKPOINTS = "./checkpoints/"
-    DEFAULT_STEERING_MODEL = None  # TODO
+    DEFAULT_STEERING_MODEL = "./model.h5"
 
 
 class Topic:
