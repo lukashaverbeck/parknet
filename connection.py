@@ -23,7 +23,7 @@ from contextlib import closing
 from PyAccessPoint import pyaccesspoint
 from http.server import BaseHTTPRequestHandler
 import vehicle
-from interaction import Communication
+import interaction
 import constants as const
 
 logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s", level=logging.DEBUG)
@@ -64,8 +64,9 @@ def check_if_up(ip_address):
 
 class TornadoWebserver(tornado.web.RequestHandler):
     """ custom http server handling POST or GET requests """
-    def __init__(self):
-        self.communication = Communication.instance()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.communication = interaction.Communication.instance()
 
     def get(self):
         print("Request from " + str(self.request.remote_ip))
@@ -118,57 +119,6 @@ class WebThread(Thread):
             ioloop.start()
         except OSError:
             print("Already connected to this address or address blocked " + str(self.ip))
-
-
-class Server(BaseHTTPRequestHandler):
-    """ custom http server handling POST or GET requests """
-
-    communication = None
-
-    def do_GET(self):
-        """ handles GET request
-        
-            Raises:
-                AttributeError: in case of the communication instance has not been set
-        """
-
-        if self.path == "/favicon.ico":
-            self.send_response(404)
-            self.end_headers()
-        else:
-            try:
-                file_to_open = "<h1>Agent</h1> <p>ID: " + self.communication.agent.id + "</p>"
-            except AttributeError:
-                raise AttributeError(
-                    "The class `Server` was not provided with a communication instance before a POST request was sent.")
-
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(bytes(file_to_open, "utf-8"))
-
-    def do_POST(self):
-        """ handles POST requests by triggering a communication event
-
-            Raises:
-                AttributeError: When there is no valid communication object
-        """
-
-        content_length = int(self.headers["Content-Length"])
-        body = self.rfile.read(content_length)
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(bytes("<h1>POST</h1>", "utf-8"))
-
-        response = bytes(body).decode("utf-8")
-        response_data = response.split("=", 1)
-
-        try:
-            # trigger event callbacks
-            for data in response_data:
-                self.communication.trigger(data)
-        except AttributeError:
-            raise AttributeError(
-                "The class `Server` was not provided with a communication instance before a POST request was sent.")
 
 
 class SSIDBlock:
@@ -277,7 +227,6 @@ class AutoConnector(Thread):
 
             self.access_point.start()
             self.hotspot_status = True
-            vehicle.start_interface()
 
     def stop_hotspot(self):
         """ stops the hotspot """
@@ -303,7 +252,6 @@ class AutoConnector(Thread):
                     f"Status: {self.wireless_module.connect(self.wlan_name_found_to_connect, const.Connection.WLAN_PASSWORD)}")
                 time.sleep(2)
                 print(f"Wlan network: {self.wireless_module.current()}")
-                vehicle.start_interface()
 
                 if self.wireless_module.current() is not None:
                     self.last_wlan_connected = self.wireless_module.current()

@@ -24,7 +24,6 @@ import constants as const
 from ai import SteeringNet
 from util import Singleton, threaded
 from ui.interface import WebInterface
-from interaction import Communication
 from vision import Camera, SensorManager
 from connection import AutoConnector, get_local_ip
 
@@ -624,4 +623,5 @@ def start_interface():
 
 
 if __name__ == "__main__":
-    Communication.instance()
+    interaction.Communication.instance()
+    start_interface()

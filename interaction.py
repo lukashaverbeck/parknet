@@ -17,7 +17,7 @@ import vehicle
 import constants as const
 from util import Singleton, threaded
 from vision import FrontAgentScanner
-from connection import get_local_ip, check_if_up, Server,WebThread
+from connection import get_local_ip, check_if_up,WebThread
 
 
 @Singleton
@@ -28,20 +28,14 @@ class Communication:
         """ initializes a communication object and starts a local HTTP Server """
 
         # intitialize and start web server
-        Server.communication = self
+
         self.local_ip = "127.0.0.1"
         self.connection_status = True
         web_server_thread = WebThread()
         web_server_thread.define_ip(self.local_ip)
         web_server_thread.start()
-        #self.server = HTTPServer((self.local_ip, 80), Server)
-
         self.subscriptions = []
         self.agent = vehicle.Agent.instance()
-
-        #server_thread = Thread(target=self.server.serve_forever)
-        #server_thread.start()
-
 
     def set_local_ip(self , ip_address):
         self.local_ip = ip_address
@@ -51,13 +45,6 @@ class Communication:
         web_server_thread = WebThread()
         web_server_thread.define_ip(ip_address)
         web_server_thread.start()
-
-        #try:
-            #self.server = HTTPServer((ip_address, 80), Server)
-            #server_thread = Thread(target=self.server.serve_forever)
-            #server_thread.start()
-        #except OSError:
-        #    print("Already connected to this address or address blocked")
 
     def lost_connection(self):
         self.connection_status = False
