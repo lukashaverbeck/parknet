@@ -21,8 +21,6 @@ import socket as socketlib
 from wireless import Wireless
 from contextlib import closing
 from PyAccessPoint import pyaccesspoint
-from http.server import BaseHTTPRequestHandler
-import vehicle
 import interaction
 import constants as const
 
