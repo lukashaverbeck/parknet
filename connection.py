@@ -14,6 +14,8 @@ import time
 import logging
 import traceback
 from threading import Thread, Event
+import tornado.web
+import tornado.ioloop
 from wifi import Cell
 import socket as socketlib
 from wireless import Wireless
@@ -21,6 +23,7 @@ from contextlib import closing
 from PyAccessPoint import pyaccesspoint
 from http.server import BaseHTTPRequestHandler
 import vehicle
+from interaction import Communication
 import constants as const
 
 logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s", level=logging.DEBUG)
@@ -57,6 +60,64 @@ def check_if_up(ip_address):
             return True
     except socketlib.error:
         return False
+
+
+class TornadoWebserver(tornado.web.RequestHandler):
+    """ custom http server handling POST or GET requests """
+    def __init__(self):
+        self.communication = Communication.instance()
+
+    def get(self):
+        print("Request from " + str(self.request.remote_ip))
+        try:
+            self.write("<h1>Agent</h1> <p>ID: " + self.communication.agent.id + "</p>")
+        except AttributeError:
+            raise AttributeError(
+                "The class `Server` was not provided with a communication instance before a POST request was sent.")
+
+    def post(self):
+        self.set_header("Content-Type", "text/plain")
+        print(self.request.body)
+        self.write("<h1>POST</h1>")
+        response = self.request.body
+        response_data = response.split("=", 1)
+
+        try:
+            # trigger event callbacks
+            for data in response_data:
+                self.communication.trigger(data)
+        except AttributeError:
+            raise AttributeError(
+                "The class `Server` was not provided with a communication instance before a POST request was sent.")
+
+
+def get_webserver_application():
+    return tornado.web.Application([
+        (r"/", TornadoWebserver)
+    ])
+
+
+class WebThread(Thread):
+    def __init__(self):
+        self.ip = "unset"
+        Thread.__init__(self, name='WebThread')
+
+    def define_ip(self, ip):
+        self.ip = ip
+
+    def run(self):
+
+        ioloop = tornado.ioloop.IOLoop()
+
+        application = get_webserver_application() #tornado.web.Application
+        http_server_api = tornado.httpserver.HTTPServer(application)
+        try:
+            http_server_api.listen(80)
+            print("Starting webserver on " + str(self.ip))
+
+            ioloop.start()
+        except OSError:
+            print("Already connected to this address or address blocked " + str(self.ip))
 
 
 class Server(BaseHTTPRequestHandler):

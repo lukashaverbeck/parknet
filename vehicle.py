@@ -24,6 +24,7 @@ import constants as const
 from ai import SteeringNet
 from util import Singleton, threaded
 from ui.interface import WebInterface
+from interaction import Communication
 from vision import Camera, SensorManager
 from connection import AutoConnector, get_local_ip
 
@@ -578,7 +579,7 @@ class DriveThread(Thread):
         angle_pwm = self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE)
         self.pwm.set_pwm(0, 0, angle_pwm)
 
-
+@threaded
 def start_interface():
     """checks for new ip addresses of picar and starts interface-webserver on new ip"""
 
@@ -620,3 +621,7 @@ def start_interface():
 
             interface = WebInterface(agent, driver, sensor_manager, action_manager)
             interface.start(current_ip)
+
+
+if __name__ == "__main__":
+    Communication.instance()
