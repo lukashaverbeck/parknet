@@ -451,20 +451,16 @@ class SteeringNet:
 
         save_history(history, version)  # save training process to disk
 
-    def evaluate(self, image_directory, samples, csv):
+    def evaluate(self):
         """ measures the inaccuracy of the model
-
-            Args:
-                img_directory (str): path to the directory containing the images
-                samples (int): number of samples to use for the evaluation
-                csv (str): path to the csv file containing the data points
 
             Returns:
                 float: mean absolute deviation
                 float: proportion between the mean absolute deviation and the average target angle
         """
 
-        data = SteeringData(image_directory, csv, 1, False)  # get evaluation data
+        data = SteeringData(self.IMG_DIRECTORY, self.CSV_VALIDATION, 1, False)  # get evaluation data
+        samples = calc_steps(self.CSV_VALIDATION, 1)
 
         average_target = 0.0
         absolute_deviation = 0.0
