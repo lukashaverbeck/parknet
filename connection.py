@@ -68,12 +68,12 @@ class TornadoWebserver(tornado.web.RequestHandler):
         self.communication = interaction.Communication.instance()
 
     def get(self):
-        print("Request from " + str(self.request.remote_ip))
+        # print("Request from " + str(self.request.remote_ip))
         try:
             self.write("<h1>Agent</h1> <p>ID: " + self.communication.agent.id + "</p>")
         except AttributeError:
             raise AttributeError(
-                "The class `Server` was not provided with a communication instance before a POST request was sent.")
+                "The class `Server` was not provided with a communication instance before a GET request was sent.")
 
     def post(self):
         self.set_header("Content-Type", "text/plain")
