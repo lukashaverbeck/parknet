@@ -76,9 +76,8 @@ class TornadoWebserver(tornado.web.RequestHandler):
 
     def post(self):
         self.set_header("Content-Type", "text/plain")
-        print(self.request.body)
         self.write("<h1>POST</h1>")
-        response = self.request.body
+        response = bytes(self.request.body).decode("utf-8")
         response_data = response.split("=", 1)
 
         try:
