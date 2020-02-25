@@ -24,7 +24,8 @@ from PyAccessPoint import pyaccesspoint
 import interaction
 import constants as const
 
-logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s", level=logging.DEBUG)
+# Enable the debug information for hotspot and tornado webserver to find errors
+# logging.basicConfig(format="%(asctime)s ::%(levelname)s:: %(message)s", level=logging.DEBUG)
 
 
 def get_local_ip():
