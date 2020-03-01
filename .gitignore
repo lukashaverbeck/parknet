@@ -1,5 +1,6 @@
 .idea
 .vscode
+*.code-workspace
 __pycache__
 data
 recorded_data
