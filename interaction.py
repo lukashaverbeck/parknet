@@ -11,13 +11,13 @@
 import json
 import time
 import requests
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 from threading import Thread
-from http.server import HTTPServer
 import vehicle
 import constants as const
 from util import Singleton, threaded
 from vision import FrontAgentScanner
-from connection import get_local_ip, check_if_up,WebThread
 
 
 @Singleton
@@ -25,59 +25,26 @@ class Communication:
     """ handles the communication between multiple agents by assigning callback functions to certain events  """
 
     def __init__(self):
-        """ initializes a communication object and starts a local HTTP Server """
+        """ initializes a communication object and connects to the IOT server """
 
-        # intitialize and start web server
-
-        self.local_ip = "127.0.0.1"
-        self.connection_status = True
-        web_server_thread = WebThread()
-        web_server_thread.define_ip(self.local_ip)
-        web_server_thread.start()
-        self.subscriptions = []
+        self.subscriptions = {}
         self.agent = vehicle.Agent.instance()
 
-    def set_local_ip(self , ip_address):
-        self.local_ip = ip_address
-        self.connection_status = True
-        print(f"Restarting Webserver on {self.local_ip}")
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.connect(const.Connection.BROKER_URL, const.Connection.BROKER_PORT, 60)
+        
+        thread = Thread(target=self.client.loop_forever)
+        thread.start()
 
-        web_server_thread = WebThread()
-        web_server_thread.define_ip(ip_address)
-        web_server_thread.start()
+    def on_connect(self, client, userdata, flags, rc):
+        print(f"Connected With Result Code {rc}")
 
-    def lost_connection(self):
-        self.connection_status = False
-
-    def scan_ips_from_network(self):
-        """ determines the used ip addresses in the network
-
-            Returns:
-                list: list of used ips in the network
-            
-            Raises:
-                IndexError: in case an ip address could not be interpreted
-
-        """
-
-        ips = []
-        local_ip = self.local_ip
-        ip_parts = local_ip.split(".")
-
-        try:
-            ip_network = ip_parts[0] + "." + ip_parts[1] + "." + ip_parts[2] + "."
-        except IndexError:
-            raise IndexError("local IP address is invalid")
-        else:
-            for i in range(2, 158):
-                ip = ip_network + str(i)
-                result = check_if_up(ip)
-                if result: ips.append(ip)
-
-            if local_ip in ips:
-                ips.remove(local_ip)
-
-            return ips
+    def on_message(self, client, userdata, message):
+        message = Message.loads(message.payload.decode())
+        if message.topic in self.subscriptions:
+            self.subscriptions[message.topic](message)
 
     def subscribe(self, topic, callback):
         """ subscribes to a topic by defining a callback function that is triggered when the event occours
@@ -87,10 +54,10 @@ class Communication:
                 callback (function): the method to run when the event occours
         """
 
-        self.subscriptions.append({
-            "topic": topic,
-            "callback": callback
-        })
+        assert topic not in self.subscriptions, "topic has already been subscribed to"
+
+        self.subscriptions[topic] = callback
+        self.client.subscribe(topic, qos=1)
 
     def send(self, topic, content):
         """ sends a message to all agents in the network
@@ -104,11 +71,8 @@ class Communication:
         message = Message(self.agent, topic, content)
         json_message = message.dumps()
 
-        # send message to every agent in the network
-        if self.connection_status:
-            for ip in self.scan_ips_from_network():
-                requests.post("http://" + ip, data=json_message)
-            requests.post("http://" + self.local_ip, data=json_message)
+        publish.single("test", json_message, hostname=const.Connection.BROKER_URL)
+        print("send message")
 
     def trigger(self, message):
         """ triggers every callback with the topic transmitted by the message
@@ -715,3 +679,19 @@ class Formation:
         if type(b).__name__ == "Agent": b = b.id
 
         return abs(self.agents.index(a) - self.agents.index(b)) - 1
+
+
+def callback(message):
+    print(message)
+
+
+if __name__ == "__main__":
+    communication = Communication.instance()
+
+    communication.subscribe("test", callback)
+
+    time.sleep(2)
+
+    for i in range(10):
+        communication.send("test", "Halli Hallo")
+        
