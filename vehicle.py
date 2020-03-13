@@ -25,7 +25,6 @@ from ai import SteeringNet
 from util import Singleton, threaded
 from ui.interface import WebInterface
 from vision import Camera, SensorManager
-from connection import AutoConnector, get_local_ip
 
 assert os.path.isfile(const.Storage.ATTRIBUTES), "required attributes file missing"
 assert os.path.isdir(const.Storage.DATA), "required data directory missing"
@@ -620,8 +619,3 @@ def start_interface():
 
             interface = WebInterface(agent, driver, sensor_manager, action_manager)
             interface.start(current_ip)
-
-
-if __name__ == "__main__":
-    interaction.Communication.instance()
-    start_interface()

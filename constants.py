@@ -5,7 +5,6 @@
 
 
 class Connection:
-    WLAN_PASSWORD = "Hallo1234"
     BROKER_URL = "test.mosquitto.org"
     BROKER_PORT = 1883
 

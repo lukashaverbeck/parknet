@@ -11,9 +11,9 @@
 import json
 import time
 import requests
+from threading import Thread
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-from threading import Thread
 import vehicle
 import constants as const
 from util import Singleton, threaded
@@ -30,18 +30,26 @@ class Communication:
         self.subscriptions = {}
         self.agent = vehicle.Agent.instance()
 
+        # establish connection to MQTT broker
         self.client = mqtt.Client()
-        self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.connect(const.Connection.BROKER_URL, const.Connection.BROKER_PORT, 60)
         
-        thread = Thread(target=self.client.loop_forever)
-        thread.start()
+        # continuously listen for MQTT messages in a separate thread
+        client_thread = Thread(target=self.client.loop_forever)
+        client_thread.start()
 
-    def on_connect(self, client, userdata, flags, rc):
-        print(f"Connected With Result Code {rc}")
+    def on_message(self, client, user, message):
+        """ handles the receivement of an MQTT message by calling the callback function for the topic
+            NOTE that this method is an internal method that should only be used for the MQTT client        
 
-    def on_message(self, client, userdata, message):
+            Args:
+                client (mqtt.Client): MQTT client instance
+                user (mqtt.UserData): private user data
+                message (mqtt.MQTTMessage): MQTT message representation
+        """
+
+        # cast message to custom message object and call the callback function if possible
         message = Message.loads(message.payload.decode())
         if message.topic in self.subscriptions:
             self.subscriptions[message.topic](message)
@@ -54,13 +62,14 @@ class Communication:
                 callback (function): the method to run when the event occours
         """
 
+        # a topic may not be subscribe to multiple times
         assert topic not in self.subscriptions, "topic has already been subscribed to"
 
         self.subscriptions[topic] = callback
         self.client.subscribe(topic, qos=1)
 
     def send(self, topic, content):
-        """ sends a message to all agents in the network
+        """ sends a message to all the listening agents 
 
             Args:
                 topic (str): topic of the message
@@ -71,8 +80,8 @@ class Communication:
         message = Message(self.agent, topic, content)
         json_message = message.dumps()
 
-        publish.single("test", json_message, hostname=const.Connection.BROKER_URL)
-        print("send message")
+        # publish message to the MQTT server
+        publish.single(topic, json_message, hostname=const.Connection.BROKER_URL)
 
     def trigger(self, message):
         """ triggers every callback with the topic transmitted by the message
@@ -679,19 +688,3 @@ class Formation:
         if type(b).__name__ == "Agent": b = b.id
 
         return abs(self.agents.index(a) - self.agents.index(b)) - 1
-
-
-def callback(message):
-    print(message)
-
-
-if __name__ == "__main__":
-    communication = Communication.instance()
-
-    communication.subscribe("test", callback)
-
-    time.sleep(2)
-
-    for i in range(10):
-        communication.send("test", "Halli Hallo")
-        
