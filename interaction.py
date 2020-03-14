@@ -472,8 +472,8 @@ class Action:
 class Formation:
     """ keeps track of the relative position of multiple agents within an agent network """
     
-    UPDATE_INTERVAL = 1  # seconds to wait after sending checking for being the first agent
-    AWAIT_CONFIRMATION = 1  # seconds to wait for the confirmation of the receivement of a backpass
+    UPDATE_INTERVAL = 2  # seconds to wait after sending checking for being the first agent
+    AWAIT_CONFIRMATION = 2  # seconds to wait for the confirmation of the receivement of a backpass
 
     def __init__(self):
         """ initializes the Formation and starts to update its agents """
@@ -484,7 +484,7 @@ class Formation:
         self.max_length = 0.0
         self.tmp_max_length = 0.0
         self.communication = Communication.instance()
-        self.backpass_confirmed = False
+        self.backpass_confirmed = None
         self.latest_update = 0.0
 
         self.update()
@@ -538,17 +538,19 @@ class Formation:
     def send_backward_pass(self):
         """ sends an agent list backwards to other agents within the network """
 
+        self.backpass_confirmed = False
+
         # send the message in a separate thread
-        thread = Thread(target=lambda: self.communication.send(const.Topic.FORMATION_BACKWARD_PASS, self.data()))
+        data = self.data()
+        thread = Thread(target=lambda: self.communication.send(const.Topic.FORMATION_BACKWARD_PASS, data))
         thread.start()
 
         time.sleep(self.AWAIT_CONFIRMATION)  # wait for a possible receiver to confirm the backpass
 
         if not self.backpass_confirmed:
             # last in line -> formation complete -> send forwards
-            self.backpass_confirmed = False
-            self.accept_tmp()
             self.send_forward_pass()
+            self.accept_tmp()
 
     def receive_backward_pass(self, message):
         """ callback function handling a formation that was sent backwards
@@ -556,8 +558,6 @@ class Formation:
             Args:
                 message (Message): message containing the formation's agent list
         """
-
-        if message.timestamp <= self.latest_update: return
 
         # check if the formation was sent to this specific agent
         with FrontAgentScanner.instance() as front_agent_scanner:
@@ -575,7 +575,8 @@ class Formation:
         """ sends an agent list forwards to other agents within the network """
 
         # send the message in a separate thread
-        thread = Thread(target=lambda: self.communication.send(const.Topic.FORMATION_FORWARD_PASS, self.data()))
+        data = self.data()
+        thread = Thread(target=lambda: self.communication.send(const.Topic.FORMATION_FORWARD_PASS, data))
         thread.start()
 
     def receive_forward_pass(self, message):
@@ -587,10 +588,10 @@ class Formation:
 
         agents = message.content["agents"]
         max_length = message.content["longest"]
-
-        # ensure that the formation contains the agent and that it is up to date
+        
+        # ensure that the formation contains the agent and was sent by another agent
         if self.agent.id not in message.content["agents"]: return
-        if message.timestamp <= self.latest_update: return
+        if message.sender == self.agent.id: return
 
         self.latest_update = message.timestamp
         self.tmp_agents = agents
@@ -615,7 +616,11 @@ class Formation:
                 message (Message): message confirming a backpass
         """
 
-        self.backpass_confirmed = message.content == self.agent.id
+        if message.sender == self.agent.id: return
+        if message.sender in self.tmp_agents: return
+
+        if message.content == self.agent.id:
+            self.backpass_confirmed = True
 
     def append(self):
         """ appends the agent to the temporary formation """
@@ -626,6 +631,9 @@ class Formation:
 
     def accept_tmp(self):
         """ makes the temporary formation the current 'official' formation and resets the temporary """
+
+        if len(self.tmp_agents) == 0:
+            self.append() 
 
         self.agents = [agent for agent in self.tmp_agents]
         self.max_length = self.tmp_max_length
@@ -688,3 +696,7 @@ class Formation:
         if type(b).__name__ == "Agent": b = b.id
 
         return abs(self.agents.index(a) - self.agents.index(b)) - 1
+
+
+if __name__ == "__main__":
+    Formation.instance()

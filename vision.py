@@ -206,7 +206,7 @@ class Camera:
 class FrontAgentScanner:
     """ analyzes the camera input and extracts agent IDs by scanning QR Codes """
 
-    UPDATE_INTERVAL = 3
+    UPDATE_INTERVAL = 1
 
     def __init__(self):
         """ initializes the FrontAgentScanner """
