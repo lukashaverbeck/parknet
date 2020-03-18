@@ -182,9 +182,9 @@ class ActionManager:
     """
 
     WAIT_ACT = 1
-    WAIT_SEND_GLOBAL = 0.5
+    WAIT_SEND_GLOBAL = 2
     WAIT_FIRST_IN_QUEUE = WAIT_SEND_GLOBAL * 4
-    WAIT_CHECK_PERMISSION = 0.5
+    WAIT_CHECK_PERMISSION = 2
 
     def __init__(self):
         """ initializes the ActionManager by initializing its attributes and starting continuous tasks """
@@ -231,28 +231,20 @@ class ActionManager:
         while True:
             # share current global action if it is the agent's current action
             if self.global_action is not None: 
-                if self.global_action.is_owner(self.agent): 
+                if self.global_action.is_owner(self.agent):
                     self.send_global_action()
 
             time.sleep(self.WAIT_SEND_GLOBAL)
 
     @threaded
     def check_global_permission(self):
-        """ continuously checks if the agent is allowed to make its local 
-            agent it intents to take global and in this case executes this action
-        """
+        """ continuously checks if the agent is allowed to make its local action global """
 
         while True:
             local_action = self.local_actions[0] if len(self.local_actions) > 0 else None
 
             # skip the loop if the local action cannot be made global
-            if local_action is None:  # check if there is a local action
-                time.sleep(self.WAIT_CHECK_PERMISSION)
-                continue
-            if self.global_action is not None:  # check if there is already a global action
-                time.sleep(self.WAIT_CHECK_PERMISSION)
-                continue
-            if local_action.mode not in self.PROACTIVAE_ACTIONS:  # check if the action does not require coordination
+            if not self.globalizing_action_possible(local_action):
                 time.sleep(self.WAIT_CHECK_PERMISSION)
                 continue
 
@@ -276,13 +268,14 @@ class ActionManager:
             # special cases : searching a parking lot and autonomous driving does not require coordination
             if len(self.local_actions) > 0:
                 local_action = self.local_actions[0]
-                if local_action == const.Mode.SEARCH:
-                    self.driver.search_parking_lot()
+                parallel_actions = {
+                    const.Mode.SEARCH: self.driver.search_parking_lot,
+                    const.Mode.AUTONOMOUS: self.driver.follow_road
+                }
+
+                if local_action.mode in parallel_actions:
                     self.local_actions.pop(0)
-                    continue
-                if local_action == const.Mode.AUTONOMOUS:
-                    self.driver.search_parking_lot()
-                    self.local_actions.pop(0)
+                    parallel_actions[local_action]()
                     continue
 
             if self.global_verification:  # permission for every action
@@ -303,6 +296,12 @@ class ActionManager:
                 # most global actions require other agents not to act at all
                 if self.global_action.mode == const.Mode.LEAVE:  # create space
                     self.driver.create_space(self.global_action.agent)
+                elif self.global_action.mode == const.Mode.ENTER:
+                    current_global_action = self.global_action
+                    self.driver.move_back()
+
+                    while current_global_action == self.global_action:
+                        time.sleep(self.WAIT_ACT)
                 else:  # do not act
                     time.sleep(self.WAIT_ACT)
                     continue
@@ -327,6 +326,25 @@ class ActionManager:
         """
 
         self.local_actions = [action for action in self if action.mode != mode]
+
+    def globalizing_action_possible(self, action):
+        """ checks if a certain action may be made global
+        
+            Args:
+                action (Action): local action to be checked
+
+            Returns:
+                bool: True if globalizing the action is possible - otherwhise False
+        """
+
+        if action is None:  # check if there is a local action
+            return False
+        if self.global_action is not None:  # check if there is already a global action
+            return False
+        if action.mode not in self.PROACTIVAE_ACTIONS:  # check if the action does not require coordination
+            return False
+        
+        return True
 
     def send_global_action(self):
         """ sends the current global action to every agent in the nework """
@@ -386,6 +404,12 @@ class Action:
 
     def __repr__(self):
         return f"Action[#{self.agent} : {self.mode} ({self.timestamp})]"
+
+    def __eq__(self, other):
+        if other is None: 
+            return False
+
+        return self.agent == other.agent and self.mode == other.mode and self.timestamp == other.timestamp
 
     def dumps(self):
         """ creates a JSON representation of the action
@@ -485,7 +509,6 @@ class Formation:
         self.tmp_max_length = 0.0
         self.communication = Communication.instance()
         self.backpass_confirmed = None
-        self.latest_update = 0.0
 
         self.update()
 
@@ -562,7 +585,6 @@ class Formation:
         # check if the formation was sent to this specific agent
         with FrontAgentScanner.instance() as front_agent_scanner:
             if front_agent_scanner.id == message.sender:
-                self.latest_update = message.timestamp
                 self.send_confirmation(message.sender)
                 
                 # update the delivered formation and send it further backwards
@@ -593,7 +615,6 @@ class Formation:
         if self.agent.id not in message.content["agents"]: return
         if message.sender == self.agent.id: return
 
-        self.latest_update = message.timestamp
         self.tmp_agents = agents
         self.tmp_max_length = max_length
         self.accept_tmp()
@@ -699,4 +720,9 @@ class Formation:
 
 
 if __name__ == "__main__":
-    Formation.instance()
+    agent = vehicle.Agent.instance()
+    action_manager = ActionManager.instance()
+
+    if agent.id == "picar002":
+        action_manager.append(const.Mode.ENTER)
+

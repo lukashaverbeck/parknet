@@ -4,6 +4,9 @@
 # version:  1.0 (28.12.2019)
 
 
+SENSOR_COMPENSATION_DISTANCE = 1.7
+
+
 class Connection:
     BROKER_URL = "test.mosquitto.org"
     BROKER_PORT = 1883
@@ -19,15 +22,8 @@ class Driving:
     MAX_STEERING_ANGLE = 25     # °
     NEUTRAL_STEERING_ANGLE = 0  # °
 
-    SAFETY_DISTANCE = 3         # cm
+    SAFETY_DISTANCE = 5         # cm
     LEAVE_PARKING_LOT_PROPORTION = 0.4
-
-
-class EchoPin:
-    FRONT = 4
-    RIGHT = 17
-    BACK = 22
-    BACK_ANGLED = 27
 
 
 class Mode:
@@ -42,12 +38,6 @@ class Mode:
 
     ALL = [ENTER, LEAVE, SEARCH, STANDBY, AUTONOMOUS, MANUAL, MOVE_UP, MOVE_BACK]
     DEFAULT = MANUAL
-
-
-class Stepper:
-    DIRECTION_PIN = 20
-    STEP_PIN = 21
-    SLEEP_PIN = 26
 
 
 class Storage:
@@ -70,3 +60,16 @@ class TriggerPin:
     RIGHT = 23
     BACK = 25
     BACK_ANGLED = 24
+
+
+class EchoPin:
+    FRONT = 4
+    RIGHT = 17
+    BACK = 22
+    BACK_ANGLED = 27
+
+
+class Stepper:
+    DIRECTION_PIN = 20
+    STEP_PIN = 21
+    SLEEP_PIN = 26

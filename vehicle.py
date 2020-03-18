@@ -52,6 +52,7 @@ class Agent:
                 self.id = str(attributes["id"])
                 self.length = float(attributes["length"])
                 self.width = float(attributes["width"])
+                self.steering_parameters = attributes["steering_parameters"]
         except OSError:
             raise OSError("The attributes file could not be opened.")
 
@@ -147,6 +148,8 @@ class Driver:
             front vehicle or obstacle in the correct starting position
         """
 
+        self.search_parking_lot()
+
         self.start_driving()
         time.sleep(2)
 
@@ -156,31 +159,30 @@ class Driver:
         self.drive_thread.driven_distance = 0
         self.distance = 35
         while self.drive_thread.driven_distance < self.distance:
-            time.sleep(1)
+            time.sleep(0.1)
 
         # drive back until close to wall
         self.angle = 0
         self.velocity = -8
         self.distance = 150
         self.drive_thread.driven_distance = 0
-        while self.sensor_manager.rear > 60:
-            time.sleep(0.2)
+        while self.sensor_manager.rear_angled > 22:
+            time.sleep(0.1)
        
         # get into straight position
         self.angle = -25
         self.velocity = -8
-        self.distance = 40
+        self.distance = 33
         self.drive_thread.driven_distance = 0
         while self.drive_thread.driven_distance < self.distance:
-            time.sleep(1)
+            time.sleep(0.1)
         
         # drive backwards up to end of gap
         self.angle = 0
         self.velocity = -8
         self.drive_thread.driven_distance = 0
         while self.sensor_manager.rear >= 10:
-            print(self.sensor_manager.rear)
-            time.sleep(0.5)
+            time.sleep(0.1)
         
         self.stop_driving()
 
@@ -190,8 +192,7 @@ class Driver:
             TODO implement method
         """
 
-        print("leave parking lot")
-        time.sleep(5)
+        pass
 
     def search_parking_lot(self):
         """ drives forward while identifying possible parking lots and evaluating whether
@@ -212,7 +213,7 @@ class Driver:
         while self.drive_thread.driven_distance < self.distance:
             time.sleep(0.1)
 
-            if self.sensor_manager.right > 25:
+            if self.sensor_manager.right > 30:
                 vacant_distance += 1
             else:
                 vacant_distance = 0
@@ -353,14 +354,17 @@ class Driver:
     def move_back(self):
         """ drives as close to the rear vehicle or obstacle as possible for the current vehicle formation """
 
-        # slowly drive backwards
-        self.velocity = -1 * const.Driving.CAUTIOUS_VELOCITY
-        self.angle = const.Driving.NEUTRAL_STEERING_ANGLE
-
-        # drive as long there is enough space to the next vehicle or obstacle
-        gap = self.formation.calc_gap()
         self.start_driving()
-        while self.sensor_manager.rear > gap: continue
+        self.velocity = -8
+        self.distance = 100
+        self.angle = 0
+        self.drive_thread.reset()
+
+        while self.drive_thread.driven_distance < self.distance:
+            time.sleep(0.1)
+
+            if self.sensor_manager.rear < 10:
+                break
 
         self.stop_driving()
 
@@ -474,6 +478,9 @@ class DriveThread(Thread):
         self.active = True
         self.driver = Driver.instance()
         self.sensor_manager = SensorManager.instance()
+        
+        agent = Agent.instance()
+        self.steering_parameters = agent.steering_parameters
 
         self.pwm = Adafruit_PCA9685.PCA9685(address=0x40, busnum=1)  # create PCA9685-object at I2C-port
         self.pwm.set_pwm_freq(50)
@@ -545,7 +552,7 @@ class DriveThread(Thread):
 
     @threaded
     def steer(self):
-        """calculates and sets steering angle"""
+        """ calculates and sets steering angle """
 
         while self.active:
             angle = self.driver.angle
@@ -553,8 +560,10 @@ class DriveThread(Thread):
             self.pwm.set_pwm(0, 0, steering_pwm_calc)
 
     def angle_to_pmw(self, angle):
-        """ converts the current steering angle to a pulse width modulation value that can be processed by the
+        """ converts the current steering angle to a pulse width modulation (PWM) value that can be processed by the
             hardware
+            NOTE that the parameters for the PWM approximation function defined as agent attributes must be in
+            descending exponential order (k0 * x^n + k1 * x^(n-1) + ... + kn)
 
             Args:
                 angle (int): angle in degrees to be converted to pwm
@@ -563,8 +572,11 @@ class DriveThread(Thread):
                 int: pwm value for the steering angle
         """
 
-        #val = 2e-6 * angle ** 4 + 2e-6 * angle ** 3 + 0.005766 * angle ** 2 - 1.81281 * angle + 324.149
-        val = -2.82492*angle+406
+        val = 0
+
+        for exponent, parameter in enumerate(reversed(self.steering_parameters)):
+            val += parameter * (angle ** exponent)
+
         return int(round(val, 0))
 
     def stop(self):
@@ -576,46 +588,3 @@ class DriveThread(Thread):
         self.active = False
         angle_pwm = self.angle_to_pmw(const.Driving.NEUTRAL_STEERING_ANGLE)
         self.pwm.set_pwm(0, 0, angle_pwm)
-
-@threaded
-def start_interface():
-    """checks for new ip addresses of picar and starts interface-webserver on new ip"""
-
-    last_ip = None
-
-    while True:
-        time.sleep(5)
-        current_ips = get_local_ip().split()
-
-        # check if a network address was found
-        if len(current_ips) == 0:
-            communication = interaction.Communication.instance()
-            communication.lost_connection()
-            continue
-        elif len(current_ips) == 1:
-            if not current_ips[0][:3] == "192":
-                communication = interaction.Communication.instance()
-                communication.lost_connection()
-                continue
-            else:
-                current_ip = current_ips[0]
-        else:
-            if current_ips[0][:3] == "192":
-                current_ip = current_ips[0]
-            else:
-                current_ip = current_ips[1]
-
-        # restar webservers if the IP is new
-        if not current_ip == last_ip:
-            last_ip = current_ip
-            print(f"Found new ip: {current_ip}")
-
-            agent = Agent.instance()
-            communication = interaction.Communication.instance()
-            communication.set_local_ip(current_ip)
-            driver = Driver.instance()
-            sensor_manager = SensorManager.instance()
-            action_manager = interaction.ActionManager.instance()
-
-            interface = WebInterface(agent, driver, sensor_manager, action_manager)
-            interface.start(current_ip)

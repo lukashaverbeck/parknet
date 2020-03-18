@@ -40,7 +40,7 @@ def lazy_sensor_update(direction, sensor):
         """
 
         def update(sensor_manager):
-            """ function that updated a sensor data point if it is being requested and has not been updated for a while
+            """ updates a sensor data point if it is being requested and has not been updated for a while
 
                 Args:
                     sensor_manager (SensorManager): instance of a sensor manager whose distance data is being requested
@@ -55,7 +55,7 @@ def lazy_sensor_update(direction, sensor):
             # check if the distance value should be updated
             if update_data["time"] < timestamp - sensor_manager.REFRESH_INTERVAL:
                 # update the distance value and the corresponding timestamp
-                update_data["value"] = sensor.distance * 100
+                update_data["value"] = sensor.distance * 100 + const.SENSOR_COMPENSATION_DISTANCE
                 update_data["time"] = timestamp
 
             return func(sensor_manager)
