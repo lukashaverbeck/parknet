@@ -1,5 +1,5 @@
 # parknet
-##### urbanen Parkraum optimal nutzen mit KI basierten, autonom agierenden Fahrzeugen
+##### Parkraum optimal nutzen mit autonom kommunizierenden, interaktiven Fahrzeugen
 
 ___
 
