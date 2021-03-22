@@ -100,11 +100,12 @@ class _Connection:
 class Communication:
     class Topics:
         FORMATION = "formation"
+        PROCESS_FINISHED = "process-finished"
 
     def __init__(self):
         self._connection: _Connection = _Connection()
 
-    def _subscribe(self, topic: str, callback: interaction.Callback, receive_own: bool = False) -> None:
+    def subscribe(self, topic: str, callback: interaction.Callback, receive_own: bool = False) -> None:
         """ Adds a communication subscription to the connection.
 
         See Also:
@@ -118,7 +119,7 @@ class Communication:
 
         self._connection.subscribe(topic, callback, receive_own)
 
-    def _send(self, topic: str, content: interaction.MessageContent) -> None:
+    def send(self, topic: str, content: interaction.MessageContent) -> None:
         """ Publishes a message sent by the main agent.
 
         Args:

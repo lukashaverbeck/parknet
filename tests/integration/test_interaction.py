@@ -13,9 +13,9 @@ def test_messaging():
     """
 
     communication = interaction.Communication()
-    communication._subscribe("should-receive-this", print, True)
-    communication._subscribe("should-not-receive-this", print, False)
+    communication.subscribe("should-receive-this", print, True)
+    communication.subscribe("should-not-receive-this", print, False)
 
     for _ in range(5):
-        communication._send("should-receive-this", "This message should be displayed.")
-        communication._send("should-not-receive-this", "This message should not be displayed.")
+        communication.send("should-receive-this", "This message should be displayed.")
+        communication.send("should-not-receive-this", "This message should not be displayed.")

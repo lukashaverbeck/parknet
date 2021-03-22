@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import time
 from typing import Callable
 
+import attributes
+import control
 import interaction
 import util
 
@@ -36,7 +39,7 @@ def _action(function: Callable[[MainAgent], None]):
 
 
 @util.SingleUse
-class MainAgent:
+class MainAgent(interaction.Communication):
     @property
     def minimum_distance(self) -> float:
         number_agents = len(self._formation)
@@ -45,8 +48,10 @@ class MainAgent:
         return self._formation.delta_max / number_agents + util.const.Driving.SAFETY_DISTANCE
 
     def __init__(self):
+        super().__init__()
         self._standby: bool = True
         self._formation: interaction.Formation = interaction.Formation()
+        self._driver: control.Driver = control.Driver()
         self._current_state_hash: int = hash(self)
 
         self._run()
@@ -120,10 +125,53 @@ class MainAgent:
     def leave(self):
         pass
 
-    # TODO: address driver to create space for filing agent
     @_action
-    def create_space(self):
-        pass
+    def create_space(self) -> None:
+        """ Creates space for a leaving agent.
+
+        In order to do so, the main agent moves up in the according direction until the agent has left the formation.
+        After the leaving agent finished the leaving process, the main agent minimizes the space again.
+
+        See Also:
+            For reference regarding minimizing space:
+                - def minimize_space(...)
+        """
+
+        # get the leaving agent from the formation
+        filing_member = self._formation.filing_member
+
+        # only create space if the leaving agent is part of the same formation
+        if not filing_member:
+            return
+
+        # initially the leaving process is running
+        process_running = True
+
+        def on_process_finish(message: interaction.Message) -> None:
+            """ Flags the leaving process as finished.
+
+            This should be called when a nearby driving process is finished.
+            The process is only flagged if the process was finished by the leaving agent.
+
+            Args:
+                message: Message sent to confirm that a driving process was finished.
+            """
+
+            nonlocal process_running
+            process_running = not message.sender == filing_member.signature
+
+        # listen for finished processes to determine when the leaving agent left the parking lane
+        self.subscribe(interaction.Communication.Topics.PROCESS_FINISHED, on_process_finish)
+
+        # drive in the matching direction as long as the leaving agent has not yet finished the process
+        comes_before = self._formation.comes_before(attributes.SIGNATURE, filing_member.signature)  # get direction
+        direction = self._driver.forward if comes_before else self._driver.backward  # get driving mode
+        direction.do_while(lambda: process_running)  # drive
+
+        # minimize space after waiting for other agents closer to the leaving agent
+        delay = self._formation.distance(attributes.SIGNATURE, filing_member.signature)  # determine prior distance
+        time.sleep(delay)  # wait an according amount of time
+        self.minimize_space()  # start minimizing the space again
 
     # TODO: address driver to minimize the distance to the next agent
     @_action

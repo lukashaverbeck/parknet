@@ -119,6 +119,7 @@ class _Mode:
         self._driving_motor: _DrivingMotor = driving_motor
         self._forward: direction = self._forward == Direction.FORWARD
 
+    # TODO: add option for maximum distance and maximum duration
     def do_while(self, condition: Callable[[], bool]) -> None:
         """ Drives as long as the mode is active and the given condition is met.
 

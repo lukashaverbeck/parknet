@@ -65,7 +65,7 @@ class _Member:
     def __init__(self, signature: str, delta: float, filing: Optional[datetime]):
         self.signature: str = signature
         self.delta: float = delta
-        self.filing: datetime = filing
+        self.filing: Optional[datetime] = filing
 
     def __repr__(self):
         return f"Agent[#{self.signature}, δ: {self.delta}{util.const.Units.DISTANCE}]"
@@ -293,13 +293,22 @@ class Formation(interaction.Communication):
     def delta_max(self) -> float:
         return max(member.delta for member in self)
 
+    @property
+    def filing_member(self) -> Optional[_Member]:
+        filing_members = filter(lambda member: member.filing is not None, self.members)
+
+        if not filing_members:
+            return None
+
+        return min(filing_members, key=lambda member: member.filing)
+
     def __init__(self):
         super().__init__()
-        self.agents: List[_Member] = []
+        self.members: List[_Member] = []
         self._scanner = sensing.Scanner()
         self._relation_graph: _RelationGraph = _RelationGraph()
 
-        self._subscribe(interaction.Communication.Topics.FORMATION, self._handle_member_relation)
+        self.subscribe(interaction.Communication.Topics.FORMATION, self._handle_member_relation)
 
     def update(self, filing: bool = False) -> None:
         """ Updates the member relation graph by adding and sharing main agent's member relation.
@@ -315,7 +324,7 @@ class Formation(interaction.Communication):
 
         # add and share the member relation
         self._add(member_relation)
-        self._send(interaction.Communication.Topics.FORMATION, member_relation.encode())
+        self.send(interaction.Communication.Topics.FORMATION, member_relation.encode())
 
     def _add(self, member_relation: _MemberRelation) -> None:
         self._relation_graph.add(member_relation)
@@ -328,7 +337,7 @@ class Formation(interaction.Communication):
             if any(member.signature == attributes.SIGNATURE for member in max_linear_transitivity):
                 agents = max_linear_transitivity
 
-        self.agents = agents
+        self.members = agents
 
     def _handle_member_relation(self, message: interaction.Message[_MemberRelation.Dictionary]) -> None:
         """ Handles an incoming member relation message by updating the formation member relation.
@@ -341,20 +350,42 @@ class Formation(interaction.Communication):
         member_relation = _MemberRelation.decode(message.content)
         self._add(member_relation)
 
+    # TODO: add documentation
+    def member(self, signature: str) -> _Member:
+        member = next([member for member in self.members if member.signature == signature], None)
+        assert member is not None, f"Tried to find {signature} but the formation does not contain an associated member."
+        return member
+
+    # TODO: add documentation
+    def comes_before(self, signature_1: str, signature_2: str) -> bool:
+        if signature_1 == signature_2:
+            return False
+
+        member_1, member_2 = self.member(signature_1), self.member(signature_2)
+        return self.members.index(member_1) < self.members.index(member_2)
+
+    # TODO: add documentation
+    def distance(self, signature_1: str, signature_2: str):
+        assert signature_1 != signature_2, f"Cannot calculate the distance between {signature_1} and {signature_2} " \
+                                           f"in a useful way."
+
+        member_1, member_2 = self.member(signature_1), self.member(signature_2)
+        return abs(self.members.index(member_1) - self.agents.index(member_2)) - 1
+
     def __eq__(self, other: Formation):
-        return self.agents == other.agents
+        return self.members == other.members
 
     def __iter__(self):
-        yield from self.agents
+        yield from self.members
 
     def __len__(self):
-        return len(self.agents)
+        return len(self.members)
 
     def __contains__(self, item: _Member):
-        return item in self.agents
+        return item in self.members
 
     def __getitem__(self, key: int):
-        return self.agents[key]
+        return self.members[key]
 
     def __repr__(self):
-        return f"Formation{self.agents}"
+        return f"Formation{self.members}"
