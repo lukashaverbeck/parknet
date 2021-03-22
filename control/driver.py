@@ -73,7 +73,6 @@ class Driver:
 
         self._current_mode: Optional[_Mode] = None
 
-    # TODO: add documentation
     def _mode(self, direction: _Direction) -> _Mode:
         """ Creates a new driving mode.
 

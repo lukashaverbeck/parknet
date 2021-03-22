@@ -50,7 +50,7 @@ class _Member:
         )
 
     @staticmethod
-    def agent(filing: bool = False):
+    def main_agent(filing: bool = False):
         """ Creates a member that represents the main agent.
 
         Args:
@@ -295,11 +295,14 @@ class Formation(interaction.Communication):
 
     @property
     def filing_member(self) -> Optional[_Member]:
+        # get members that proposed a filing
         filing_members = filter(lambda member: member.filing is not None, self.members)
 
+        # return None if no agent proposed a filing
         if not filing_members:
             return None
 
+        # of all filing members return the member with the earliest filing
         return min(filing_members, key=lambda member: member.filing)
 
     def __init__(self):
@@ -319,7 +322,7 @@ class Formation(interaction.Communication):
 
         # create the main agent's member relation containing the front agent signature and the main agent Member
         ahead_signature = self._scanner.ahead_signature
-        member = _Member.agent(filing)
+        member = _Member.main_agent(filing)
         member_relation = _MemberRelation(member, ahead_signature)
 
         # add and share the member relation
@@ -327,17 +330,39 @@ class Formation(interaction.Communication):
         self.send(interaction.Communication.Topics.FORMATION, member_relation.encode())
 
     def _add(self, member_relation: _MemberRelation) -> None:
-        self._relation_graph.add(member_relation)
-        self._update_agents()
+        """ Adds a member relation to the graph and then updates the member list.
 
-    def _update_agents(self) -> None:
-        agents = [_Member.agent()]
+        See Also:
+            For reference regarding the update of the member list:
+                - def _update_members(...)
 
+        Args:
+            member_relation: Relation between two members to add to the graph.
+        """
+
+        self._relation_graph.add(member_relation)  # add relation to the graph
+        self._update_members()  # update member list
+
+    def _update_members(self) -> None:
+        """ Updates the member list based on the current relation Graph.
+
+        The member list always contains at least the main agent.
+        If there is a linear transitivity including the main agent, the member list is set as the maximum linear
+        transitivity including the main agent.
+        """
+
+        # member list always includes at least the main agent
+        members = [_Member.main_agent()]
+
+        # iterate over every maximum linear transitivity in the relation graph
         for max_linear_transitivity in self._relation_graph.max_linear_transitivities():
+            # overwrite the members with maximum linear transitivity if it includes the main agent
             if any(member.signature == attributes.SIGNATURE for member in max_linear_transitivity):
-                agents = max_linear_transitivity
+                members = max_linear_transitivity  # set member list
+                break  # member list found -> stop further search
 
-        self.members = agents
+        # set member list
+        self.members = members
 
     def _handle_member_relation(self, message: interaction.Message[_MemberRelation.Dictionary]) -> None:
         """ Handles an incoming member relation message by updating the formation member relation.
@@ -350,26 +375,73 @@ class Formation(interaction.Communication):
         member_relation = _MemberRelation.decode(message.content)
         self._add(member_relation)
 
-    # TODO: add documentation
     def member(self, signature: str) -> _Member:
+        """ Gets a formation member associated with a given signature.
+
+        Args:
+            signature: Signature of the desired member.
+
+        Returns:
+            The member with the associated signature.
+
+        Raises:
+            AssertionError: If there is no member with the given signature in the formation.
+        """
+
+        # get first member with the given signature or None if there is None
         member = next([member for member in self.members if member.signature == signature], None)
+
+        # there must be a member with the associated signature in the formation
         assert member is not None, f"Tried to find {signature} but the formation does not contain an associated member."
+
         return member
 
-    # TODO: add documentation
     def comes_before(self, signature_1: str, signature_2: str) -> bool:
+        """ Determines whether an agent is located further ahead within the formation.
+
+        Args:
+            signature_1: Signature of a formation member.
+            signature_2: Signature of another formation member.
+
+        Returns:
+             Boolean whether member associated with ``signature_1`` comes before member associated with ``signature_2``.
+        """
+
+        # a member never comes before itself
         if signature_1 == signature_2:
             return False
 
+        # get members associated to the signatures
         member_1, member_2 = self.member(signature_1), self.member(signature_2)
+
+        # determine and return whether index of first member is less than the index of the second member
         return self.members.index(member_1) < self.members.index(member_2)
 
-    # TODO: add documentation
-    def distance(self, signature_1: str, signature_2: str):
-        assert signature_1 != signature_2, f"Cannot calculate the distance between {signature_1} and {signature_2} " \
-                                           f"in a useful way."
+    def distance(self, signature_1: str, signature_2: str) -> int:
+        """ Determines how many vehicles stand between two different members.
 
+        Notes:
+            The given signatures must be distinct.
+
+        Args:
+            signature_1: Signature of a formation member.
+            signature_2: Signature of another formation member.
+
+        Returns:
+            The number of vehicles in between the given members.
+
+        Raises:
+            AssertionError: If the signatures are equal.
+        """
+
+        # signatures must be different in order to find the distance between distinct members
+        assert signature_1 != signature_2, f"Cannot calculate the distance between {signature_1} and {signature_2} " \
+                                           f"in a meaningful way."
+
+        # get members associated to the signatures
         member_1, member_2 = self.member(signature_1), self.member(signature_2)
+
+        # calculate and return the (absolute) number of vehicles in between
         return abs(self.members.index(member_1) - self.agents.index(member_2)) - 1
 
     def __eq__(self, other: Formation):
